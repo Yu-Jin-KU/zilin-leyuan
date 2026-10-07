@@ -574,7 +574,10 @@ function quest(list,o={}){if(writer){try{writer.cancelQuiz()}catch(_){}writer=nu
  Q={list,o,qi:0,gi:0,games:null,score:0,total:0};nextGame()}
 function nextGame(){const e=Q.list[Q.qi];if(!Q.games){Q.games=gamesFor(e,Q.o.daily?2:3);Q.gi=0}
  if(Q.gi>=Q.games.length){const p=me();p.quest=p.quest||{};p.quest[e.c]=(p.quest[e.c]||0)+1;save();Q.qi++;Q.games=null;if(Q.qi>=Q.list.length)return questDone();return nextGame()}
- const k=Q.games[Q.gi],g=GAMES[k].build(e);Q.total++;
+ const k=Q.games[Q.gi];
+ if(k==='color'&&document.fonts&&document.fonts.status!=='loaded'){$('#main').innerHTML='<p class="muted" style="text-align:center;margin-top:40px">准备颜料中…</p>';document.fonts.ready.then(()=>{if(Q&&Q.games&&Q.games[Q.gi]===k)renderGame(e,k)});return}
+ renderGame(e,k)}
+function renderGame(e,k){const g=GAMES[k].build(e);Q.total++;
  $('#main').innerHTML=`<button class="big ghost" id="qBack" style="font-size:18px;padding:8px 14px;margin-bottom:12px">← 退出闯关</button>
   <div class="quest"><div class="qhead"><span class="qbadge">${esc(GAMES[k].name)}</span><span class="muted">${Q.o.daily?`第 ${Q.qi+1} / ${Q.list.length} 个字`:`第 ${Q.gi+1} / ${Q.games.length} 关`} · <b class="${e.letter?'lat':''}">${esc(e.c)}</b></span></div>${g.html}<div class="msg" id="qmsg"></div></div>`;
  $('#qBack').onclick=()=>Q.o.daily?go('grades'):go('write',e.c);
