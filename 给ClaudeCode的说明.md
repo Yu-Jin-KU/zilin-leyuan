@@ -1,6 +1,6 @@
 # 字灵乐园：给 Claude Code 的说明
 
-「字灵乐园」是汉字 / 拼音笔顺小游戏。2026-10-07 起已经是一个完整的、全本地化的静态网站，并发布在 GitHub Pages：
+「字灵乐园」是汉字 / 拼音笔顺小游戏，已发布在 GitHub Pages：
 
 - 网址：https://yu-jin-ku.github.io/zilin-leyuan/
 - 仓库：https://github.com/Yu-Jin-KU/zilin-leyuan （GitHub 账号 Yu-Jin-KU，本机 `gh` 已登录）
@@ -8,22 +8,26 @@
 
 ## 目录
 
-- `index.html`：游戏本体（字表、字灵绘制、卡册、海报、语音播放逻辑全在里面）。
-- `audio/`：Fish Audio 预生成的语音，`<字>.mp3` 和 `ui_*.mp3`（32 kbps 单声道）。
-- `data/`：每个字的笔顺 JSON（hanzi-writer-data，Arphic 许可）；本地找不到时才退回 jsDelivr。
-- `lib/hanzi-writer.min.js`、`fonts/`（站酷快乐体 / Andika 子集 woff2）：不再依赖任何 CDN。
-- `sw.js` + `manifest.webmanifest` + 图标：Service Worker 离线缓存、可“添加到主屏幕”。
-- `tools/gen_audio.py`：批量生成语音（见下）；`tools/patch_index.js` 是一次性改造脚本，已执行过，留作记录。
-- `字灵卡-打印版.pdf`：300 张可打印字灵卡。
+- `index.html`：游戏本体。字表 DATA、拼音表 PINYIN、英文释义 EN、HSK 表 HSK 都内嵌在里面（由 `tools/patch_*.js` 从 `tools/*.json` 注入过，之后直接改 index.html 即可）。
+- `audio/`、`audio/kid/`：成人声 / 童声语音，`<字>.mp3` 和 `ui_*.mp3`（32 kbps 单声道）。
+- `data/`：笔顺 JSON（hanzi-writer-data，Arphic 许可）。拼音复合音节（zh、ang、yuan…）没有现成数据，由 `letterData()` 把单个字母的笔画拼接而成。
+- `lib/`、`fonts/`：不依赖任何 CDN。`sw.js` 离线缓存，改了核心文件记得把 VERSION 加一。
+- `tools/phrases.py`：所有要朗读的文本（字 + 注音标签 + 诗句；拼音读音 + 儿歌；提示语），gen / qa 共用。
+- `tools/gen_audio.py`：生成语音；`tools/qa_audio.py`：用本地 faster-whisper 听写比对，找漏读乱读；`tools/pinyin.json`、`en_gloss.json`、`hsk30_chars.json`：数据源。
+- `设计/字灵卡美术方案.md` + `prompts_一年级.csv`：给 Gemini 出图的方案和 1161 条提示词；`tools/make_prompts.py` 可重新生成。
+- `tools/index.before-patch.html`、`index.before-v2.html`：两轮改造前的备份（已 gitignore）。
 
-## 语音怎么来的
+## 语音
 
-- Fish Audio 免费模型 `s2.1-pro-free`（官方说明免费到 2026-11-30，之后可能收费：s2.1-pro 为 15 美元 / 百万字节，整套字表约 10 万字节，即不到 2 美元）。
-- 音色：公共声音「温柔动听女声」`faccba1a8ac54016bcfc02761285e67f`，语速 0.88。单字后面带了拼音注音标签，保证多音字按字表里的拼音读。
-- 密钥通过环境变量 `FISH_API_KEY` 传入，**不要写进仓库**。换声音：删掉 `audio/`，`python tools/gen_audio.py --voice <id>`，约 45 分钟。
-- 浏览器端用 Web Audio 解码播放；mp3 缺失 / 离线未缓存时自动退回系统朗读。
+- Fish Audio 免费模型 `s2.1-pro-free`（官方博客：免费到 2026-11-30）。密钥只通过环境变量 `FISH_API_KEY` 传入，不要写进仓库。
+- 成人声「温柔动听女声」`faccba1a8ac54016bcfc02761285e67f`；童声「童声·讲故事」`8ab237c79d36417e84030674b8ab4cfd`。
+- 童声是微软 Xiaoyou（美人鱼课绘本旁白所用的 Azure `zh-CN-XiaoyouNeural`）的克隆：参考音频取自 `D:\美人鱼课\绘本_十二生肖\pilot_鼠\audio_zh\00-04.mp3`，用 `client.voices.create()` 建成私有模型 `27bbdacb95f6449a806dd4a9ac85aba9`（在用户的 Fish 账号下）。Edge 免费端点已经下架 Xiaoyou（2026-10 只剩 6 个 zh-CN 音色），所以不能再用 edge-tts 生成新的参考音频。不要克隆真实学生的录音。
+- 背景音乐：`music/` 下是 Kevin MacLeod 的 CC BY 4.0 曲目（压成 64 kbps 单声道），`music/CREDITS.txt` 是署名。网页里 `playMusic()` 按视图选曲（写字页用安静的 Carefree），`duck()` 在人声播放时压低到 0.05；另有 `startGen()` 用 Web Audio 即兴生成大调小曲作为第二选项。
+- 模型偶尔会把短句读成十几秒胡话或漏字，所以每次生成后用 `qa_audio.py` 过一遍，`gen_audio.py --redo` 重做可疑条目。
 
-## 已知可以继续做的事
+## 设计决策
 
-- 国内访问：github.io 时通时断。可把同一文件夹再部署一份到腾讯 EdgeOne Pages（`*.edgeone.app` 国内可达、免费、不需要备案）。
-- 玩家进度只在本机 localStorage，没有导出 / 导入；年级名「0年级…15年级」对孩子不直观；丹麦语释义可做成多语言切换。
+- 级别名：拼音 / 一到九年级 / 进阶一到六（丹麦学制没有 10 年级以上的叫法）；另有 HSK 3.0 视图。
+- 编号 No. 保持最初的 26 字母 + 汉字顺序，新加的拼音排在最后，以免和打印版 PDF 的编号对不上。
+- 语音减少重复：开场提示只在每次打开网页后说一次；完成时的夸奖在 8 句里轮换。
+- 书写：笔画宽度 40/44，鼠标设备判定宽松 15%；错两次后下一笔用亮粉色高亮并持续提示。
