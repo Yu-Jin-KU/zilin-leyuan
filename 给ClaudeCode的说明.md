@@ -25,6 +25,13 @@
 - 背景音乐：`music/` 下是 Kevin MacLeod 的 CC BY 4.0 曲目（压成 64 kbps 单声道），`music/CREDITS.txt` 是署名。网页里 `playMusic()` 按视图选曲（写字页用安静的 Carefree），`duck()` 在人声播放时压低到 0.05；另有 `startGen()` 用 Web Audio 即兴生成大调小曲作为第二选项。
 - 模型偶尔会把短句读成十几秒胡话或漏字，所以每次生成后用 `qa_audio.py` 过一遍，`gen_audio.py --redo` 重做可疑条目。
 
+## 闯关小游戏（index.html 里 `GAMES` 对象）
+
+- 借鉴丹麦 ABC 教材（照片在 `丹麦语教材借鉴/`，已 gitignore）：每个音用多条通道重复。五种小游戏：listen 听音选字、picture 看图认字（emoji 表 `EMOJI`）、fill 填一填（拼音项：补声母 / 韵母 / 整体认读；汉字：补句子里的字）、maze 字迷宫（5×5，右/下随机生成保证可达）、sentence 拼句子。
+- `quest(list,{daily,pool})` 是独立视图；`daily()` 从当前年级抽 5 个学过的字。通过记录在 `player.quest[字]`，瓷砖左上角显示 🎖。
+- 拼音项的干扰项来自同一拼音分组；汉字来自同年级。填拼音的目标字取一到三年级里拼音含该音的字（`fillTargets`）。
+- 还没做的：涂色显字、找形近字、画给字灵。
+
 ## 设计决策
 
 - 级别名：拼音 / 一到九年级 / 进阶一到六（丹麦学制没有 10 年级以上的叫法）；另有 HSK 3.0 视图。

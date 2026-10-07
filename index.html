@@ -79,6 +79,20 @@ h1{font-size:34px;margin:8px 0 4px;font-weight:400}h2{font-size:26px;margin:22px
 .combo{display:flex;justify-content:center;gap:6px;margin-top:8px}
 .combo span{width:22px;height:22px;border-radius:50%;background:var(--locked)}
 .combo span.on{background:var(--grass)}.combo span.bad{background:var(--berry)}
+/* quest 闯关小游戏 */
+.quest{background:var(--paper);border:3px solid var(--line);border-radius:26px;padding:18px;max-width:720px;margin:0 auto}
+.qhead{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}.qbadge{background:#8A5CF6;color:#fff;border-radius:999px;padding:4px 12px;font-size:16px}
+.qtip{font-size:22px;margin:6px 0 12px}.qpic{font-size:110px;text-align:center;line-height:1.2}
+.qword{font-size:56px;text-align:center}.qword small{display:block;font-family:var(--lat);font-size:30px;color:var(--soft);letter-spacing:2px}
+.qline{font-size:30px;text-align:center;line-height:1.8;margin:8px 0}.qline .blank{display:inline-block;min-width:1.2em;border-bottom:3px solid var(--berry);margin:0 2px;color:var(--grass)}
+.qopts{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:12px;margin-top:14px}
+.qopt{font-size:44px;padding:14px;border-radius:20px;background:var(--bg);border:3px solid var(--line);min-height:84px}.qopt.lat{font-family:var(--lat);font-weight:700;font-size:32px}
+.qopt.ok{background:var(--grass);color:#fff;border-color:var(--grass)}.qopt.bad{animation:shake .4s;background:var(--berry);color:#fff}.qopt.used{opacity:.4}
+.maze{display:grid;gap:6px;max-width:420px;margin:10px auto 30px}.mc{font-size:30px;aspect-ratio:1;border-radius:14px;background:var(--bg);border:3px solid var(--line);padding:0}.mc.lat{font-family:var(--lat);font-weight:700;font-size:22px}
+.mc.on{background:var(--grass);color:#fff;border-color:var(--grass)}.mc.bad{animation:shake .4s;background:var(--berry);color:#fff}.mc.home{box-shadow:0 0 0 4px var(--sun)}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.rib{position:absolute;left:-4px;top:-8px;font-size:18px}
+.big.purple{background:#8A5CF6;box-shadow:0 5px 0 #5B3BB5}
 /* album */
 .album{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px}
 .slot{background:none;padding:0;border-radius:14px}
@@ -381,7 +395,7 @@ function players(){
 function grades(gid){
  if(gid!==undefined){S.grade=gid;save()}
  const hsk=S.view==='hsk';
- const tile=e=>{const s=starsOf(e.c);return `<button class="tile ${s?'done':''}" data-w="${esc(e.c)}" aria-label="写 ${esc(e.c)}，${s} 颗星"><span class="ch ${e.letter?'lat':''}" style="${e.c.length>2?'font-size:30px':e.c.length>1?'font-size:38px':''}">${esc(e.c)}</span><span class="st">${'★'.repeat(s)}${'☆'.repeat(3-s)}</span>${s?`<span class="mini">${mini(e,s)}</span>`:''}</button>`};
+ const tile=e=>{const s=starsOf(e.c);return `<button class="tile ${s?'done':''}" data-w="${esc(e.c)}" aria-label="写 ${esc(e.c)}，${s} 颗星"><span class="ch ${e.letter?'lat':''}" style="${e.c.length>2?'font-size:30px':e.c.length>1?'font-size:38px':''}">${esc(e.c)}</span><span class="st">${'★'.repeat(s)}${'☆'.repeat(3-s)}</span>${s?`<span class="mini">${mini(e,s)}</span>`:''}${(me().quest||{})[e.c]?'<span class="rib" title="闯关通过">🎖</span>':''}</button>`};
  let items,head,sub;
  if(hsk){const lv=HSK[S.hsk]?S.hsk:'1';S.hsk=lv;items=[...HSK[lv]].map(c=>BY[c]).filter(Boolean);
   head=`<div class="tabs" role="tablist">${HSK_LEVELS.map(l=>`<button role="tab" aria-selected="${l===lv}" data-hsk="${l}">HSK ${l}</button>`).join('')}</div>`;sub=`HSK 3.0 ${lv} 级汉字表，共 ${items.length} 个字`}
@@ -390,12 +404,13 @@ function grades(gid){
  const L=items.filter(e=>e.letter),H=items.filter(e=>!e.letter);
  const got=items.filter(e=>starsOf(e.c)).length;
  const pyHtml=PINYIN.groups.map(g=>{const its=L.filter(e=>e.pg===g.name);return its.length?`<h2>${g.name}<small class="muted">${g.lesson||''}</small></h2><div class="tiles">${its.map(tile).join('')}</div>`:''}).join('');
- $('#main').innerHTML=`<div class="viewsw"><button data-view="grade" aria-pressed="${!hsk}">按年级</button><button data-view="hsk" aria-pressed="${hsk}">按 HSK</button></div>`+head+`
+ $('#main').innerHTML=`<div class="viewsw"><button data-view="grade" aria-pressed="${!hsk}">按年级</button><button data-view="hsk" aria-pressed="${hsk}">按 HSK</button><button class="big purple" id="daily" style="margin-left:auto;font-size:17px;padding:6px 14px">🎯 今日闯关</button></div>`+head+`
  <p class="muted">${sub}。已经召唤 ${got} / ${items.length} 只字灵。写得越好，字灵进化得越厉害：1 星小字灵，2 星字灵，3 星字灵大王。</p>
  ${S.tf&&TYPES[S.tf]?`<button class="chip" id="tfclear">只看 ${TYPES[S.tf].n} ✕</button>`:''}
  ${pyHtml}
  ${H.length?`<h2>汉字</h2><div class="tiles">${H.map(tile).join('')}</div>`:''}`;
  document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>{S.view=b.dataset.view;save();grades()});
+ $('#daily').onclick=()=>daily(items);
  document.querySelectorAll('[data-g]').forEach(b=>b.onclick=()=>grades(+b.dataset.g));
  document.querySelectorAll('[data-hsk]').forEach(b=>b.onclick=()=>{S.hsk=b.dataset.hsk;save();grades()});
  if($('#tfclear'))$('#tfclear').onclick=()=>{S.tf=null;save();grades()};
@@ -422,7 +437,7 @@ function write(c){
   <div style="margin-left:auto;width:84px">${starsOf(c)?mini(e,starsOf(c)):`<svg viewBox="0 0 200 200">${creatureSVG(e,1,{silhouette:true,silColor:'#C9D3E6'})}</svg>`}</div></div>
   <span class="kind" style="background:${KIND_COLOR[e.k]||'#8a8fae'}">${e.k}</span>
   <p class="poem">${hl}</p>${e.s?`<div class="src">${esc(e.s)}</div>`:''}
-  <div class="ctrls"><button class="big ghost" id="bSay">🔊 听一听</button><button class="big" id="bAnim">👀 看笔顺</button><button class="big green" id="bQuiz">✏️ 开始写</button></div>
+  <div class="ctrls"><button class="big ghost" id="bSay">🔊 听一听</button><button class="big" id="bAnim">👀 看笔顺</button><button class="big green" id="bQuiz">✏️ 开始写</button><button class="big purple" id="bQuest">🎯 闯关</button></div>
   ${next?`<div class="ctrls"><button class="big ghost" id="bNext" style="font-size:18px">下一个：${esc(next.c)}</button></div>`:''}
  </div></div>`;
  writer=HanziWriter.create('hw',c,{width:size,height:size,padding:pad,showOutline:true,showCharacter:false,strokeColor:TYPES[e.t].d,outlineColor:'#D9E1EE',drawingColor:'#2F6BFF',drawingWidth:e.letter?44:40,drawingFadeDuration:220,highlightColor:'#FF3B7A',strokeHighlightSpeed:1.3,radicalColor:null,strokeAnimationSpeed:.9,delayBetweenStrokes:350,
@@ -433,6 +448,7 @@ function write(c){
  $('#bAnim').onclick=()=>{clearTimeout(autoT);writer.cancelQuiz();writer.hideCharacter();writer.animateCharacter();$('#msg').textContent='看好每一笔的方向哦';sayOnce('watch','看好每一笔的方向哦','ui_watch')};
  setTimeout(()=>say(sayText,e.c),250);
  $('#bQuiz').onclick=()=>startQuiz(e);
+ $('#bQuest').onclick=()=>quest([e]);
  if(next)$('#bNext').onclick=()=>go('write',next.c);
  autoT=setTimeout(()=>{try{writer.animateCharacter()}catch(_){}},400);
 }
@@ -460,6 +476,77 @@ function finish(e,mist){
  else{title=`又是 ${stars} 颗星！`;sub=best<3?`写到 3 颗星，它会进化成 ${cname(e,3)}`:`字灵大王为你骄傲`;voice=best<3?['ui_good'+(1+e.num%8),'ui_star'+stars]:['ui_again3']}
  setTimeout(()=>openCard(e,best,{title,sub,stars,after:true,voice}),700);
 }
+/* ---------- 闯关小游戏：借鉴丹麦字母教材“一个音，多条通道”（听音选字 / 看图认字 / 填一填 / 字迷宫 / 拼句子） ---------- */
+const EMOJI={'一':'1️⃣','二':'2️⃣','三':'3️⃣','四':'4️⃣','五':'5️⃣','六':'6️⃣','七':'7️⃣','八':'8️⃣','九':'9️⃣','十':'🔟','人':'🧍','口':'👄','日':'☀️','月':'🌙','山':'⛰️','水':'💧','火':'🔥','木':'🌳','手':'✋','目':'👁️','田':'🌾','土':'🪨','牛':'🐮','鸟':'🐦','天':'🌤️','云':'☁️','雨':'🌧️','雪':'❄️','风':'🌬️','花':'🌸','草':'🌿','树':'🌳','叶':'🍃','鱼':'🐟','虫':'🐛','马':'🐴','羊':'🐑','狗':'🐶','猫':'🐱','猪':'🐷','鸡':'🐔','兔':'🐰','虎':'🐯','龙':'🐉','红':'🔴','黄':'🟡','蓝':'🔵','绿':'🟢','白':'⚪','黑':'⚫','星':'⭐','光':'💡','电':'⚡','车':'🚗','船':'⛵','路':'🛣️','门':'🚪','窗':'🪟','书':'📖','笔':'✏️','画':'🖼️','歌':'🎵','球':'⚽','家':'🏠','爸':'👨','妈':'👩','儿':'👶','女':'👧','男':'👦','心':'❤️','耳':'👂','足':'🦶','牙':'🦷','石':'🪨','米':'🍚','饭':'🍚','茶':'🍵','果':'🍎','瓜':'🍉','菜':'🥬','肉':'🍖','蛋':'🥚','奶':'🥛','糖':'🍬','衣':'👕','帽':'🧢','鞋':'👟','床':'🛏️','椅':'🪑','灯':'💡','钟':'⏰','刀':'🔪','伞':'☂️','飞':'✈️','走':'🚶','跑':'🏃','哭':'😢','笑':'😄','看':'👀','听':'👂','吃':'🍽️','喝':'🥤','睡':'😴','爱':'❤️','王':'👑','河':'🏞️','海':'🌊','林':'🌲','森':'🌲','竹':'🎋','猴':'🐒','象':'🐘','熊':'🐻','鸭':'🦆','鹅':'🪿','蛇':'🐍','鼠':'🐭','狼':'🐺','蜂':'🐝','蝶':'🦋','春':'🌱','夏':'🏖️','秋':'🍂','冬':'⛄','早':'🌅','夜':'🌃','金':'🥇','钱':'💰','医':'🏥','药':'💊','校':'🏫','气':'💨','冰':'🧊','雷':'🌩️','虹':'🌈','桥':'🌉','塔':'🗼','井':'🕳️','火车':'🚂','鼻':'👃','舌':'👅','头':'🗣️','脚':'🦶','血':'🩸','骨':'🦴','蚂':'🐜','蚁':'🐜','蛙':'🐸','龟':'🐢','鹿':'🦌','狮':'🦁','豹':'🐆','驴':'🫏','鲸':'🐳','虾':'🦐','蟹':'🦀','柿':'🍅','桃':'🍑','梨':'🍐','橘':'🍊','萄':'🍇','莓':'🍓','椒':'🌶️','葱':'🧅','蘑':'🍄','蘑菇':'🍄','面':'🍜','包':'🥟','饼':'🥞','汤':'🍲','盐':'🧂','蜜':'🍯','杯':'🥤','碗':'🥣','锅':'🍳','剪':'✂️','针':'🪡','锁':'🔒','钥':'🔑','镜':'🪞','箱':'📦','袋':'👜','旗':'🚩','鼓':'🥁','琴':'🎹','笛':'🎺','铃':'🔔','球':'⚽','棋':'♟️','玩':'🧸','礼':'🎁','药':'💊','针':'💉','车':'🚗','舟':'🛶','机':'✈️','票':'🎫','信':'✉️','报':'📰','图':'🗺️','字':'🔤','笑':'😄','怒':'😠','哭':'😢','怕':'😨','累':'😩','病':'🤒','热':'🥵','冷':'🥶','香':'🌸','臭':'💩','洗':'🧼','扫':'🧹','种':'🌱','钓':'🎣','游':'🏊','跳':'🤸','唱':'🎤','舞':'💃','读':'📖','写':'✍️','算':'🧮','问':'❓','答':'💬','开':'🔓','关':'🔒','上':'⬆️','下':'⬇️','左':'⬅️','右':'➡️','中':'🎯','大':'🐘','小':'🐜','高':'🦒','长':'📏','多':'🍬','少':'🍬','快':'🐇','慢':'🐢','新':'✨','旧':'🧶','圆':'⚪','方':'⬛','尖':'📍','半':'🌗','百':'💯','千':'🔢','万':'🔢','零':'0️⃣','岁':'🎂','年':'🎆','国':'🏳️','城':'🏙️','村':'🏡','园':'🌷','店':'🏪','院':'🏥','楼':'🏢','房':'🏠','路':'🛣️','桌':'🪑','柜':'🗄️','被':'🛏️','枕':'🛏️','镜':'🪞','表':'⌚','表':'⌚','网':'🕸️','线':'🧵','布':'🧶','纸':'📄','墨':'🖋️','砖':'🧱','瓦':'🏠','泥':'🟫','沙':'🏖️','浪':'🌊','岛':'🏝️','洞':'🕳️','峰':'🏔️','谷':'🏞️','泉':'⛲','湖':'🏞️','江':'🏞️','池':'🏊','露':'💧','雾':'🌫️','霜':'❄️','暖':'🌞','凉':'🍃','晴':'☀️','阴':'☁️','夕':'🌇','晨':'🌅','午':'🕛','昨':'📅','今':'📅','明':'🌞','暗':'🌑','影':'👤','声':'🔊','味':'👃','色':'🎨','形':'🔷','数':'🔢','本':'📚','册':'📚','课':'🏫','考':'📝','奖':'🏆','星':'⭐','宝':'💎','玉':'💚','银':'🥈','铁':'⛓️','铜':'🥉','油':'🛢️','煤':'⚫','柴':'🪵','烟':'💨','灰':'🩶','尘':'💨','垃圾':'🗑️','药':'💊','针':'💉','刀':'🔪','剑':'🗡️','弓':'🏹','箭':'🏹','盾':'🛡️','旗':'🚩','鼓':'🥁','号':'🎺','钟':'🔔','锣':'🥁','笑':'😄'};
+const INITIALS=['zh','ch','sh','b','p','m','f','d','t','n','l','g','k','h','j','q','x','r','z','c','s','y','w'];
+const FINALS=PINYIN.groups.filter(g=>/韵母/.test(g.name)).flatMap(g=>g.items);
+const WHOLE=(PINYIN.groups.find(g=>/整体/.test(g.name))||{items:[]}).items;
+const DETONE=s=>s.replace(/[āáǎà]/g,'a').replace(/[ēéěè]/g,'e').replace(/[īíǐì]/g,'i').replace(/[ōóǒò]/g,'o').replace(/[ūúǔù]/g,'u').replace(/[ǖǘǚǜ]/g,'ü').replace(/[ńňǹ]/g,'n');
+const toned=p=>p.split('/')[0].split(',')[0].trim();
+function splitPy(p){const t=DETONE(toned(p).toLowerCase());const ini=INITIALS.find(i=>t.startsWith(i))||'';return {ini,fin:t.slice(ini.length),full:t}}
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const pick=(a,n)=>shuffle(a).slice(0,n);
+const uniqBy=(a,f)=>{const s=new Set();return a.filter(x=>{const k=f(x);if(s.has(k))return false;s.add(k);return true})};
+function peers(e){
+ if(e.letter){const g=PINYIN.groups.find(g=>g.items.includes(e.c));const same=(g?g.items:[]).filter(c=>c!==e.c).map(c=>BY[c]);return same.length>=3?same:GRADES[0].items.filter(x=>x.letter&&x!==e)}
+ const same=GRADES[e.g].items.filter(x=>!x.letter&&x!==e);return same.length>=3?same:ALL.filter(x=>!x.letter&&x!==e)}
+const EARLY=()=>ALL.filter(x=>!x.letter&&x.g<=3);
+function pyRole(k){return WHOLE.includes(k)?'whole':INITIALS.includes(k)?'ini':'fin'}
+function fillTargets(e){const role=pyRole(e.c);return EARLY().filter(x=>{const s=splitPy(x.p);return role==='whole'?s.full===e.c:role==='ini'?s.ini===e.c:s.fin===e.c&&s.ini})}
+function mazeGood(e){if(!e.letter)return [e.c];const t=uniqBy(fillTargets(e).map(x=>toned(x.p)),x=>x);return t.length?t:[e.c]}
+function wrong(b){b.classList.add('bad');sBad();setTimeout(()=>b.classList.remove('bad'),450)}
+function optHandlers(root,answer,done){let miss=0;root.querySelectorAll('.qopt').forEach(b=>b.onclick=()=>{if(b.disabled)return;
+ if(b.dataset.c===answer){b.classList.add('ok');root.querySelectorAll('.qopt').forEach(x=>x.disabled=true);done(miss===0)}
+ else{wrong(b);b.disabled=true;miss++;if(miss>=2){root.querySelectorAll('.qopt').forEach(x=>{x.disabled=true;if(x.dataset.c===answer)x.classList.add('ok')});done(false)}}})}
+const GAMES={
+ listen:{name:'听音选字',ok:()=>true,build(e){const opts=shuffle([e,...pick(peers(e),3)]);const t=e.letter?LETTER_SAY[e.c]:e.c;
+  return {html:`<p class="qtip">听一听，点出你听到的${e.letter?'拼音':'字'}</p><div style="text-align:center"><button class="big ghost" id="qPlay">🔊 再听一遍</button></div><div class="qopts">${opts.map(o=>`<button class="qopt ${o.letter?'lat':''}" data-c="${esc(o.c)}">${esc(o.c)}</button>`).join('')}</div>`,
+   start(){say(t,e.c)},bind(root,done){root.querySelector('#qPlay').onclick=()=>say(t,e.c);optHandlers(root,e.c,done)}}}},
+ picture:{name:'看图认字',ok:e=>!!EMOJI[e.c],build(e){const withPic=peers(e).filter(x=>EMOJI[x.c]&&EMOJI[x.c]!==EMOJI[e.c]);const opts=shuffle([e,...pick(withPic.length>=3?withPic:peers(e),3)]);
+  return {html:`<p class="qtip">这是哪个字？</p><div class="qpic">${EMOJI[e.c]}</div><div class="qopts">${opts.map(o=>`<button class="qopt" data-c="${esc(o.c)}">${esc(o.c)}</button>`).join('')}</div>`,bind(root,done){optHandlers(root,e.c,done)}}}},
+ fill:{name:'填一填',ok:e=>e.letter?fillTargets(e).length>0:(e.l.includes(e.c)&&[...e.l].filter(ch=>/[一-鿿]/.test(ch)).length>=2),build(e){
+  if(e.letter){const t=pick(fillTargets(e),1)[0],sp=splitPy(t.p),tp=toned(t.p),role=pyRole(e.c);
+   const shown=role==='whole'?'____':role==='ini'?'__'+tp.slice(sp.ini.length):tp.slice(0,sp.ini.length)+'__';
+   const pool=(role==='whole'?WHOLE:role==='ini'?INITIALS:FINALS).filter(x=>x!==e.c);const opts=shuffle([e.c,...pick(pool,3)]);
+   return {html:`<p class="qtip">「${esc(t.c)}」的拼音少了一块，把它补上</p><div class="qword">${esc(t.c)}<small>${esc(shown)}</small></div><div class="qopts">${opts.map(o=>`<button class="qopt lat" data-c="${esc(o)}">${esc(o)}</button>`).join('')}</div>`,start(){say(t.c+'。'+t.l,t.c)},bind(root,done){optHandlers(root,e.c,done)}}}
+  const line=e.l.split(e.c).join('▢');const opts=shuffle([e,...pick(peers(e),3)]);
+  return {html:`<p class="qtip">句子里少了一个字，是哪个？</p><div class="qline">${esc(line)}</div><div class="qopts">${opts.map(o=>`<button class="qopt" data-c="${esc(o.c)}">${esc(o.c)}</button>`).join('')}</div>`,bind(root,done){optHandlers(root,e.c,done)}}}},
+ maze:{name:'字迷宫',ok:()=>true,build(e){const N=5;const path=[0];let r=0,c=0;while(r<N-1||c<N-1){if(r===N-1)c++;else if(c===N-1)r++;else if(Math.random()<.5)c++;else r++;path.push(r*N+c)}
+  const on=new Set(path),good=mazeGood(e),bad=peers(e).map(x=>e.letter?x.c:x.c);
+  const cells=[];for(let i=0;i<N*N;i++)cells.push(on.has(i)?pick(good,1)[0]:pick(bad,1)[0]);
+  return {html:`<p class="qtip">只能踩有「${esc(e.c)}」的格子，从左上角一步一步走到右下角的 🏠</p><div class="maze" style="grid-template-columns:repeat(${N},1fr)">${cells.map((t,i)=>`<button class="mc ${e.letter?'lat':''} ${i===N*N-1?'home':''}" data-i="${i}">${esc(t)}</button>`).join('')}</div>`,
+   bind(root,done){let cur=-1,miss=0;const adj=(a,b)=>{const ar=Math.floor(a/N),ac=a%N,br=Math.floor(b/N),bc=b%N;return Math.abs(ar-br)+Math.abs(ac-bc)===1};
+    root.querySelectorAll('.mc').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;if(b.classList.contains('on'))return;if(cur===-1?i!==0:!adj(cur,i)){wrong(b);return}
+     if(!on.has(i)){wrong(b);miss++;return}b.classList.add('on');cur=i;sGood(path.indexOf(i));if(i===N*N-1)done(miss===0)})}}}},
+ sentence:{name:'拼句子',ok:e=>!e.letter&&[...e.l].filter(ch=>/[一-鿿]/.test(ch)).length>=4,build(e){
+  const chars=[...e.l];const idxs=chars.map((ch,i)=>/[一-鿿]/.test(ch)?i:-1).filter(i=>i>=0);
+  const extra=Math.max(0,Math.min(2,Math.floor(idxs.length/2)-1));   /* 4 个字挖 2 个，7 个字挖 3 个，至少留一半给孩子看 */
+  const blanks=new Set([chars.indexOf(e.c),...pick(idxs.filter(i=>chars[i]!==e.c),extra)]);const order=[...blanks].sort((a,b)=>a-b);let k=0;
+  const chips=shuffle(order.map(i=>chars[i]));
+  return {html:`<p class="qtip">把字按顺序放回句子里</p><div class="qline">${chars.map((ch,i)=>blanks.has(i)?`<span class="blank" data-i="${i}"></span>`:esc(ch)).join('')}</div><div class="qopts">${chips.map(ch=>`<button class="qopt" data-c="${esc(ch)}">${esc(ch)}</button>`).join('')}</div>`,
+   bind(root,done){let miss=0;root.querySelectorAll('.qopt').forEach(b=>b.onclick=()=>{if(b.disabled)return;const want=chars[order[k]];if(b.dataset.c!==want){wrong(b);miss++;return}
+    root.querySelector(`.blank[data-i="${order[k]}"]`).textContent=want;b.disabled=true;b.classList.add('used');k++;sGood(k);if(k===order.length){say(e.c+'。'+e.l,e.c);done(miss===0)}})}}}}
+};
+let Q=null;
+function gamesFor(e,n){const avail=Object.keys(GAMES).filter(k=>GAMES[k].ok(e));return pick(avail,Math.min(n,avail.length))}
+function quest(list,o={}){if(writer){try{writer.cancelQuiz()}catch(_){}writer=null}closeModal();setNav('quest');window.scrollTo(0,0);curView='quest';playMusic('menu');
+ Q={list,o,qi:0,gi:0,games:null,score:0,total:0};nextGame()}
+function nextGame(){const e=Q.list[Q.qi];if(!Q.games){Q.games=gamesFor(e,Q.o.daily?2:3);Q.gi=0}
+ if(Q.gi>=Q.games.length){const p=me();p.quest=p.quest||{};p.quest[e.c]=(p.quest[e.c]||0)+1;save();Q.qi++;Q.games=null;if(Q.qi>=Q.list.length)return questDone();return nextGame()}
+ const k=Q.games[Q.gi],g=GAMES[k].build(e);Q.total++;
+ $('#main').innerHTML=`<button class="big ghost" id="qBack" style="font-size:18px;padding:8px 14px;margin-bottom:12px">← 退出闯关</button>
+  <div class="quest"><div class="qhead"><span class="qbadge">${esc(GAMES[k].name)}</span><span class="muted">${Q.o.daily?`第 ${Q.qi+1} / ${Q.list.length} 个字`:`第 ${Q.gi+1} / ${Q.games.length} 关`} · <b class="${e.letter?'lat':''}">${esc(e.c)}</b></span></div>${g.html}<div class="msg" id="qmsg"></div></div>`;
+ $('#qBack').onclick=()=>Q.o.daily?go('grades'):go('write',e.c);
+ let finished=false;g.bind($('.quest'),ok=>{if(finished)return;finished=true;
+  if(ok){Q.score++;const m=['真棒！','对啦！','好样的！','太厉害了！'][Q.total%4];$('#qmsg').textContent=m;say(m,'ui_good'+(1+Q.total%8))}else{$('#qmsg').textContent='没关系，记住正确的答案，下次一定行'}
+  setTimeout(()=>{Q.gi++;nextGame()},ok?1000:1800)});
+ if(g.start)setTimeout(g.start,350)}
+function questDone(){sWin();burst(window.innerWidth/2,220,20);const all=Q.score===Q.total;
+ $('#main').innerHTML=`<div class="quest" style="text-align:center"><h1 style="margin-top:0">闯关完成！</h1><div style="font-size:72px">${all?'🏆':'🎖️'}</div><p style="font-size:24px">${Q.total} 关里一次就过了 ${Q.score} 关${Q.o.daily?'，今天的任务做完啦':''}</p>
+  <div class="ctrls" style="justify-content:center"><button class="big purple" id="qAgain">再来一轮</button><button class="big ghost" data-go="grades">回去写字</button></div></div>`;
+ say(all?'太厉害了！':'好样的！',all?'ui_good5':'ui_good3');
+ $('#qAgain').onclick=()=>Q.o.daily?daily(Q.o.pool):quest(Q.list,Q.o)}
+function daily(pool){pool=pool||GRADES[S.grade].items;const learned=pool.filter(e=>starsOf(e.c));const from=learned.length>=5?learned:pool;quest(pick(from,Math.min(5,from.length)),{daily:true,pool})}
 /* ---------- modal ---------- */
 function openCard(e,f,o={}){
  const nx=GRADES[e.g].items[GRADES[e.g].items.indexOf(e)+1];
