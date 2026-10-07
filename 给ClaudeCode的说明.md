@@ -30,7 +30,9 @@
 - 借鉴丹麦 ABC 教材（照片在 `丹麦语教材借鉴/`，已 gitignore）：每个音用多条通道重复。五种小游戏：listen 听音选字、picture 看图认字（emoji 表 `EMOJI`）、fill 填一填（拼音项：补声母 / 韵母 / 整体认读；汉字：补句子里的字）、maze 字迷宫（5×5，右/下随机生成保证可达）、sentence 拼句子。
 - `quest(list,{daily,pool})` 是独立视图；`daily()` 从当前年级抽 5 个学过的字。通过记录在 `player.quest[字]`，瓷砖左上角显示 🎖。
 - 拼音项的干扰项来自同一拼音分组；汉字来自同年级。填拼音的目标字取一到三年级里拼音含该音的字（`fillTargets`）。
-- 还没做的：涂色显字、找形近字、画给字灵。
+- color 涂色显字（`inkMask()` 把字渲染到小画布取墨迹格子，涂完目标格子显出字形）、find 找形近字（`LOOK_HZ` / `LOOK_PY` 手工形近表 + 同年级同笔画兜底）。
+- `draw(c)` 画板视图：作品以 256px JPEG dataURL 存在 `player.art[字]`，卡册顶部"我的画"和卡片弹窗会显示；localStorage 存满时提示删画。
+- 立绘接入位：`art/manifest.json` 列出已有的 `<字>_<星>.webp`，`mascotHTML()` 有图用图、没图用程序怪兽。Gemini 出图后把 PNG 放到 `art/_raw/` 跑 `python tools/pack_art.py`。
 
 ## 设计决策
 
