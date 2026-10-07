@@ -4,3 +4,7 @@ voice-samples/
 *.tmp.mp3
 .DS_Store
 Thumbs.db
+tools/index.before-v2.html
+tools/_qa_*.json
+tools/_redo.txt
+丹麦语教材借鉴/
