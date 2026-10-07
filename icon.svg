@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <rect width="200" height="200" rx="44" fill="#2F6BFF"/>
+  <ellipse cx="100" cy="84" rx="64" ry="56" fill="#FFC72C"/>
+  <circle cx="76" cy="74" r="14" fill="#fff"/><circle cx="124" cy="74" r="14" fill="#fff"/>
+  <circle cx="78" cy="76" r="6" fill="#1F2340"/><circle cx="126" cy="76" r="6" fill="#1F2340"/>
+  <path d="M82 102 Q100 118 118 102" stroke="#1F2340" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <text x="100" y="178" text-anchor="middle" font-size="54" font-family="ZCOOL KuaiLe, PingFang SC, Microsoft YaHei, sans-serif" fill="#fff">字</text>
+</svg>

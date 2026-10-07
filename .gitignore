@@ -1,0 +1,6 @@
+tools/_raw_audio/
+tools/index.before-patch.html
+voice-samples/
+*.tmp.mp3
+.DS_Store
+Thumbs.db
