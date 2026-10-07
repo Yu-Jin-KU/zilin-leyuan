@@ -92,6 +92,18 @@ h1{font-size:34px;margin:8px 0 4px;font-weight:400}h2{font-size:26px;margin:22px
 .mc.on{background:var(--grass);color:#fff;border-color:var(--grass)}.mc.bad{animation:shake .4s;background:var(--berry);color:#fff}.mc.home{box-shadow:0 0 0 4px var(--sun)}
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
 .rib{position:absolute;left:-4px;top:-8px;font-size:18px}
+.legend2{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:6px 0 10px}.legend2 button{display:flex;align-items:center;gap:8px;font-size:26px;padding:6px 14px;border-radius:999px;background:var(--bg);border:3px solid var(--line)}
+.legend2 button i{width:26px;height:26px;border-radius:50%;display:inline-block;border:2px solid rgba(0,0,0,.15)}.legend2 button[aria-pressed="true"]{border-color:var(--ink);background:var(--paper)}.legend2 button.lat{font-family:var(--lat);font-weight:700}
+.cgrid{display:grid;gap:3px;max-width:440px;margin:0 auto}.cc{aspect-ratio:1;border-radius:6px;background:var(--paper);border:2px solid var(--line);font-size:15px;padding:0;color:var(--soft);transition:background .15s}.cc.lat{font-family:var(--lat);font-weight:700}
+.cc.painted{color:transparent;border-color:transparent}.cc.bad{animation:shake .4s;background:var(--berry)!important}.cgrid.reveal .cc:not(.target){opacity:.15}
+.fgrid{display:grid;gap:8px;max-width:520px;margin:0 auto}.fc{aspect-ratio:1;border-radius:14px;background:var(--bg);border:3px solid var(--line);font-size:34px;padding:0}.fc.lat{font-family:var(--lat);font-weight:700;font-size:24px}
+.fc.found{background:var(--grass);color:#fff;border-color:var(--grass)}.fc.bad{animation:shake .4s;background:var(--berry);color:#fff}
+.drawwrap{display:grid;grid-template-columns:minmax(0,auto) 1fr;gap:20px;align-items:start}@media (max-width:760px){.drawwrap{grid-template-columns:1fr}}
+.canvasbox{background:#fff;border-radius:26px;border:4px solid var(--line);touch-action:none;margin:0 auto;overflow:hidden}.canvasbox canvas{display:block;width:100%;height:100%}
+.tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;justify-content:center}.tools button{width:44px;height:44px;border-radius:50%;border:3px solid var(--line);background:var(--paper)}.tools button[aria-pressed="true"]{border-color:var(--ink);transform:scale(1.12)}
+.tools .sz{width:auto;padding:0 12px;border-radius:999px;font-size:16px}
+.arts{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:12px;margin-bottom:18px}.arts button{padding:0;border-radius:16px;overflow:hidden;background:var(--paper);border:3px solid var(--line)}.arts img{width:100%;display:block;aspect-ratio:1;object-fit:cover}.arts small{display:block;font-size:16px;padding:4px}
+.mascot{width:120px;height:120px;flex:none}.mascot img,.mascot svg{width:100%;height:100%;object-fit:contain}
 .big.purple{background:#8A5CF6;box-shadow:0 5px 0 #5B3BB5}
 /* album */
 .album{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px}
@@ -379,7 +391,7 @@ const mini=(e,f)=>`<svg viewBox="0 0 200 200" aria-hidden="true">${creatureSVG(e
 function setNav(v){document.querySelectorAll('#nav button').forEach(b=>b.setAttribute('aria-current',b.dataset.go===v));const p=me();$('#who').textContent=p?`${p.name} ⭐${totalStars(p)}`:'选人'}
 document.addEventListener('click',ev=>{const b=ev.target.closest('[data-go]');if(b){if(b.dataset.go!=='players'&&!me())return go('players');go(b.dataset.go)}});
 let writer=null,autoT=null;
-function go(v,arg){if(writer){try{writer.cancelQuiz()}catch(_){}writer=null}closeModal();setNav(v);window.scrollTo(0,0);curView=v;({players,grades,write,album,poster})[v](arg);playMusic(v==='write'?'write':(v==='album'||v==='poster')?'album':'menu')}
+function go(v,arg){if(writer){try{writer.cancelQuiz()}catch(_){}writer=null}closeModal();setNav(v);window.scrollTo(0,0);curView=v;({players,grades,write,album,poster,draw})[v](arg);playMusic(v==='write'?'write':(v==='album'||v==='poster')?'album':'menu')}
 function gradeTabs(cur,attr){return `<div class="tabs" role="tablist">${GRADES.map(g=>`<button role="tab" aria-selected="${g.id===cur}" ${attr}="${g.id}">${g.name}</button>`).join('')}</div>`}
 /* ---------- players ---------- */
 function players(){
@@ -434,10 +446,10 @@ function write(c){
   <div class="msg" id="msg">先看一遍笔顺，再自己写！</div></div>
  <div class="info"><div style="display:flex;gap:16px;align-items:center"><div class="big-ch ${e.letter?'lat':''}" style="${e.c.length>2?'font-size:54px':''}">${esc(e.c)}</div>
   <div>${e.letter?`<div class="py">${esc(e.pg||'拼音')}</div><div class="da">${(PINYIN.items[e.c]||{}).lesson?'一年级上册 第 '+esc(String((PINYIN.items[e.c]||{}).lesson))+' 课':''}</div>`:`<div class="py">${esc(e.p)}</div><div class="da">${esc(e.da)}${EN[e.c]?' · '+esc(EN[e.c]):''}</div>`}<div class="src">${e.strokes} 笔　${TYPES[e.t].n}　No.${String(e.num).padStart(4,'0')}</div></div>
-  <div style="margin-left:auto;width:84px">${starsOf(c)?mini(e,starsOf(c)):`<svg viewBox="0 0 200 200">${creatureSVG(e,1,{silhouette:true,silColor:'#C9D3E6'})}</svg>`}</div></div>
+  <div class="mascot" style="margin-left:auto">${mascotHTML(e,starsOf(c))}</div></div>
   <span class="kind" style="background:${KIND_COLOR[e.k]||'#8a8fae'}">${e.k}</span>
   <p class="poem">${hl}</p>${e.s?`<div class="src">${esc(e.s)}</div>`:''}
-  <div class="ctrls"><button class="big ghost" id="bSay">🔊 听一听</button><button class="big" id="bAnim">👀 看笔顺</button><button class="big green" id="bQuiz">✏️ 开始写</button><button class="big purple" id="bQuest">🎯 闯关</button></div>
+  <div class="ctrls"><button class="big ghost" id="bSay">🔊 听一听</button><button class="big" id="bAnim">👀 看笔顺</button><button class="big green" id="bQuiz">✏️ 开始写</button><button class="big purple" id="bQuest">🎯 闯关</button><button class="big ghost" id="bDraw">🎨 画一画</button></div>
   ${next?`<div class="ctrls"><button class="big ghost" id="bNext" style="font-size:18px">下一个：${esc(next.c)}</button></div>`:''}
  </div></div>`;
  writer=HanziWriter.create('hw',c,{width:size,height:size,padding:pad,showOutline:true,showCharacter:false,strokeColor:TYPES[e.t].d,outlineColor:'#D9E1EE',drawingColor:'#2F6BFF',drawingWidth:e.letter?44:40,drawingFadeDuration:220,highlightColor:'#FF3B7A',strokeHighlightSpeed:1.3,radicalColor:null,strokeAnimationSpeed:.9,delayBetweenStrokes:350,
@@ -449,6 +461,7 @@ function write(c){
  setTimeout(()=>say(sayText,e.c),250);
  $('#bQuiz').onclick=()=>startQuiz(e);
  $('#bQuest').onclick=()=>quest([e]);
+ $('#bDraw').onclick=()=>go('draw',e.c);
  if(next)$('#bNext').onclick=()=>go('write',next.c);
  autoT=setTimeout(()=>{try{writer.animateCharacter()}catch(_){}},400);
 }
@@ -498,6 +511,22 @@ function wrong(b){b.classList.add('bad');sBad();setTimeout(()=>b.classList.remov
 function optHandlers(root,answer,done){let miss=0;root.querySelectorAll('.qopt').forEach(b=>b.onclick=()=>{if(b.disabled)return;
  if(b.dataset.c===answer){b.classList.add('ok');root.querySelectorAll('.qopt').forEach(x=>x.disabled=true);done(miss===0)}
  else{wrong(b);b.disabled=true;miss++;if(miss>=2){root.querySelectorAll('.qopt').forEach(x=>{x.disabled=true;if(x.dataset.c===answer)x.classList.add('ok')});done(false)}}})}
+/* 形近字 / 形近拼音：手工表 + 同年级同笔画数兜底 */
+const LOOK_HZ=['日目田由甲申白','人入八大太天夫','土士王玉主生','木本末未禾米','口回四田','千干于十士','己已巳','牛午年','乌鸟马','刀力办为','几凡风','住往主','子了孑','又叉友','水永冰','火灭炎','上下卡','左右石','小少尘','门们问间','自白百目','见贝只','开升井','手毛看','中申串','月用甩','大犬太','天无夫','云去台','云支支','云公去','今令冷','半羊美','车东乐','东车来','乐东','西四酉','面而页','青清情请','清晴睛','晴睛精','河何可','他她它地','地他她','从丛众','林森木','明朋月日','对树又','欢次欠','次吹欠','跑泡抱','飞气风','鸟乌岛','鱼渔鲁','虫虹蛇','羊洋样','走起赵','云运','买卖读','书事','长张','在左','有月','真直','要票','给合','真具','哪那','那哪','得的地','象像','己已','练炼','活话','洗先','字学','到倒','坐座','在再','以已','进近','块快','圆园','员圆','练炼','题提','很根','清情','欢次','场扬','阴阳','现观','玩完','热然','空穿','气汽','分份','声生','声和','半伴','包抱','常长','想相','道到','经轻','经验','话活','该孩','各客','体休','体本','往住','体休','思想','意音','想相','意思'];
+const LOOK_PY=['bdpq','mnh','uüv','ijl','aoe','zhchsh','zcs','angengingong','aneninunün','aieiui','aoouiu','ieüeer','yw','zizhi','cichi','sishi','riyi','ygq','fth','kh','wuyu','yeyue','yinying','yuanyun'];
+function lookalikes(e){let out=[];
+ if(e.letter){for(const g of LOOK_PY){if(g.includes(e.c)){const parts=g.match(/zh|ch|sh|ang|eng|ing|ong|an|en|in|un|ün|ai|ei|ui|ao|ou|iu|ie|üe|er|yue|yuan|yun|ying|yin|zhi|chi|shi|ri|zi|ci|si|yi|wu|yu|ye|[a-zü]/g)||[];out.push(...parts.filter(p=>p!==e.c&&BY[p]))}}
+  if(out.length<3)out.push(...peers(e).map(x=>x.c));return uniqBy(out,x=>x).slice(0,6)}
+ for(const g of LOOK_HZ)if(g.includes(e.c))out.push(...[...g].filter(c=>c!==e.c&&BY[c]));
+ const sameStroke=GRADES[e.g].items.filter(x=>!x.letter&&x!==e&&Math.abs(x.strokes-e.strokes)<=1).map(x=>x.c);
+ out.push(...shuffle(sameStroke));if(out.length<3)out.push(...peers(e).map(x=>x.c));return uniqBy(out,x=>x).slice(0,6)}
+/* 把字渲染到小画布，算出哪些格子是“墨” */
+function inkMask(ch,N){const cv=document.createElement('canvas');const R=N*12;cv.width=cv.height=R;const g=cv.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,R,R);g.fillStyle='#000';g.textAlign='center';g.textBaseline='middle';
+ const lat=/^[a-zü]+$/.test(ch);g.font=`${lat?'bold ':''}${Math.round(R*(lat?(ch.length>2?.55:ch.length>1?.75:.95):.92))}px ${lat?"'Andika',Arial,sans-serif":"'ZCOOL KuaiLe','Microsoft YaHei',sans-serif"}`;g.fillText(ch,R/2,R/2+(lat?R*.04:R*.03));
+ const d=g.getImageData(0,0,R,R).data;const mask=new Set();
+ for(let r=0;r<N;r++)for(let c=0;c<N;c++){let ink=0;for(let y=0;y<12;y++)for(let x=0;x<12;x++){const i=((r*12+y)*R+(c*12+x))*4;if(d[i]<128)ink++}if(ink>=22)mask.add(r*N+c)}
+ if(mask.size<N)for(let r=Math.floor(N*.4);r<Math.ceil(N*.6);r++)for(let c=1;c<N-1;c++)mask.add(r*N+c);   /* 字体没加载出来时兜底：画一横 */
+ return mask}
 const GAMES={
  listen:{name:'听音选字',ok:()=>true,build(e){const opts=shuffle([e,...pick(peers(e),3)]);const t=e.letter?LETTER_SAY[e.c]:e.c;
   return {html:`<p class="qtip">听一听，点出你听到的${e.letter?'拼音':'字'}</p><div style="text-align:center"><button class="big ghost" id="qPlay">🔊 再听一遍</button></div><div class="qopts">${opts.map(o=>`<button class="qopt ${o.letter?'lat':''}" data-c="${esc(o.c)}">${esc(o.c)}</button>`).join('')}</div>`,
@@ -526,6 +555,18 @@ const GAMES={
   return {html:`<p class="qtip">把字按顺序放回句子里</p><div class="qline">${chars.map((ch,i)=>blanks.has(i)?`<span class="blank" data-i="${i}"></span>`:esc(ch)).join('')}</div><div class="qopts">${chips.map(ch=>`<button class="qopt" data-c="${esc(ch)}">${esc(ch)}</button>`).join('')}</div>`,
    bind(root,done){let miss=0;root.querySelectorAll('.qopt').forEach(b=>b.onclick=()=>{if(b.disabled)return;const want=chars[order[k]];if(b.dataset.c!==want){wrong(b);miss++;return}
     root.querySelector(`.blank[data-i="${order[k]}"]`).textContent=want;b.disabled=true;b.classList.add('used');k++;sGood(k);if(k===order.length){say(e.c+'。'+e.l,e.c);done(miss===0)}})}}}}
+,
+ color:{name:'涂色显字',ok:()=>true,build(e){const N=e.letter?8:10;const mask=inkMask(e.c,N);const others=pick(peers(e),2).map(x=>x.c);const labels=[e.c,...others];const cols=shuffle(['#FF5C8A','#3FBF6A','#2F6BFF']);
+  const cells=[];for(let i=0;i<N*N;i++)cells.push(mask.has(i)?0:1+Math.floor(Math.random()*2));
+  return {html:`<p class="qtip">按颜色把格子涂上：涂完「${esc(e.c)}」的格子，会有东西显出来</p><div class="legend2">${labels.map((l,i)=>`<button class="${e.letter?'lat':''}" data-k="${i}" aria-pressed="${i===0}"><i style="background:${cols[i]}"></i>${esc(l)}</button>`).join('')}</div>
+   <div class="cgrid" style="grid-template-columns:repeat(${N},1fr)">${cells.map((k,i)=>`<button class="cc ${e.letter?'lat':''} ${k===0?'target':''}" data-i="${i}" data-k="${k}">${esc(labels[k])}</button>`).join('')}</div>`,
+   bind(root,done){let cur=0,miss=0,left=mask.size;const leg=root.querySelectorAll('.legend2 button');leg.forEach(b=>b.onclick=()=>{cur=+b.dataset.k;leg.forEach(x=>x.setAttribute('aria-pressed',x===b))});
+    root.querySelectorAll('.cc').forEach(b=>b.onclick=()=>{if(b.classList.contains('painted'))return;const k=+b.dataset.k;if(k!==cur){wrong(b);miss++;return}
+     b.style.background=cols[k];b.classList.add('painted');if(k===0){left--;sGood(mask.size-left);if(left===0){root.querySelector('.cgrid').classList.add('reveal');say(e.letter?LETTER_SAY[e.c]:e.c,e.c);done(miss<=2)}}})}}}},
+ find:{name:'找形近字',ok:()=>true,build(e){const cols=e.letter?5:6,N=e.letter?20:24,k=5+Math.floor(Math.random()*3);const look=lookalikes(e);
+  const cells=shuffle(Array.from({length:N},(_,i)=>i<k?e.c:pick(look,1)[0]));
+  return {html:`<p class="qtip">这里藏着 <b id="fleft">${k}</b> 个「${esc(e.c)}」，把它们全找出来（别被长得像的骗了）</p><div class="fgrid" style="grid-template-columns:repeat(${cols},1fr)">${cells.map((t,i)=>`<button class="fc ${e.letter?'lat':''}" data-c="${esc(t)}">${esc(t)}</button>`).join('')}</div>`,
+   bind(root,done){let found=0,miss=0;root.querySelectorAll('.fc').forEach(b=>b.onclick=()=>{if(b.classList.contains('found'))return;if(b.dataset.c!==e.c){wrong(b);miss++;return}b.classList.add('found');found++;sGood(found);$('#fleft').textContent=k-found;if(found===k)done(miss<=1)})}}}}
 };
 let Q=null;
 function gamesFor(e,n){const avail=Object.keys(GAMES).filter(k=>GAMES[k].ok(e));return pick(avail,Math.min(n,avail.length))}
@@ -547,20 +588,51 @@ function questDone(){sWin();burst(window.innerWidth/2,220,20);const all=Q.score=
  say(all?'太厉害了！':'好样的！',all?'ui_good5':'ui_good3');
  $('#qAgain').onclick=()=>Q.o.daily?daily(Q.o.pool):quest(Q.list,Q.o)}
 function daily(pool){pool=pool||GRADES[S.grade].items;const learned=pool.filter(e=>starsOf(e.c));const from=learned.length>=5?learned:pool;quest(pick(from,Math.min(5,from.length)),{daily:true,pool})}
+/* ---------- 立绘：art/manifest.json 里有的字用 Gemini 画的图，没有的用程序怪兽 ---------- */
+const ART=new Set();
+function mascotHTML(e,f){const key=`${e.c}_${f||1}`;if(f&&ART.has(key))return `<img src="art/${encodeURIComponent(e.c)}_${f}.webp" alt="${esc(cname(e,f))}">`;
+ return f?mini(e,f):`<svg viewBox="0 0 200 200">${creatureSVG(e,1,{silhouette:true,silColor:'#C9D3E6'})}</svg>`}
+/* ---------- 画给字灵：画板，作品存在本机卡册里 ---------- */
+function draw(c){const e=BY[c],p=me();const size=Math.max(260,Math.min(window.innerWidth-48,window.innerHeight-260,420));
+ const COLORS=['#1F2340','#FF5C8A','#FF8C42','#FFC72C','#3FBF6A','#2F6BFF','#8A5CF6','#8B5A2B'];
+ $('#main').innerHTML=`<button class="big ghost" data-go="write" style="font-size:18px;padding:8px 14px;margin-bottom:12px">← 回到 ${esc(e.c)}</button>
+ <div class="drawwrap"><div><div class="canvasbox" style="width:${size}px;height:${size}px"><canvas id="cv" width="${size*2}" height="${size*2}"></canvas></div>
+  <div class="tools">${COLORS.map((col,i)=>`<button data-col="${col}" style="background:${col}" aria-pressed="${i===0}" aria-label="颜色"></button>`).join('')}<button data-col="#ffffff" aria-label="橡皮" style="background:#fff">⌫</button><button class="sz" data-sz="6">细</button><button class="sz" data-sz="14" aria-pressed="true">中</button><button class="sz" data-sz="28">粗</button><button class="sz" id="dUndo">撤销</button><button class="sz" id="dClear">清空</button></div></div>
+ <div class="info"><div style="display:flex;gap:16px;align-items:center"><div class="big-ch ${e.letter?'lat':''}">${esc(e.c)}</div><div><div class="py">${esc(e.letter?(e.pg||'拼音'):e.p)}</div><div class="da">${esc(e.da)}${EN[e.c]?' · '+esc(EN[e.c]):''}</div></div><div class="mascot" style="margin-left:auto">${mascotHTML(e,starsOf(c))}</div></div>
+  <p class="poem">${esc(e.l)}</p><p class="muted">给「${esc(e.c)}」画一幅画：它的样子、它的意思，或者这句话里的画面。画好存进卡册，老师可以投屏给大家看。</p>
+  <div class="ctrls"><button class="big green" id="dSave">💾 存进卡册</button>${(p.art||{})[c]?`<button class="big ghost" id="dDel">🗑 删除这幅</button>`:''}<button class="big ghost" id="dDown">⬇️ 保存图片</button></div><div class="msg" id="dmsg"></div></div></div>`;
+ const cv=$('#cv'),g=cv.getContext('2d');g.lineCap=g.lineJoin='round';g.fillStyle='#fff';g.fillRect(0,0,cv.width,cv.height);
+ if((p.art||{})[c]){const im=new Image();im.onload=()=>g.drawImage(im,0,0,cv.width,cv.height);im.src=p.art[c]}
+ let col=COLORS[0],sz=14,drawing=false,hist=[];
+ const pos=ev=>{const r=cv.getBoundingClientRect();return [(ev.clientX-r.left)*cv.width/r.width,(ev.clientY-r.top)*cv.height/r.height]};
+ cv.onpointerdown=ev=>{cv.setPointerCapture(ev.pointerId);if(hist.length>12)hist.shift();hist.push(g.getImageData(0,0,cv.width,cv.height));drawing=true;g.strokeStyle=col;g.lineWidth=sz*2;const [x,y]=pos(ev);g.beginPath();g.moveTo(x,y);g.lineTo(x+.1,y+.1);g.stroke()};
+ cv.onpointermove=ev=>{if(!drawing)return;const [x,y]=pos(ev);g.lineTo(x,y);g.stroke()};
+ cv.onpointerup=cv.onpointercancel=()=>{drawing=false};
+ document.querySelectorAll('[data-col]').forEach(b=>b.onclick=()=>{col=b.dataset.col;document.querySelectorAll('[data-col]').forEach(x=>x.setAttribute('aria-pressed',x===b))});
+ document.querySelectorAll('[data-sz]').forEach(b=>b.onclick=()=>{sz=+b.dataset.sz;document.querySelectorAll('[data-sz]').forEach(x=>x.setAttribute('aria-pressed',x===b))});
+ $('#dUndo').onclick=()=>{const h=hist.pop();if(h)g.putImageData(h,0,0)};
+ $('#dClear').onclick=()=>{hist.push(g.getImageData(0,0,cv.width,cv.height));g.fillStyle='#fff';g.fillRect(0,0,cv.width,cv.height)};
+ const thumb=()=>{const t=document.createElement('canvas');t.width=t.height=256;t.getContext('2d').drawImage(cv,0,0,256,256);return t.toDataURL('image/jpeg',.72)};
+ $('#dSave').onclick=()=>{p.art=p.art||{};p.art[c]=thumb();try{localStorage.setItem(KEY,JSON.stringify(S));$('#dmsg').textContent='存好啦！在卡册里能看到';sWin();burst(window.innerWidth/2,300,14);say('存好啦！','ui_good7')}catch(_){delete p.art[c];$('#dmsg').textContent='存不下了：画太多啦，去卡册删掉几幅再画'}};
+ if($('#dDel'))$('#dDel').onclick=()=>{delete p.art[c];save();go('album')};
+ $('#dDown').onclick=()=>{const a=document.createElement('a');a.download=`字灵乐园-${c}.png`;a.href=cv.toDataURL('image/png');a.click()};
+}
 /* ---------- modal ---------- */
 function openCard(e,f,o={}){
  const nx=GRADES[e.g].items[GRADES[e.g].items.indexOf(e)+1];
  $('#mbox').innerHTML=`<div class="title">${o.title||cname(e,f)}</div>${o.stars!==undefined?`<div style="font-size:34px;color:#FFC72C">${'★'.repeat(o.stars)}${'☆'.repeat(3-o.stars)}</div>`:''}
  <div class="cardwrap pop">${cardSVG(e,f,e.strokes,e.num,{uid:'m'})}</div>
  <div style="font-size:20px;margin-top:10px">${o.sub||''}</div>
+ ${(me().art||{})[e.c]?`<div style="margin-top:10px"><img src="${(me().art||{})[e.c]}" alt="我画的 ${esc(e.c)}" style="width:160px;height:160px;border-radius:16px;border:3px solid var(--line);object-fit:cover;background:#fff"><div class="src" style="color:#cfd6f0">我画的 ${esc(e.c)}</div></div>`:''}
  <div class="forms">${[1,2,3].map(k=>`<div title="${cname(e,k)}"><svg viewBox="0 0 200 200">${creatureSVG(e,k,{silhouette:k>f,silColor:'#3a4370'})}</svg><div style="font-size:14px">${k<=f?cname(e,k):'？？？'}</div></div>`).join('')}</div>
- <div class="mbtns">${o.after?`<button class="big ghost" id="mAgain">再写一次</button>${nx?`<button class="big green" id="mNext">下一个 ${esc(nx.c)}</button>`:''}`:`<button class="big" id="mWrite">去写 ${esc(e.c)}</button><button class="big ghost" id="mPrint">🖨 打印这张</button>`}<button class="big pink" id="mClose">关闭</button></div>`;
+ <div class="mbtns">${o.after?`<button class="big ghost" id="mAgain">再写一次</button>${nx?`<button class="big green" id="mNext">下一个 ${esc(nx.c)}</button>`:''}`:`<button class="big" id="mWrite">去写 ${esc(e.c)}</button><button class="big ghost" id="mDraw">🎨 画一画</button><button class="big ghost" id="mPrint">🖨 打印这张</button>`}<button class="big pink" id="mClose">关闭</button></div>`;
  $('#modal').classList.add('open');say(o.title||cname(e,f),o.voice||[e.c]);
  $('#mClose').onclick=closeModal;
  if($('#mAgain'))$('#mAgain').onclick=()=>{closeModal();startQuiz(e)};
  if($('#mNext'))$('#mNext').onclick=()=>go('write',nx.c);
  if($('#mWrite'))$('#mWrite').onclick=()=>go('write',e.c);
  if($('#mPrint'))$('#mPrint').onclick=()=>printCards([[e,f]]);
+ if($('#mDraw'))$('#mDraw').onclick=()=>go('draw',e.c);
 }
 function closeModal(){$('#modal').classList.remove('open');stopVoice()}
 $('#modal').addEventListener('click',ev=>{if(ev.target.id==='modal')closeModal()});
@@ -582,11 +654,13 @@ function album(gid){
  const ggot=G.items.filter(e=>p.prog[e.c]);
  $('#main').innerHTML=`<h1>${esc(p.name)} 的卡册</h1><p class="muted">已收集 ${got} / ${ALL.length} 张，其中金卡 ${gold} 张。笔画多的字写到 3 颗星会变成闪卡。</p>
  <div class="prog"><i style="width:${got/ALL.length*100}%"></i></div>
+ ${Object.keys(p.art||{}).length?`<h2>🎨 我的画 <small class="muted">${Object.keys(p.art).length} 幅，点一幅可以再画或删除</small></h2><div class="arts">${Object.entries(p.art).map(([c,src])=>`<button data-art="${esc(c)}"><img src="${src}" alt="${esc(c)}"><small>${esc(c)}　${esc((BY[c]||{}).l||'')}</small></button>`).join('')}</div>`:''}
  ${gradeTabs(S.agrade,'data-ag')}
  <div class="ctrls" style="margin:4px 0 14px"><span class="muted" style="align-self:center">${G.name}已收集 ${ggot.length} / ${G.items.length} 张</span>${ggot.length?`<button class="big ghost" id="aPrint" style="font-size:18px;padding:8px 14px">🖨 打印${G.name}的 ${ggot.length} 张卡</button>`:''}</div>
  <div class="album">${G.items.map(e=>{const f=p.prog[e.c];return f?`<button class="slot" data-c="${esc(e.c)}" aria-label="${cname(e,f)}">${cardSVG(e,f,e.strokes,e.num,{uid:'a'})}</button>`
   :`<button class="slot" data-c="${esc(e.c)}" aria-label="还没收集 ${esc(e.c)}"><div class="lockcard"><svg viewBox="0 0 200 200">${creatureSVG(e,1,{silhouette:true,silColor:'#9AA6C4'})}</svg>No.${String(e.num).padStart(4,'0')}</div></button>`}).join('')}</div>`;
  document.querySelectorAll('[data-ag]').forEach(b=>b.onclick=()=>album(+b.dataset.ag));
+ document.querySelectorAll('[data-art]').forEach(b=>b.onclick=()=>go('draw',b.dataset.art));
  document.querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{const e=BY[b.dataset.c],f=p.prog[e.c];f?openCard(e,f):go('write',e.c)});
  if($('#aPrint'))$('#aPrint').onclick=()=>printCards(ggot.map(e=>[e,p.prog[e.c]]));
 }
@@ -622,6 +696,7 @@ function poster(){
 }
 /* ---------- boot ---------- */
 $('#logoSvg').innerHTML=creatureSVG(BY['火']||ALL[0],2);
+fetch('art/manifest.json').then(r=>r.ok?r.json():[]).then(list=>{for(const k of list)ART.add(k)}).catch(()=>{});
 const FINE=window.matchMedia&&window.matchMedia('(pointer:fine)').matches;
 $('#snd').onclick=ev=>{ev.stopPropagation();$('#sndmenu').hidden=!$('#sndmenu').hidden};
 document.querySelectorAll('#sndmenu [data-vk]').forEach(b=>b.onclick=ev=>{ev.stopPropagation();setVoice(b.dataset.vk)});
