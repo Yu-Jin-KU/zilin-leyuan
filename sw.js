@@ -2,7 +2,7 @@
    - 核心文件（页面、字库、字体）首次访问时整体缓存；
    - 笔顺数据 data/ 和语音 audio/ 用到哪个缓存哪个（内容不变，缓存优先）；
    - index.html 走“网络优先”，这样更新后刷新就能拿到新版本。 */
-const VERSION = 'zilin-v3';
+const VERSION = 'zilin-v4';
 const CORE = ['./', 'index.html', 'lib/hanzi-writer.min.js',
   'fonts/ZCOOLKuaiLe-sub.woff2', 'fonts/Andika-Regular-sub.woff2', 'fonts/Andika-Bold-sub.woff2',
   'manifest.webmanifest', 'icon.svg', 'icon-192.png', 'icon-512.png'];
@@ -23,7 +23,7 @@ self.addEventListener('fetch', e => {
     return;
   }
   e.respondWith(caches.match(e.request).then(hit => hit || fetch(e.request).then(r => {
-    if (r.ok && (url.pathname.includes('/data/') || url.pathname.includes('/audio/') || url.pathname.includes('/fonts/') || url.pathname.includes('/lib/'))) {
+    if (r.ok && (url.pathname.includes('/data/') || url.pathname.includes('/audio/') || url.pathname.includes('/music/') || url.pathname.includes('/fonts/') || url.pathname.includes('/lib/'))) {
       const copy = r.clone(); caches.open(VERSION).then(c => c.put(e.request, copy));
     }
     return r;
