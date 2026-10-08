@@ -31,7 +31,7 @@
 | `sw.js` `manifest.webmanifest` | 离线缓存与"添加到主屏幕" |
 | `tools/` | 数据与语音脚本：`phrases.py`（朗读文本）、`gen_audio.py`（生成语音）、`qa_audio.py`（Whisper 质检）、`pinyin.json`（拼音表与儿歌）、`en_gloss.json`（英文释义）、`hsk30_chars.json`（HSK 字表） |
 | `设计/` | 字灵卡美术方案和给 Gemini 的出图提示词表 |
-| `字灵卡-打印版.pdf` | 300 张可打印字灵卡 |
+| `字灵卡-打印版.pdf` | 前 300 号字卡（26 个字母 + 274 个常用字，63×88 毫米，A4 每页 9 张）；在浏览器里打开 `index.html?print=300` 再打印即可重新导出 |
 
 ## 重新生成语音 / 换声音
 

@@ -141,7 +141,7 @@ h1{font-size:34px;margin:8px 0 4px;font-weight:400}h2{font-size:26px;margin:22px
 .legend span{border-radius:999px;padding:4px 12px;color:#fff;font-size:16px}
 @media (max-width:520px){.logo{font-size:20px}.logo svg{width:30px;height:30px}.nav button,.who{font-size:15px;padding:6px 10px}.bar{gap:6px;padding:8px 10px}h1{font-size:28px}}
 @media (prefers-reduced-motion:reduce){.pop,.burst,.holo .holo-sheen{animation:none}}
-@media print{body.printing>*{display:none!important}body.printing #print{display:grid!important}#print{display:none;grid-template-columns:repeat(3,63mm);gap:3mm;padding:8mm;background:#fff}.pcard{width:63mm;height:88mm;break-inside:avoid}.pcard svg{width:63mm;height:88mm;display:block}}
+@media print{@page{size:A4;margin:0}body.printing{background:#fff}body.printing>*{display:none!important}body.printing #print{display:grid!important}#print{display:none;grid-template-columns:repeat(3,63mm);gap:3mm;padding:7.5mm;background:#fff}.pcard{width:63mm;height:88mm;break-inside:avoid}.pcard svg{width:63mm;height:88mm;display:block}}
 @media screen{#print{display:none}}
 @page{size:A4;margin:8mm}
 </style></head>
@@ -752,6 +752,9 @@ document.addEventListener('click',()=>{$('#sndmenu').hidden=true});
 setVoice(voiceOn()?voiceKind():'off');
 if('serviceWorker'in navigator&&location.protocol.startsWith('http')){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))}
 if(typeof HanziWriter==='undefined'){$('#main').innerHTML='<h1>写字工具没有加载出来</h1><p>请检查网络后刷新页面。</p>'}
+else if(/[?&]print=(\d+)/.test(location.search)){/* 导出打印版 PDF：index.html?print=300 → 前 300 号字卡（三星）铺在 #print 里，不弹打印框，由无头 Chrome 打印 */
+ const N=+RegExp.$1;const list=ALL.filter(e=>e.num<=N).sort((a,b)=>a.num-b.num);
+ $('#print').innerHTML=list.map((e,i)=>`<div class="pcard">${charCardSVG(e,3,{uid:'p'+i})}</div>`).join('');document.body.classList.add('printing');document.title='字灵卡 '+list.length+' 张'}
 else go(me()?'grades':'players');
 </script>
 </body></html>
