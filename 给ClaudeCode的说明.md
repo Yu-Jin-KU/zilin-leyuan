@@ -34,6 +34,15 @@
 - `draw(c)` 画板视图：作品以 256px JPEG dataURL 存在 `player.art[字]`，卡册顶部"我的画"和卡片弹窗会显示；localStorage 存满时提示删画。
 - 立绘接入位：`art/manifest.json` 列出已有的 `<字>_<星>.webp`，`mascotHTML()` 有图用图、没图用程序怪兽。Gemini 出图后把 PNG 放到 `art/_raw/` 跑 `python tools/pack_art.py`。
 
+## 奖励系统：字系 → 部落 → 部首（2026-10-08 起）
+
+- 数据：`tools/tribes.json`（24 个部落、各自的部首列表、造型说明 look）、`tools/_mmah_dictionary.txt`（makemeahanzi 字典，提供每个字的部首，Arphic 许可）、`tools/_tribe_map.json`（字 → 部落），由 `tools/patch_v3.js` 注入成 `TRIBES / TRIBE_IDX / RADS`。
+- 进度全部从 `player.prog` 推导（`tribeStats()`），没有新存档字段，老玩家自动换算。阈值 `STAGES=[3,15,40]`：孵化 / 进化 / 大王。
+- 每个字的奖励是 `charCardSVG()` 排版字卡：笔画 ≤4 普通、5-8 稀有、9-12 史诗、13+ 传说（边框），星级另外显示。旧的 `creatureSVG / cardSVG` 保留，作为部落字灵没有立绘时的占位。
+- 立绘接入位：`art/tribe_<id>_<1|2|3>.webp` 和 `art/egg_<id>.webp`，`tribeInner()` 优先用图。提示词 `设计/prompts_部落.csv`。
+- 卡册有"字卡 / 部落"两页；海报改为"字灵王国"，24 只部落字灵按字系分区、按全班喂养量长大；点字灵或部落卡上的按钮会按部落筛选选字页（`S.tfb`）。
+- 打印版 PDF（300 张旧怪兽卡）已过时，待字灵立绘到位后用页内 printCards 重新导出。
+
 ## 设计决策
 
 - 级别名：拼音 / 一到九年级 / 进阶一到六（丹麦学制没有 10 年级以上的叫法）；另有 HSK 3.0 视图。
