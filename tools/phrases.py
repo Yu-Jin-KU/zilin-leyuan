@@ -58,10 +58,16 @@ def char_phrase(row):
     head = f"<|phoneme_start|>{n}<|phoneme_end|>" if n else c
     return f"{head}。{line}"
 
-def pinyin_phrase(key, item):
-    """拼音：读音，儿歌（儿歌里的字母替换成读音）"""
-    say = item["say"]
-    line = re.sub(r"[a-zü]+", say, item["line"])
+def pinyin_phrase(key, item, items=None):
+    """拼音：读音，儿歌。读音用 Fish 注音标签、一律一声（教拼音用一声音阶）；
+    儿歌里的每个字母串按它自己的 tag 读（z加h → zi1 加 he1），没有对应项的才用本项的 tag。"""
+    def tag(k): return f"<|phoneme_start|>{k}<|phoneme_end|>"
+    say = tag(item["tag"]) if item.get("tag") else item["say"]
+    def rep(m):
+        k = m.group(0)
+        if items and k in items and items[k].get("tag"): return tag(items[k]["tag"])
+        return say
+    line = re.sub(r"[a-zü]+", rep, item["line"])
     return f"{say}，{line}"
 
 def all_phrases():
@@ -70,7 +76,7 @@ def all_phrases():
     py = load_pinyin()
     for g in py["groups"]:
         for k in g["items"]:
-            out.append((k, pinyin_phrase(k, py["items"][k])))
+            out.append((k, pinyin_phrase(k, py["items"][k], py["items"])))
     for r in load_data():
         out.append((r[0], char_phrase(r)))
     for k, t in UI.items():

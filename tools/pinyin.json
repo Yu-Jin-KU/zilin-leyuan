@@ -1,5 +1,5 @@
 {
- "_说明": "人教版一年级上册汉语拼音教学顺序。say = 朗读时代表这个音的汉字（必要时后面跟 Fish 注音标签）；line = 儿歌，里面的拉丁字母在朗读时会替换成 say 的读音。",
+ "_说明": "人教版一年级上册汉语拼音教学顺序。say = 屏幕上/兜底朗读用的代表字；tag = Fish 注音标签（一律一声，教拼音用一声音阶）；line = 儿歌，里面的拉丁字母在朗读时按各自的 tag 读。",
  "groups": [
   {
    "name": "单韵母",
@@ -100,379 +100,442 @@
    "say": "啊",
    "line": "张大嘴巴 a a a",
    "lesson": 1,
-   "lesson_2024": 1
+   "lesson_2024": 1,
+   "tag": "a1"
   },
   "o": {
    "say": "喔",
    "line": "圆圆嘴巴 o o o",
    "lesson": 1,
-   "lesson_2024": 1
+   "lesson_2024": 1,
+   "tag": "o1"
   },
   "e": {
    "say": "鹅",
    "line": "扁扁嘴巴 e e e",
    "lesson": 1,
-   "lesson_2024": 1
+   "lesson_2024": 1,
+   "tag": "e1"
   },
   "i": {
    "say": "衣",
    "line": "牙齿对齐 i i i",
    "lesson": 2,
-   "lesson_2024": 2
+   "lesson_2024": 2,
+   "tag": "yi1"
   },
   "u": {
    "say": "乌",
    "line": "嘴巴突出 u u u",
    "lesson": 2,
-   "lesson_2024": 2
+   "lesson_2024": 2,
+   "tag": "wu1"
   },
   "ü": {
    "say": "迂",
    "line": "嘴吹口哨 ü ü ü",
    "lesson": 2,
-   "lesson_2024": 2
+   "lesson_2024": 2,
+   "tag": "yu1"
   },
   "y": {
    "say": "衣",
    "line": "树杈树杈 y y y",
    "lesson": 2,
-   "lesson_2024": 9
+   "lesson_2024": 9,
+   "tag": "yi1"
   },
   "w": {
    "say": "乌",
    "line": "屋顶屋顶 w w w",
    "lesson": 2,
-   "lesson_2024": 9
+   "lesson_2024": 9,
+   "tag": "wu1"
   },
   "b": {
    "say": "玻",
    "line": "右下半圆 b b b",
    "lesson": 3,
-   "lesson_2024": 3
+   "lesson_2024": 3,
+   "tag": "bo1"
   },
   "p": {
    "say": "坡",
    "line": "右上半圆 p p p",
    "lesson": 3,
-   "lesson_2024": 3
+   "lesson_2024": 3,
+   "tag": "po1"
   },
   "m": {
    "say": "摸",
    "line": "两个门洞 m m m",
    "lesson": 3,
-   "lesson_2024": 3
+   "lesson_2024": 3,
+   "tag": "mo1"
   },
   "f": {
    "say": "佛",
    "line": "一根拐杖 f f f",
    "lesson": 3,
-   "lesson_2024": 3
+   "lesson_2024": 3,
+   "tag": "fo1"
   },
   "d": {
    "say": "得",
    "line": "左下半圆 d d d",
    "lesson": 4,
-   "lesson_2024": 4
+   "lesson_2024": 4,
+   "tag": "de1"
   },
   "t": {
    "say": "特",
    "line": "伞柄朝下 t t t",
    "lesson": 4,
-   "lesson_2024": 4
+   "lesson_2024": 4,
+   "tag": "te1"
   },
   "n": {
    "say": "讷",
    "line": "一个门洞 n n n",
    "lesson": 4,
-   "lesson_2024": 4
+   "lesson_2024": 4,
+   "tag": "ne1"
   },
   "l": {
    "say": "勒",
    "line": "一根小棒 l l l",
    "lesson": 4,
-   "lesson_2024": 4
+   "lesson_2024": 4,
+   "tag": "le1"
   },
   "g": {
    "say": "哥",
    "line": "9字加弯 g g g",
    "lesson": 5,
-   "lesson_2024": 5
+   "lesson_2024": 5,
+   "tag": "ge1"
   },
   "k": {
    "say": "科",
    "line": "蝌蚪水草 k k k",
    "lesson": 5,
-   "lesson_2024": 5
+   "lesson_2024": 5,
+   "tag": "ke1"
   },
   "h": {
    "say": "喝",
    "line": "一把椅子 h h h",
    "lesson": 5,
-   "lesson_2024": 5
+   "lesson_2024": 5,
+   "tag": "he1"
   },
   "j": {
    "say": "基",
    "line": "竖弯加点 j j j",
    "lesson": 6,
-   "lesson_2024": 6
+   "lesson_2024": 6,
+   "tag": "ji1"
   },
   "q": {
    "say": "欺",
    "line": "左上半圆 q q q",
    "lesson": 6,
-   "lesson_2024": 6
+   "lesson_2024": 6,
+   "tag": "qi1"
   },
   "x": {
    "say": "希",
    "line": "一个大叉 x x x",
    "lesson": 6,
-   "lesson_2024": 6
+   "lesson_2024": 6,
+   "tag": "xi1"
   },
   "z": {
    "say": "资",
    "line": "像个2字 z z z",
    "lesson": 7,
-   "lesson_2024": 7
+   "lesson_2024": 7,
+   "tag": "zi1"
   },
   "c": {
    "say": "雌",
    "line": "半个圆圈 c c c",
    "lesson": 7,
-   "lesson_2024": 7
+   "lesson_2024": 7,
+   "tag": "ci1"
   },
   "s": {
    "say": "思",
    "line": "半个8字 s s s",
    "lesson": 7,
-   "lesson_2024": 7
+   "lesson_2024": 7,
+   "tag": "si1"
   },
   "zh": {
    "say": "知",
    "line": "z加h zh zh zh，织毛衣 zh zh zh",
    "lesson": 8,
-   "lesson_2024": 8
+   "lesson_2024": 8,
+   "tag": "zhi1"
   },
   "ch": {
    "say": "吃",
    "line": "c加h ch ch ch，吃苹果 ch ch ch",
    "lesson": 8,
-   "lesson_2024": 8
+   "lesson_2024": 8,
+   "tag": "chi1"
   },
   "sh": {
    "say": "诗",
    "line": "s加h sh sh sh，小狮子 sh sh sh",
    "lesson": 8,
-   "lesson_2024": 8
+   "lesson_2024": 8,
+   "tag": "shi1"
   },
   "r": {
    "say": "日",
    "line": "小苗发芽 r r r",
    "lesson": 8,
-   "lesson_2024": 8
+   "lesson_2024": 8,
+   "tag": "ri1"
   },
   "ai": {
    "say": "哀",
    "line": "弟弟矮 ai ai ai",
    "lesson": 9,
-   "lesson_2024": 10
+   "lesson_2024": 10,
+   "tag": "ai1"
   },
   "ei": {
    "say": "诶",
    "line": "干活用劲 ei ei ei",
    "lesson": 9,
-   "lesson_2024": 10
+   "lesson_2024": 10,
+   "tag": "ei1"
   },
   "ui": {
    "say": "威",
    "line": "围上围巾 ui ui ui",
    "lesson": 9,
-   "lesson_2024": 10
+   "lesson_2024": 10,
+   "tag": "wei1"
   },
   "ao": {
    "say": "熬",
    "line": "冬天穿袄 ao ao ao",
    "lesson": 10,
-   "lesson_2024": 11
+   "lesson_2024": 11,
+   "tag": "ao1"
   },
   "ou": {
    "say": "欧",
    "line": "莲花长藕 ou ou ou",
    "lesson": 10,
-   "lesson_2024": 11
+   "lesson_2024": 11,
+   "tag": "ou1"
   },
   "iu": {
    "say": "优",
    "line": "邮筒邮信 iu iu iu",
    "lesson": 10,
-   "lesson_2024": 11
+   "lesson_2024": 11,
+   "tag": "you1"
   },
   "ie": {
    "say": "耶",
    "line": "一棵椰树 ie ie ie",
    "lesson": 11,
-   "lesson_2024": 12
+   "lesson_2024": 12,
+   "tag": "ye1"
   },
   "üe": {
    "say": "约",
    "line": "月亮月亮 üe üe üe",
    "lesson": 11,
-   "lesson_2024": 12
+   "lesson_2024": 12,
+   "tag": "yue1"
   },
   "er": {
    "say": "儿",
    "line": "一只耳朵 er er er",
    "lesson": 11,
-   "lesson_2024": 12
+   "lesson_2024": 12,
+   "tag": "er1"
   },
   "an": {
    "say": "安",
    "line": "马匹配鞍 an an an",
    "lesson": 12,
-   "lesson_2024": 13
+   "lesson_2024": 13,
+   "tag": "an1"
   },
   "en": {
    "say": "恩",
    "line": "点点头 en en en",
    "lesson": 12,
-   "lesson_2024": 13
+   "lesson_2024": 13,
+   "tag": "en1"
   },
   "in": {
    "say": "因",
    "line": "树下乘凉 in in in",
    "lesson": 12,
-   "lesson_2024": 13
+   "lesson_2024": 13,
+   "tag": "yin1"
   },
   "un": {
    "say": "温",
    "line": "蚊子叫 un un un",
    "lesson": 12,
-   "lesson_2024": 13
+   "lesson_2024": 13,
+   "tag": "wen1"
   },
   "ün": {
    "say": "晕",
    "line": "白云朵朵 ün ün ün",
    "lesson": 12,
-   "lesson_2024": 13
+   "lesson_2024": 13,
+   "tag": "yun1"
   },
   "ang": {
    "say": "昂",
    "line": "小手肮脏 ang ang ang",
    "lesson": 13,
-   "lesson_2024": 14
+   "lesson_2024": 14,
+   "tag": "ang1"
   },
   "eng": {
-   "say": "鞥<|phoneme_start|>eng1<|phoneme_end|>",
+   "say": "鞥eng1",
    "line": "打开电灯 eng eng eng",
    "lesson": 13,
-   "lesson_2024": 14
+   "lesson_2024": 14,
+   "tag": "eng1"
   },
   "ing": {
    "say": "英",
    "line": "老鹰飞翔 ing ing ing",
    "lesson": 13,
-   "lesson_2024": 14
+   "lesson_2024": 14,
+   "tag": "ying1"
   },
   "ong": {
    "say": "翁",
    "line": "天上彩虹 ong ong ong",
    "lesson": 13,
-   "lesson_2024": 14
+   "lesson_2024": 14,
+   "tag": "ong1"
   },
   "zhi": {
    "say": "知",
    "line": "白鸽飞上小树枝 zhi zhi zhi",
    "lesson": 8,
-   "lesson_2024": 8
+   "lesson_2024": 8,
+   "tag": "zhi1"
   },
   "chi": {
    "say": "吃",
    "line": "测量长度小皮尺 chi chi chi",
    "lesson": 8,
-   "lesson_2024": 8
+   "lesson_2024": 8,
+   "tag": "chi1"
   },
   "shi": {
    "say": "诗",
    "line": "大家一起背唐诗 shi shi shi",
    "lesson": 8,
-   "lesson_2024": 8
+   "lesson_2024": 8,
+   "tag": "shi1"
   },
   "ri": {
    "say": "日",
    "line": "冉冉升起大红日 ri ri ri",
    "lesson": 8,
-   "lesson_2024": 8
+   "lesson_2024": 8,
+   "tag": "ri1"
   },
   "zi": {
    "say": "资",
    "line": "手握毛笔写大字 zi zi zi",
    "lesson": 7,
-   "lesson_2024": 7
+   "lesson_2024": 7,
+   "tag": "zi1"
   },
   "ci": {
    "say": "雌",
    "line": "小小刺猬满身刺 ci ci ci",
    "lesson": 7,
-   "lesson_2024": 7
+   "lesson_2024": 7,
+   "tag": "ci1"
   },
   "si": {
    "say": "思",
    "line": "春蚕结茧吐细丝 si si si",
    "lesson": 7,
-   "lesson_2024": 7
+   "lesson_2024": 7,
+   "tag": "si1"
   },
   "yi": {
    "say": "衣",
    "line": "微风拂面柳依依 yi yi yi",
    "lesson": 2,
-   "lesson_2024": 9
+   "lesson_2024": 9,
+   "tag": "yi1"
   },
   "wu": {
    "say": "乌",
    "line": "大家一起来跳舞 wu wu wu",
    "lesson": 2,
-   "lesson_2024": 9
+   "lesson_2024": 9,
+   "tag": "wu1"
   },
   "yu": {
    "say": "迂",
    "line": "乌云密布要下雨 yu yu yu",
    "lesson": 2,
-   "lesson_2024": 9
+   "lesson_2024": 9,
+   "tag": "yu1"
   },
   "ye": {
    "say": "耶",
    "line": "水珠滚滚绿荷叶 ye ye ye",
    "lesson": 11,
-   "lesson_2024": 12
+   "lesson_2024": 12,
+   "tag": "ye1"
   },
   "yue": {
    "say": "约",
    "line": "点点星空挂明月 yue yue yue",
    "lesson": 11,
-   "lesson_2024": 12
+   "lesson_2024": 12,
+   "tag": "yue1"
   },
   "yuan": {
    "say": "冤",
    "line": "绿树红花小花园 yuan yuan yuan",
    "lesson": 12,
-   "lesson_2024": 13
+   "lesson_2024": 13,
+   "tag": "yuan1"
   },
   "yin": {
    "say": "因",
    "line": "榆槐树下绿成荫 yin yin yin",
    "lesson": 12,
-   "lesson_2024": 13
+   "lesson_2024": 13,
+   "tag": "yin1"
   },
   "yun": {
    "say": "晕",
    "line": "蓝蓝天上飘白云 yun yun yun",
    "lesson": 12,
-   "lesson_2024": 13
+   "lesson_2024": 13,
+   "tag": "yun1"
   },
   "ying": {
    "say": "英",
    "line": "蓝蓝天上飞雄鹰 ying ying ying",
    "lesson": 13,
-   "lesson_2024": 14
+   "lesson_2024": 14,
+   "tag": "ying1"
   }
  }
 }
