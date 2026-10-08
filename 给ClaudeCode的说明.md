@@ -41,7 +41,7 @@
 - 每个字的奖励是 `charCardSVG()` 排版字卡：笔画 ≤4 普通、5-8 稀有、9-12 史诗、13+ 传说（边框），星级另外显示。旧的 `creatureSVG / cardSVG` 保留，作为部落字灵没有立绘时的占位。
 - 立绘接入位：`art/tribe_<id>_<1|2|3>.webp` 和 `art/egg_<id>.webp`，`tribeInner()` 优先用图。提示词 `设计/prompts_部落.csv`。
 - 卡册有"字卡 / 部落"两页；海报改为"字灵王国"，24 只部落字灵按字系分区、按这台设备上所有人的喂养量长大（标题和口吻按人数自动切换：1 人「X 的王国 / 你已经」，2–5 人「我们的 / 大家一起」，6 人以上「全班的 / 全班一起」）；点字灵或部落卡上的按钮会按部落筛选选字页（`S.tfb`）。
-- 打印版 PDF（300 张旧怪兽卡）已过时，待字灵立绘到位后用页内 printCards 重新导出。
+- 打印版 PDF 已于 2026-10-08 用新字卡重做：`index.html?print=N` 会把前 N 号字卡（三星）铺进 #print 且不弹打印框，用无头 Chrome `--headless=new --no-pdf-header-footer --virtual-time-budget=20000 --print-to-pdf=… http://127.0.0.1:8931/index.html?print=300` 导出（要先起本地 http 服务，file:// 下字体加载不出来）。
 
 ## 设计决策
 
