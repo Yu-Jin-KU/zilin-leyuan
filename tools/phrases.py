@@ -44,6 +44,10 @@ UI = {
     "ui_welcome": "欢迎来到字灵乐园！写对一个字，就能召唤一只字灵。",
     "ui_tryagain": "没关系，再来一次！",
     "ui_almost": "就差一点点，加油！",
+    "ui_hatch": "孵化啦！新朋友出来了！",
+    "ui_card": "字卡到手！",
+    "ui_crack": "蛋在动，再写几个字它就出来了。",
+    "ui_chief": "部落集齐啦！你是族长！",
 }
 
 def char_phrase(row):
