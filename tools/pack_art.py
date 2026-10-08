@@ -22,15 +22,16 @@ def unwhite(im, thr=240):
 
 n = 0
 for f in sorted(SRC.glob("*")):
-    m = re.fullmatch(r"(.+)_([123])\.(png|jpg|jpeg|webp)", f.name, re.I)
+    m = re.fullmatch(r"(.+_[123]|egg_\w+)\.(png|jpg|jpeg|webp)", f.name, re.I)
     if not m: continue
+    stem = m.group(1)
     im = Image.open(f)
     if im.mode != "RGBA" or im.getchannel("A").getextrema() == (255, 255): im = unwhite(im)
     bbox = im.getbbox()
     if bbox: im = im.crop(bbox)
     side = max(im.size); sq = Image.new("RGBA", (side, side), (0, 0, 0, 0)); sq.paste(im, ((side - im.width) // 2, (side - im.height) // 2))
     sq = sq.resize((512, 512), Image.LANCZOS)
-    sq.save(OUT / f"{m.group(1)}_{m.group(2)}.webp", "WEBP", quality=82, method=6); n += 1
+    sq.save(OUT / f"{stem}.webp", "WEBP", quality=82, method=6); n += 1
 keys = sorted(p.stem for p in OUT.glob("*.webp"))
 (OUT / "manifest.json").write_text(json.dumps(keys, ensure_ascii=False), encoding="utf-8")
 print(f"转换 {n} 张，manifest 共 {len(keys)} 个立绘")
