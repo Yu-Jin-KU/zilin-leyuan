@@ -149,7 +149,7 @@ h1{font-size:34px;margin:8px 0 4px;font-weight:400}h2{font-size:26px;margin:22px
 <header class="bar">
  <button class="logo" data-go="grades" aria-label="回到首页"><svg viewBox="0 0 200 200" id="logoSvg"></svg>字灵乐园</button>
  <nav class="nav" id="nav">
-  <button data-go="grades">写字</button><button data-go="album">卡册</button><button data-go="poster">全班海报</button>
+  <button data-go="grades">写字</button><button data-go="album">卡册</button><button data-go="poster">字灵王国</button>
  </nav>
  <button class="who" id="who" data-go="players">选人</button>
  <div class="sndwrap"><button class="snd" id="snd" aria-pressed="true" title="声音" aria-label="声音设置" aria-haspopup="true">🔊</button>
@@ -640,7 +640,7 @@ function draw(c){const e=BY[c],p=me();const size=Math.max(260,Math.min(window.in
  <div class="drawwrap"><div><div class="canvasbox" style="width:${size}px;height:${size}px"><canvas id="cv" width="${size*2}" height="${size*2}"></canvas></div>
   <div class="tools">${COLORS.map((col,i)=>`<button data-col="${col}" style="background:${col}" aria-pressed="${i===0}" aria-label="颜色"></button>`).join('')}<button data-col="#ffffff" aria-label="橡皮" style="background:#fff">⌫</button><button class="sz" data-sz="6">细</button><button class="sz" data-sz="14" aria-pressed="true">中</button><button class="sz" data-sz="28">粗</button><button class="sz" id="dUndo">撤销</button><button class="sz" id="dClear">清空</button></div></div>
  <div class="info"><div style="display:flex;gap:16px;align-items:center"><div class="big-ch ${e.letter?'lat':''}">${esc(e.c)}</div><div><div class="py">${esc(e.letter?(e.pg||'拼音'):e.p)}</div><div class="da">${esc(e.da)}${EN[e.c]?' · '+esc(EN[e.c]):''}</div></div><div class="mascot" style="margin-left:auto">${mascotHTML(e)}</div></div>
-  <p class="poem">${esc(e.l)}</p><p class="muted">给「${esc(e.c)}」画一幅画：它的样子、它的意思，或者这句话里的画面。画好存进卡册，老师可以投屏给大家看。</p>
+  <p class="poem">${esc(e.l)}</p><p class="muted">给「${esc(e.c)}」画一幅画：它的样子、它的意思，或者这句话里的画面。画好存进卡册，可以给爸爸妈妈或老师看。</p>
   <div class="ctrls"><button class="big green" id="dSave">💾 存进卡册</button>${(p.art||{})[c]?`<button class="big ghost" id="dDel">🗑 删除这幅</button>`:''}<button class="big ghost" id="dDown">⬇️ 保存图片</button></div><div class="msg" id="dmsg"></div></div></div>`;
  const cv=$('#cv'),g=cv.getContext('2d');g.lineCap=g.lineJoin='round';g.fillStyle='#fff';g.fillRect(0,0,cv.width,cv.height);
  if((p.art||{})[c]){const im=new Image();im.onload=()=>g.drawImage(im,0,0,cv.width,cv.height);im.src=p.art[c]}
@@ -721,8 +721,9 @@ function poster(){
    crit+=`<g class="pc" data-tribe="${t.id}" transform="translate(${cx-100*sc} ${cy-100*sc}) scale(${sc})"><title>${esc(t.name)} · ${esc(tname(t,st.stage))} · 已喂 ${st.fed}</title>${tribeInner(t,st.stage,st)}</g><text x="${cx}" y="${cy+sz/2+16}" text-anchor="middle" font-size="15" font-family="${HAN_FONT}" fill="#1f2340">${esc(t.name)}</text>`})}
  const got=Object.keys(best).length;const hatchedN=TRIBES.filter(t=>tribeStats(classP,t).stage>0).length;
  const pl=Object.values(S.players);
- $('#main').innerHTML=`<h1>字灵王国</h1><p class="muted">这台设备上 ${pl.length} 个小朋友一起喂养的 ${TRIBES.length} 个部落都住在这里。大家写对的字越多，字灵长得越大。</p>
- <div class="prog"><i style="width:${got/ALL.length*100}%"></i></div><p style="font-size:22px;margin:4px 0 12px">全班一起写对 ${got} 个字，${hatchedN} / ${TRIBES.length} 个部落已孵化</p>
+ const solo=pl.length===1,many=pl.length>=6;
+ $('#main').innerHTML=`<h1>${solo?esc(pl[0].name)+' 的':many?'全班的':'我们的'}字灵王国</h1><p class="muted">${solo?`${TRIBES.length} 个部落都住在这里。你写对的字越多，字灵长得越大。把网址发给同学，他们也能养自己的王国。`:`这台设备上 ${pl.length} 个小朋友一起喂养的 ${TRIBES.length} 个部落都住在这里。大家写对的字越多，字灵长得越大。`}</p>
+ <div class="prog"><i style="width:${got/ALL.length*100}%"></i></div><p style="font-size:22px;margin:4px 0 12px">${solo?'你已经':many?'全班一起':'大家一起'}写对 ${got} 个字，${hatchedN} / ${TRIBES.length} 个部落已孵化</p>
  <div class="poster"><svg viewBox="0 0 1000 660">
   <rect width="1000" height="660" fill="#BFE6FF"/><circle cx="885" cy="135" r="90" fill="#FFE27A"/><circle cx="885" cy="135" r="64" fill="#FFD23F"/>
   <ellipse cx="200" cy="90" rx="110" ry="30" fill="#fff" opacity=".8"/><ellipse cx="560" cy="70" rx="130" ry="32" fill="#fff" opacity=".8"/>
