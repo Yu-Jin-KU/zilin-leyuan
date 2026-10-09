@@ -43,6 +43,7 @@ h1{font-size:34px;margin:8px 0 4px;font-weight:400}h2{font-size:26px;margin:22px
 .muted{color:var(--soft)}
 .fam{margin-top:22px;background:#fff;border-radius:16px;padding:12px 16px;box-shadow:0 2px 8px rgba(0,0,0,.06)}.fam summary{cursor:pointer;font-size:18px}.fam b{font-family:ui-monospace,Consolas,monospace;letter-spacing:2px;font-size:20px}.famin{margin-top:10px}#famqr{width:150px;margin:6px 0}#famqr svg{width:150px;height:150px;display:block}.famrow{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}.famrow button{font-size:17px;padding:8px 14px;border-radius:14px;background:var(--bg);border:3px solid var(--line)}
 .mean{background:#fff;border-radius:16px;padding:12px 16px;margin-top:10px;display:flex;gap:14px;align-items:center;box-shadow:0 2px 8px rgba(0,0,0,.06)}.mean[hidden]{display:none}.mean .em{font-size:54px;line-height:1;flex:0 0 auto}.mean p{margin:0;font-size:19px;line-height:1.5}.mean .w{color:var(--soft);font-size:17px;margin-top:4px}.mean .w b{color:var(--ink);margin-right:12px;font-weight:600}
+.srch{display:flex;gap:8px;align-items:center;margin:0 0 12px}.srch input{font:inherit;font-size:20px;padding:9px 14px;border-radius:999px;border:3px solid var(--line);background:var(--paper);color:var(--ink);flex:1 1 160px;min-width:0}.srch button{font-size:22px;width:48px;height:48px;border-radius:50%;background:var(--paper);border:3px solid var(--line)}.srch button[aria-pressed="true"]{background:var(--berry);color:#fff;border-color:transparent}.srch .x{font-size:18px}.found{background:#fff;border-radius:18px;padding:12px 16px;margin:0 0 14px;box-shadow:0 2px 8px rgba(0,0,0,.05)}.found h2{margin:0 0 8px;font-size:19px}
 .hw{background:#fff;border:3px solid var(--sun);border-radius:18px;padding:12px 16px;margin:4px 0 14px}.hwh{font-size:19px}.hwcs{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.hwc{font:inherit;font-size:26px;min-width:52px;padding:4px 8px;border-radius:12px;background:#f1f6fb;border:2px solid var(--line);display:inline-flex;flex-direction:column;align-items:center;line-height:1.1;color:var(--ink)}.hwc small{font-size:12px;color:#c9a200}.hwc.s3{background:#d7f5df;border-color:#8fd9a3}.hwc.s1,.hwc.s2{background:#fff7c2}.pg label{font-size:16px;margin-right:10px}
 .parentbtn{margin-top:18px;font-size:17px;padding:10px 16px;border-radius:14px;background:#fff;border:3px solid var(--line);text-align:left}
 .pg{text-align:left;background:var(--paper);color:var(--ink);border-radius:18px;padding:16px 18px;max-width:460px;margin:0 auto}.pg h2{margin:0 0 4px;font-size:22px}.pg ol{padding-left:0;margin:0;list-style:none}.pg li{margin:14px 0;padding-top:12px;border-top:2px dashed var(--line)}.pg li b.t{display:block;font-size:19px;margin-bottom:4px}.pg .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}.pg button,.pg select{font:inherit;font-size:16px;padding:8px 12px;border-radius:12px;background:var(--bg);border:3px solid var(--line);color:var(--ink)}.pg button.green{background:var(--grass);color:#fff;border-color:transparent}.pg .seg button[aria-pressed="true"]{background:var(--sun);color:#3a2a00}.pg .muted{font-size:14px;margin:6px 0 0}.pg .ok{color:#2a8a4a}.pg code{font-family:ui-monospace,Consolas,monospace;letter-spacing:2px;font-size:19px}
@@ -380,6 +381,15 @@ async function syncClasses(leaving){const byCls={};for(const [pid,code] of Objec
   if(r.status===404){for(const pid of Object.keys(players))delete S.cls[pid];if(S.clsInfo)delete S.clsInfo[code]}else if(r.ok){const j=await r.json();S.clsInfo=S.clsInfo||{};S.clsInfo[code]={name:j.name,assign:j.assign||{}}}}catch(_){}}
  rawSave()}
 async function joinClass(code,ids){try{const r=await fetch(SYNC_API+'/c/'+code);if(r.status===404)return '没有这个班级码，再检查一下';if(!r.ok)throw 0;const j=await r.json();S.cls=S.cls||{};S.clsInfo=S.clsInfo||{};S.clsInfo[code]={name:j.name,assign:j.assign||{}};for(const id of ids)S.cls[id]=code;rawSave();syncNow();scheduleSync();return true}catch(_){return '连不上云端，请检查网络后再试'}}
+/* 找字：打字（汉字或拼音）或按住话筒说出来；汉字结果后面跟同音字 */
+const TONE_MAP={'ā':'a','á':'a','ǎ':'a','à':'a','ē':'e','é':'e','ě':'e','è':'e','ī':'i','í':'i','ǐ':'i','ì':'i','ō':'o','ó':'o','ǒ':'o','ò':'o','ū':'u','ú':'u','ǔ':'u','ù':'u','ǖ':'ü','ǘ':'ü','ǚ':'ü','ǜ':'ü'};
+const nopy=p=>String(p||'').toLowerCase().replace(/[āáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜ]/g,ch=>TONE_MAP[ch]).replace(/v/g,'ü').split(/[\/,\s]/)[0];
+let PYIDX=null;function pyIndex(){if(PYIDX)return PYIDX;PYIDX={};for(const e of ALL){if(e.letter)continue;const k=nopy(e.p);(PYIDX[k]=PYIDX[k]||[]).push(e)}return PYIDX}
+function findChars(q){q=String(q||'').trim();if(!q)return [];const out=[],seen=new Set();const add=e=>{if(e&&!seen.has(e.c)){seen.add(e.c);out.push(e)}};
+ const han=[...q].filter(ch=>/[\u4e00-\u9fff]/.test(ch));
+ if(han.length){for(const ch of han)add(BY[ch]);for(const ch of han){const e=BY[ch];if(!e)continue;for(const x of (pyIndex()[nopy(e.p)]||[]).sort((a,b)=>a.g-b.g))add(x)}}
+ else{const k=q.toLowerCase().replace(/v/g,'ü').replace(/[^a-zü]/g,'');if(!k)return [];if(BY[k]&&BY[k].letter)add(BY[k]);const idx=pyIndex();const keys=Object.keys(idx).filter(x=>x===k).concat(Object.keys(idx).filter(x=>x!==k&&x.startsWith(k)).sort());for(const key of keys)for(const x of idx[key].sort((a,b)=>a.g-b.g)){add(x);if(out.length>=24)break}}
+ return out.slice(0,24)}
 const myClass=()=>{const code=S.cls&&S.cls[S.cur];const info=code&&S.clsInfo&&S.clsInfo[code];return info?{code,name:info.name,assign:info.assign||{}}:null};
 async function joinFamily(code){try{const r=await fetch(SYNC_API+'/f/'+code);if(r.status===404)return '没有这个家庭码，再检查一下';if(!r.ok)throw 0;const j=await r.json();S.fam=code;mergeRemote(j.data);S.syncAt=Date.now();rawSave();syncNow();return true}catch(_){return '连不上云端，请检查网络后再试'}}
 window.addEventListener('online',scheduleSync);
@@ -568,7 +578,9 @@ function grades(gid){
  const got=items.filter(e=>starsOf(e.c)).length;
  const pyHtml=PINYIN.groups.map(g=>{const its=L.filter(e=>e.pg===g.name);return its.length?`<h2>${g.name}<small class="muted">${g.lesson||''}</small></h2><div class="tiles">${its.map(tile).join('')}</div>`:''}).join('');
  const hw=(()=>{const C=myClass();const A=C&&C.assign.chars||[];if(!C||!A.length)return '';const done=A.filter(c=>starsOf(c)).length;return `<div class="hw"><div class="hwh">🏫 ${esc(C.name)} · 老师留的字 <b>${done}/${A.length}</b>${done>=A.length?' 全部完成 🎉':''}</div>${C.assign.note?`<p class="muted" style="margin:4px 0">${esc(C.assign.note)}</p>`:''}<div class="hwcs">${A.map(c=>BY[c]?`<button class="hwc s${starsOf(c)}" data-w="${esc(c)}" aria-label="写 ${esc(c)}">${esc(c)}<small>${'★'.repeat(starsOf(c))||'·'}</small></button>`:`<span class="hwc s0" title="这个字字库里还没有">${esc(c)}</span>`).join('')}</div></div>`})();
- $('#main').innerHTML=hw+`<div class="viewsw"><button data-view="grade" aria-pressed="${!hsk}">按年级</button><button data-view="hsk" aria-pressed="${hsk}">按 HSK</button><button class="big purple" id="daily" style="margin-left:auto;font-size:17px;padding:6px 14px">🎯 今日闯关</button></div>`+head+`
+ const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+ const srch=`<div class="srch"><input id="q" placeholder="找字：打一个字或拼音${SR?'，或者按话筒说出来':''}" autocomplete="off" aria-label="找字" value="${esc(S.q||'')}">${SR?'<button id="mic" title="说出要找的字" aria-label="语音找字" aria-pressed="false">🎤</button>':''}<button class="x" id="qx" title="清空" aria-label="清空">✕</button></div><div id="found"></div>`;
+ $('#main').innerHTML=hw+srch+`<div class="viewsw"><button data-view="grade" aria-pressed="${!hsk}">按年级</button><button data-view="hsk" aria-pressed="${hsk}">按 HSK</button><button class="big purple" id="daily" style="margin-left:auto;font-size:17px;padding:6px 14px">🎯 今日闯关</button></div>`+head+`
  <p class="muted">${sub}。已经召唤 ${got} / ${items.length} 只字灵。写得越好，字灵进化得越厉害：1 星小字灵，2 星字灵，3 星字灵大王。</p>
  ${S.tf&&TYPES[S.tf]?`<button class="chip" id="tfclear">只看 ${TYPES[S.tf].n} ✕</button>`:''}${S.tfb&&TRIBE_BY_ID[S.tfb]?`<button class="chip" id="tfbclear">只看 ${TRIBE_BY_ID[S.tfb].emoji} ${TRIBE_BY_ID[S.tfb].name} ✕</button>`:''}
  ${pyHtml}
@@ -577,6 +589,13 @@ function grades(gid){
  $('#daily').onclick=()=>daily(items);
  document.querySelectorAll('[data-g]').forEach(b=>b.onclick=()=>grades(+b.dataset.g));
  document.querySelectorAll('[data-hsk]').forEach(b=>b.onclick=()=>{S.hsk=b.dataset.hsk;save();grades()});
+ const showFound=()=>{const q=$('#q').value;S.q=q;rawSave();const box=$('#found');const r=findChars(q);if(!q.trim()){box.innerHTML='';return}
+  box.innerHTML=`<div class="found"><h2>${r.length?`找到 ${r.length} 个字，点一个开始写`:'没找到这个字，换个说法试试'}</h2>${r.length?`<div class="tiles">${r.map(tile).join('')}</div>`:''}</div>`;
+  box.querySelectorAll('[data-w]').forEach(b=>b.onclick=()=>go('write',b.dataset.w))};
+ $('#q').oninput=showFound;$('#qx').onclick=()=>{$('#q').value='';showFound();$('#q').focus()};if(S.q)showFound();
+ if($('#mic')){$('#mic').onclick=()=>{try{const rec=new SR();rec.lang='zh-CN';rec.interimResults=false;rec.maxAlternatives=3;const b=$('#mic');b.setAttribute('aria-pressed','true');$('#q').placeholder='请说…';
+   rec.onresult=ev=>{const alts=[...ev.results[0]].map(a=>a.transcript).join('');$('#q').value=alts.replace(/[。，！？\s]/g,'').slice(0,12);showFound()};
+   rec.onerror=()=>{$('#q').placeholder='没听清，再试一次'};rec.onend=()=>{b.setAttribute('aria-pressed','false')};rec.start()}catch(_){}}}
  if($('#tfclear'))$('#tfclear').onclick=()=>{S.tf=null;save();grades()};
  if($('#tfbclear'))$('#tfbclear').onclick=()=>{S.tfb=null;save();grades()};
  document.querySelectorAll('[data-w]').forEach(b=>b.onclick=()=>go('write',b.dataset.w));
