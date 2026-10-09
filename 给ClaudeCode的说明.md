@@ -28,7 +28,7 @@
 
 - Fish Audio 免费模型 `s2.1-pro-free`（官方博客：免费到 2026-11-30）。密钥只通过环境变量 `FISH_API_KEY` 传入，不要写进仓库。
 - 成人声「温柔动听女声」`faccba1a8ac54016bcfc02761285e67f`；童声「童声·讲故事」`8ab237c79d36417e84030674b8ab4cfd`。
-- 童声是微软 Xiaoyou（美人鱼课动画（识字儿歌）旁白所用的 Azure `zh-CN-XiaoyouNeural`）的克隆：参考音频取自 `D:\美人鱼课\绘本_十二生肖\pilot_鼠\audio_zh\00-04.mp3`，用 `client.voices.create()` 建成私有模型 `27bbdacb95f6449a806dd4a9ac85aba9`（在用户的 Fish 账号下）。Edge 免费端点已经下架 Xiaoyou（2026-10 只剩 6 个 zh-CN 音色），所以不能再用 edge-tts 生成新的参考音频。不要克隆真实学生的录音。
+- 童声是微软 Xiaoyou（美人鱼课绘本旁白所用的 Azure `zh-CN-XiaoyouNeural`）的克隆：参考音频取自 `D:\美人鱼课\绘本_十二生肖\pilot_鼠\audio_zh\00-04.mp3`，用 `client.voices.create()` 建成私有模型 `27bbdacb95f6449a806dd4a9ac85aba9`（在用户的 Fish 账号下）。Edge 免费端点已经下架 Xiaoyou（2026-10 只剩 6 个 zh-CN 音色），所以不能再用 edge-tts 生成新的参考音频。不要克隆真实学生的录音。
 - 背景音乐：`music/` 下是 Kevin MacLeod 的 CC BY 4.0 曲目（压成 64 kbps 单声道），`music/CREDITS.txt` 是署名。网页里 `playMusic()` 按视图选曲（写字页用安静的 Carefree），`duck()` 在人声播放时压低到 0.05；另有 `startGen()` 用 Web Audio 即兴生成大调小曲作为第二选项。
 - 模型偶尔会把短句读成十几秒胡话或漏字，所以每次生成后用 `qa_audio.py` 过一遍，`gen_audio.py --redo` 重做可疑条目。
 
