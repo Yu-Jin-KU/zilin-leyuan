@@ -12,7 +12,8 @@
    PUT  /c/:code/members {fam, players}              学生设备把加入了这个班的名字和进度汇总上来（每个字取最高星）
    GET  /c/:code/report?key=K   -> {name, code, assign, members:[{id,name,prog,updated}]}
    PUT  /c/:code/assign?key=K {chars, note}          老师布置本周生字
-   DELETE /c/:code/m/:id?key=K                       老师把一个名字从班里移除 */
+   DELETE /c/:code/m/:id?key=K                       老师把一个名字从班里移除
+   GET  /stats                  -> 全站汇总：家庭数、1/7/30 天活跃、班级数、班里学生数（只有数字） */
 const ALPH = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 const CORS = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET,PUT,POST,DELETE,OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type', 'Access-Control-Max-Age': '86400' };
 const json = (o, s = 200) => new Response(JSON.stringify(o), { status: s, headers: { ...CORS, 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } });
@@ -142,6 +143,14 @@ export default {
     if (req.method === 'OPTIONS') return new Response(null, { headers: CORS });
     const url = new URL(req.url);
     try {
+      if (url.pathname === '/stats' && req.method === 'GET') {   // 只给汇总数字，不含任何个人信息
+        const now = Date.now(), d1 = now - 864e5, d7 = now - 7 * 864e5, d30 = now - 30 * 864e5;
+        const f = await env.DB.prepare('SELECT COUNT(*) n, SUM(updated>?1) d1, SUM(updated>?2) d7, SUM(updated>?3) d30, SUM(created>?2) new7 FROM fam').bind(d1, d7, d30).first();
+        const c = await env.DB.prepare('SELECT COUNT(*) n FROM cls').first();
+        const m = await env.DB.prepare('SELECT COUNT(*) n, SUM(updated>?1) d7 FROM mem').bind(d7).first();
+        return new Response(JSON.stringify({ families: f.n, active_1d: f.d1 || 0, active_7d: f.d7 || 0, active_30d: f.d30 || 0, new_7d: f.new7 || 0, classes: c.n, students_in_classes: m.n, students_active_7d: m.d7 || 0 }),
+          { headers: { ...CORS, 'content-type': 'application/json; charset=utf-8', 'cache-control': 'public, max-age=300' } });
+      }
       if (url.pathname.startsWith('/c/')) return await classes(req, env, url);
       return await family(req, env, url);
     } catch (e) { return json({ error: 'server', detail: String(e && e.message || e).slice(0, 200) }, 500); }

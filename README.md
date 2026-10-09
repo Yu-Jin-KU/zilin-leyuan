@@ -59,7 +59,7 @@ python tools/qa_audio.py                  # 用 Whisper 听一遍，列出可疑
 - 笔顺数据：[hanzi-writer-data](https://github.com/chanind/hanzi-writer-data)，源自 Make Me a Hanzi，Arphic 公共许可（见 `data/LICENSE-ARPHIC.txt`）
 - HSK 3.0 字表：[elkmovie/hsk30](https://github.com/elkmovie/hsk30)（MIT），依据教育部《国际中文教育中文水平等级标准》
 - 英文释义：[CC-CEDICT](https://cc-cedict.org)（CC BY-SA 4.0）
-- 字体：站酷快乐体、Andika（SIL Open Font License，见 `fonts/`）
+- 字体：站酷快乐体（界面）、霞鹜文楷 LXGW WenKai（字卡、字块上的汉字，楷体字形）、Andika（拼音），都是 SIL Open Font License，见 `fonts/`
 - 语音：由 [Fish Audio](https://fish.audio) 生成
 - 背景音乐：Kevin MacLeod（[incompetech.com](https://incompetech.com)），CC BY 4.0，曲目见 `music/CREDITS.txt`
 - 许可：代码为 PolyForm Noncommercial 1.0.0，字义文字、字灵形象、语音等内容为 CC BY-NC-SA 4.0（详见 `LICENSE`）。老师和家长可以自由分享、打印、改编用于教学；商业使用请先联系作者。网站本身对孩子、家长和老师永久免费
