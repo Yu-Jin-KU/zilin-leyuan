@@ -9,7 +9,7 @@ rows = []
 for ln in (ROOT / "tools" / "meaning.tsv").read_text(encoding="utf-8").splitlines():
     if not ln.strip() or ln.startswith("#"): continue
     c, m, w, e = (ln.rstrip("\n").split("\t") + ["", "", ""])[:4]
-    assert len(w.split()) == 2 and m[-1] in "。？", (c, m, w)
+    assert len(w.split()) == 2 and m[-1] in "。？！", (c, m, w)
     rows.append((c, m, w.split(), e))
 assert len({r[0] for r in rows}) == len(rows), "有重复的字"
 (ROOT / "data" / "meaning.json").write_text(json.dumps({c: [m, w] for c, m, w, e in rows}, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
