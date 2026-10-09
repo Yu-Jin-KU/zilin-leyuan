@@ -623,7 +623,7 @@ function seqFor(e){if(S.view==='hsk'&&!e.letter){const lv=S.hsk||'1';const seq=[
  if(S.tfb){const seq=GRADES[e.g].items.filter(x=>x.tribe.id===S.tfb);if(seq.includes(e))return {seq,label:GRADES[e.g].name+' · '+TRIBE_BY_ID[S.tfb].name}}
  return {seq:GRADES[e.g].items,label:GRADES[e.g].name}}
 function write(c){
- const e=BY[c],G=GRADES[e.g],{seq,label}=seqFor(e),idx=seq.indexOf(e),next=seq[idx+1];
+ const e=BY[c],G=GRADES[e.g],{seq,label}=seqFor(e),idx=seq.indexOf(e),next=seq[idx+1],prev=idx>0?seq[idx-1]:null;
  const size=Math.max(260,Math.min(window.innerWidth-48,window.innerHeight-200,460)),pad=e.letter?10:22;
  const hl=e.letter?esc(e.l):esc(e.l).split(e.c).join(`<b>${e.c}</b>`);
  $('#main').innerHTML=`<button class="big ghost" data-go="grades" style="font-size:18px;padding:8px 14px;margin-bottom:12px">← ${label}</button>
@@ -638,7 +638,7 @@ function write(c){
   <p class="poem">${hl}</p>${e.s?`<div class="src">${esc(e.s)}</div>`:''}${e.letter&&(PINYIN.items[e.c]||{}).sent?`<p class="poem" style="font-size:20px;margin-top:4px">👂 ${(()=>{const it=PINYIN.items[e.c];return esc(it.sent).split(it.word).join(`<b>${esc(it.word)}</b>`)})()}</p>`:''}
   ${MEAN[e.c]?`<div class="mean" id="mean" hidden>${EMOJI[e.c]?`<div class="em">${EMOJI[e.c]}</div>`:''}<div><p>${esc(MEAN[e.c][0])}</p><div class="w">${MEAN[e.c][1].map(w=>`<b>${esc(w)}</b>`).join('')}</div></div></div>`:''}
   <div class="ctrls"><button class="big ghost" id="bSay">🔊 听一听</button>${MEAN[e.c]?`<button class="big ghost" id="bMean">🔍 什么意思</button>`:''}<button class="big" id="bAnim">👀 看笔顺</button><button class="big green" id="bQuiz">✏️ 开始写</button><button class="big purple" id="bQuest">🎯 闯关</button><button class="big ghost" id="bDraw">🎨 画一画</button></div>
-  ${next?`<div class="ctrls"><button class="big ghost" id="bNext" style="font-size:18px">下一个：${esc(next.c)}</button></div>`:''}
+  ${(prev||next)?`<div class="ctrls">${prev?`<button class="big ghost" id="bPrev" style="font-size:18px">上一个：${esc(prev.c)}</button>`:''}${next?`<button class="big ghost" id="bNext" style="font-size:18px">下一个：${esc(next.c)}</button>`:''}</div>`:''}
  </div></div>`;
  writer=HanziWriter.create('hw',c,{width:size,height:size,padding:pad,showOutline:true,showCharacter:false,strokeColor:TYPES[e.t].d,outlineColor:'#D9E1EE',drawingColor:'#2F6BFF',drawingWidth:e.letter?44:40,drawingFadeDuration:220,highlightColor:'#FF3B7A',strokeHighlightSpeed:1.3,radicalColor:null,strokeAnimationSpeed:.9,delayBetweenStrokes:350,
   charDataLoader:loadChar,onLoadCharDataError:()=>{$('#msg').textContent='这个字的笔顺没有加载出来，请检查网络后再试'}});
@@ -651,6 +651,7 @@ function write(c){
  $('#bQuiz').onclick=()=>startQuiz(e);
  $('#bQuest').onclick=()=>quest([e]);
  $('#bDraw').onclick=()=>go('draw',e.c);
+ if($('#bPrev'))$('#bPrev').onclick=()=>go('write',prev.c);
  if(next)$('#bNext').onclick=()=>go('write',next.c);
  autoT=setTimeout(()=>{try{writer.animateCharacter()}catch(_){}},400);
 }
