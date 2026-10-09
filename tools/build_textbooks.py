@@ -8,6 +8,8 @@ sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
 ROOT = Path(__file__).resolve().parent.parent
 src = ROOT / "tools" / "textbooks"
 ov = json.loads((src / "overrides.json").read_text(encoding="utf-8"))
+html = (ROOT / "index.html").read_text(encoding="utf-8")
+LIB = set(r[0] for r in json.loads(re.search(r"^const DATA=(\[\[.*?\]\]);", html, re.M).group(1)))   # 字库里有的字
 out = {"中文": {}}
 for f in sorted(src.glob("zw*.lessons.json")):
     stem = f.stem.split(".")[0]; vol = str(int(stem[2:]))
@@ -22,6 +24,8 @@ for f in sorted(src.glob("zw*.lessons.json")):
         for ch in o.get("add", ""):
             if ch not in lessons[k]: lessons[k].append(ch)
             if ch in extra: extra.remove(ch)
+    lessons = {k: [c for c in v if c in LIB] for k, v in lessons.items()}   # 去掉繁体和 OCR 认出的怪字
+    extra = [c for c in extra if c in LIB]
     out["中文"][vol] = {"lessons": dict(sorted(lessons.items(), key=lambda kv: int(kv[0]))), "extra": extra}
     print(f"《中文》第{vol}册：{len(lessons)} 课，{sum(len(v) for v in lessons.values())} 字，未归课 {len(extra)}")
 (ROOT / "data" / "textbooks.json").write_text(json.dumps(out, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")

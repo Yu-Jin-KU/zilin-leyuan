@@ -41,8 +41,14 @@ def parse(stem):
                 n = int(l['t'])
                 if 1 <= n <= 15 and n not in starts: starts[n] = i
     lessons = sorted(starts.items())
-    tbl = [i for i, p in enumerate(pages) if i > N // 2 and any('生字表' in l['t'].replace(' ', '') and l['h'] >= 25 for l in p)]
-    tbl_pages = sorted(set(tbl + [i + 1 for i in tbl if i + 1 < N]))
+    # 本册的音序生字表是后面第一个「生字表」标题页，到「生词表」标题页为止（后面还会有前几册的累计表，不能要）
+    heading = lambda p, word: any(word in l['t'].replace(' ', '') and l['h'] >= 25 for l in p)
+    tbl = [i for i, p in enumerate(pages) if i > N // 2 and heading(p, '生字表')]
+    tbl_pages = []
+    if tbl:
+        i = tbl[0]
+        while i < N and len(tbl_pages) < 4 and not (i > tbl[0] and (heading(pages[i], '生词表') or heading(pages[i], '生字表'))):
+            tbl_pages.append(i); i += 1
     book_set, pairs = [], {}
     for i in tbl_pages:
         for l in pages[i]:
@@ -102,7 +108,7 @@ def parse(stem):
                 near = [c for (x2, c) in chars if abs(x2 - cx) < 30]
                 ok = any(tok in PY.get(c, ()) or any(_sim(tok, p) for p in PY.get(c, ())) for c in near)
                 if not ok: pending_py.append(tok)
-        SIMPLE = '一二三十'   # OCR 常常漏掉的极简字，允许不在生字表里也补回
+        SIMPLE = '一二三十' if stem.endswith('01') else ''   # 第一册里 OCR 常漏掉的极简字，允许不在生字表里也补回；后面的册不需要
         for tok in pending_py:
             if len(tok) < 2: continue
             variants = [tok, tok.replace('d', 'a'), tok.replace('o', 'a')]
