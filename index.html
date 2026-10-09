@@ -43,6 +43,7 @@ h1{font-size:34px;margin:8px 0 4px;font-weight:400}h2{font-size:26px;margin:22px
 .muted{color:var(--soft)}
 .fam{margin-top:22px;background:#fff;border-radius:16px;padding:12px 16px;box-shadow:0 2px 8px rgba(0,0,0,.06)}.fam summary{cursor:pointer;font-size:18px}.fam b{font-family:ui-monospace,Consolas,monospace;letter-spacing:2px;font-size:20px}.famin{margin-top:10px}#famqr{width:150px;margin:6px 0}#famqr svg{width:150px;height:150px;display:block}.famrow{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}.famrow button{font-size:17px;padding:8px 14px;border-radius:14px;background:var(--bg);border:3px solid var(--line)}
 .mean{background:#fff;border-radius:16px;padding:12px 16px;margin-top:10px;display:flex;gap:14px;align-items:center;box-shadow:0 2px 8px rgba(0,0,0,.06)}.mean[hidden]{display:none}.mean .em{font-size:54px;line-height:1;flex:0 0 auto}.mean p{margin:0;font-size:19px;line-height:1.5}.mean .w{color:var(--soft);font-size:17px;margin-top:4px}.mean .w b{color:var(--ink);margin-right:12px;font-weight:600}
+.hw{background:#fff;border:3px solid var(--sun);border-radius:18px;padding:12px 16px;margin:4px 0 14px}.hwh{font-size:19px}.hwcs{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.hwc{font:inherit;font-size:26px;min-width:52px;padding:4px 8px;border-radius:12px;background:#f1f6fb;border:2px solid var(--line);display:inline-flex;flex-direction:column;align-items:center;line-height:1.1;color:var(--ink)}.hwc small{font-size:12px;color:#c9a200}.hwc.s3{background:#d7f5df;border-color:#8fd9a3}.hwc.s1,.hwc.s2{background:#fff7c2}.pg label{font-size:16px;margin-right:10px}
 .parentbtn{margin-top:18px;font-size:17px;padding:10px 16px;border-radius:14px;background:#fff;border:3px solid var(--line);text-align:left}
 .pg{text-align:left;background:var(--paper);color:var(--ink);border-radius:18px;padding:16px 18px;max-width:460px;margin:0 auto}.pg h2{margin:0 0 4px;font-size:22px}.pg ol{padding-left:0;margin:0;list-style:none}.pg li{margin:14px 0;padding-top:12px;border-top:2px dashed var(--line)}.pg li b.t{display:block;font-size:19px;margin-bottom:4px}.pg .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}.pg button,.pg select{font:inherit;font-size:16px;padding:8px 12px;border-radius:12px;background:var(--bg);border:3px solid var(--line);color:var(--ink)}.pg button.green{background:var(--grass);color:#fff;border-color:transparent}.pg .seg button[aria-pressed="true"]{background:var(--sun);color:#3a2a00}.pg .muted{font-size:14px;margin:6px 0 0}.pg .ok{color:#2a8a4a}.pg code{font-family:ui-monospace,Consolas,monospace;letter-spacing:2px;font-size:19px}
 #rest{position:fixed;inset:0;background:#0f1430;color:#fff;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;z-index:50;padding:24px}#rest.open{display:flex}#rest svg{width:170px;height:170px}#rest h1{font-size:28px;margin:10px 0 4px}#rest p{margin:4px 0;font-size:18px}#rest .cd{font-family:ui-monospace,Consolas,monospace;font-size:46px;margin:12px 0}#rest .gate{margin-top:28px;font-size:15px;color:#aab}#rest .gate button{font-size:15px;padding:6px 12px;border-radius:10px;background:#2a3160;color:#fff}#rest input{font:inherit;font-size:20px;width:80px;text-align:center;border-radius:10px;padding:5px;border:0}
@@ -371,8 +372,15 @@ async function syncNow(leaving){if(syncing||!navigator.onLine||!Object.keys(S.pl
  try{if(!S.fam){const r=await fetch(SYNC_API+'/new',{method:'POST'});if(!r.ok)throw 0;S.fam=(await r.json()).code;rawSave()}
   const r=await fetch(SYNC_API+'/f/'+S.fam,{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify(slimPlayers()),keepalive:!!leaving});
   if(r.status===404){S.fam=null;rawSave();syncing=false;return syncNow()}
-  if(!r.ok)throw 0;const j=await r.json();mergeRemote(j.data);S.syncAt=Date.now();rawSave();if($('#fammsg'))famRefresh()}catch(_){}
+  if(!r.ok)throw 0;const j=await r.json();mergeRemote(j.data);S.syncAt=Date.now();rawSave();if($('#fammsg'))famRefresh();await syncClasses(leaving)}catch(_){}
  syncing=false}
+/* 教师版：加入了班级的名字，把进度也汇总到班里（每个班一次请求），顺便拿回老师布置的本周生字 */
+async function syncClasses(leaving){const byCls={};for(const [pid,code] of Object.entries(S.cls||{})){const p=S.players[pid];if(p)(byCls[code]=byCls[code]||{})[pid]={name:p.name,prog:p.prog||{}}}
+ for(const [code,players] of Object.entries(byCls)){try{const r=await fetch(SYNC_API+'/c/'+code+'/members',{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify({fam:S.fam,players}),keepalive:!!leaving});
+  if(r.status===404){for(const pid of Object.keys(players))delete S.cls[pid];if(S.clsInfo)delete S.clsInfo[code]}else if(r.ok){const j=await r.json();S.clsInfo=S.clsInfo||{};S.clsInfo[code]={name:j.name,assign:j.assign||{}}}}catch(_){}}
+ rawSave()}
+async function joinClass(code,ids){try{const r=await fetch(SYNC_API+'/c/'+code);if(r.status===404)return '没有这个班级码，再检查一下';if(!r.ok)throw 0;const j=await r.json();S.cls=S.cls||{};S.clsInfo=S.clsInfo||{};S.clsInfo[code]={name:j.name,assign:j.assign||{}};for(const id of ids)S.cls[id]=code;rawSave();syncNow();scheduleSync();return true}catch(_){return '连不上云端，请检查网络后再试'}}
+const myClass=()=>{const code=S.cls&&S.cls[S.cur];const info=code&&S.clsInfo&&S.clsInfo[code];return info?{code,name:info.name,assign:info.assign||{}}:null};
 async function joinFamily(code){try{const r=await fetch(SYNC_API+'/f/'+code);if(r.status===404)return '没有这个家庭码，再检查一下';if(!r.ok)throw 0;const j=await r.json();S.fam=code;mergeRemote(j.data);S.syncAt=Date.now();rawSave();syncNow();return true}catch(_){return '连不上云端，请检查网络后再试'}}
 window.addEventListener('online',scheduleSync);
 const me=()=>S.cur&&S.players[S.cur];
@@ -505,17 +513,21 @@ async function pgDownload(){const g=+$('#pgGrade').value,el=$('#pgDlMsg'),btn=$(
  const q=urls.slice();const work=async()=>{while(q.length){const u=q.shift();try{if(!(await caches.match(u))){const r=await fetch(u);if(!r.ok)throw 0;if(!navigator.serviceWorker.controller&&cacheName){const c=await caches.open(cacheName);await c.put(u,r.clone())}}}catch(_){fail++}done++;if(done%10===0||done===urls.length)el.textContent=`正在下载 ${done}/${urls.length}`}};
  await Promise.all([0,1,2,3,4,5].map(work));btn.disabled=false;
  el.textContent=fail?`存好了 ${urls.length-fail} 个文件，还有 ${fail} 个没下来（网络不稳），再点一次只会补缺的`:'✅ 下载好了，这个级别的字没网也能写（背景音乐和提示音也存好了）'}
-function parentGuide(){
- const lim=limitMin();
+function parentGuide(opt){
+ const lim=limitMin();const pre=opt&&typeof opt.cls==='string'?opt.cls:'';const names=Object.entries(S.players);
+ const joined=Object.entries(S.cls||{}).filter(([pid])=>S.players[pid]).map(([pid,code])=>`<div class="row">✅ ${esc(S.players[pid].name)} 在「${esc((S.clsInfo&&S.clsInfo[code]&&S.clsInfo[code].name)||famFmt(code))}」<button data-leave="${pid}">退出</button></div>`).join('');
  $('#mbox').innerHTML=`<div class="pg"><h2>👨‍👩‍👧 家长看这里</h2><p class="muted">三步设置好，剩下的孩子自己玩。</p><ol>
  <li><b class="t">① 加到主屏幕</b>像 App 一样全屏打开，桌面上有图标，孩子点不到浏览器里别的东西。<div class="row" id="pgInstall"></div></li>
  <li><b class="t">② 没网也能玩</b>把要练的级别先存到这台设备上，以后坐车、出门没网也能写。<div class="row"><select id="pgGrade" aria-label="选级别">${GRADES.map(g=>`<option value="${g.id}">${g.name}（${g.items.length} 个，约 ${offlineMB(g.id)} MB）</option>`).join('')}</select><button class="green" id="pgDl">下载到这台设备</button></div><p class="muted" id="pgDlMsg"></p></li>
  <li><b class="t">③ 进度不会丢</b>${S.fam?`进度自动备份到云端，钥匙就是这个家庭码：<code>${famFmt(S.fam)}</code>。请存到不会丢的地方，微信文件传输助手、手机备忘录、拍张照都行。换设备时点那个链接或输入家庭码，所有人的进度都回来。<div class="row"><button id="pgShare">📤 发给自己</button><button id="pgCopy">📋 复制</button></div><p class="muted" id="pgFamMsg"></p>`:'加了名字并联网以后会自动生成一个家庭码做云端备份，到时候记一下就行。'}<p class="muted">清理浏览器数据或换平板之前，联网打开一次，选人页看到「上次备份」是刚刚，就放心。</p></li>
+ <li><b class="t">🏫 加入班级</b>${joined}${names.length?`老师发了班级码的话填在这里，勾上孩子的名字。老师就能看到孩子写了哪些字，还能布置本周生字。<div class="row"><input id="pgCls" maxlength="9" placeholder="班级码，比如 AB2C-D3EF" autocapitalize="characters" autocomplete="off" value="${esc(pre)}" style="font:inherit;font-size:18px;padding:8px 12px;border-radius:12px;border:3px solid var(--line);background:var(--paper);color:var(--ink)"></div><div class="row" id="pgClsWho">${names.map(([id,p])=>`<label><input type="checkbox" value="${id}" ${(names.length===1||pre)?'checked':''}> ${esc(p.name)}</label>`).join('')}</div><div class="row"><button class="green" id="pgJoin">加入班级</button></div>`:'先在上面加一个名字，再加入班级。'}<p class="muted" id="pgClsMsg"></p></li>
  <li><b class="t">⏰ 每次玩多久</b>到时间会出现休息画面，休息 10 分钟才能继续；家长答一道乘法题可以提前解锁。<div class="row seg" id="pgLimit">${[[0,'不限'],[15,'15 分钟'],[20,'20 分钟'],[30,'30 分钟']].map(([v,t])=>`<button data-lim="${v}" aria-pressed="${v===lim}">${t}</button>`).join('')}</div></li>
- </ol><div class="row" style="justify-content:center;margin-top:16px"><button class="big" id="mClose">好了</button></div></div>`;
+ </ol><p class="muted" style="margin-top:14px">老师想看全班进度、布置生字？用 <a href="teacher.html">老师版</a>。</p><div class="row" style="justify-content:center;margin-top:10px"><button class="big" id="mClose">好了</button></div></div>`;
  $('#modal').classList.add('open');pgInstallRow();
  $('#pgGrade').value=String(S.grade||0);$('#pgGrade').onchange=pgOfflineStatus;pgOfflineStatus();$('#pgDl').onclick=pgDownload;
  if($('#pgShare')){$('#pgShare').onclick=()=>famShare($('#pgFamMsg'));$('#pgCopy').onclick=()=>famCopy($('#pgFamMsg'))}
+ if($('#pgJoin'))$('#pgJoin').onclick=async()=>{const code=($('#pgCls').value||'').toUpperCase().replace(/[^A-Z2-9]/g,'');const ids=[...document.querySelectorAll('#pgClsWho input:checked')].map(i=>i.value);if(code.length!==8)return $('#pgClsMsg').textContent='班级码是 8 个字母和数字';if(!ids.length)return $('#pgClsMsg').textContent='勾上要加入的名字';$('#pgClsMsg').textContent='正在加入…';const r=await joinClass(code,ids);if(r===true)parentGuide();else $('#pgClsMsg').textContent=r};
+ document.querySelectorAll('[data-leave]').forEach(b=>b.onclick=()=>{delete S.cls[b.dataset.leave];save();parentGuide()});
  document.querySelectorAll('#pgLimit button').forEach(b=>b.onclick=()=>{S.limit=+b.dataset.lim;S.playMs=0;save();document.querySelectorAll('#pgLimit button').forEach(x=>x.setAttribute('aria-pressed',x===b))});
  $('#mClose').onclick=closeModal;
 }
@@ -555,7 +567,8 @@ function grades(gid){
  const L=items.filter(e=>e.letter),H=items.filter(e=>!e.letter);
  const got=items.filter(e=>starsOf(e.c)).length;
  const pyHtml=PINYIN.groups.map(g=>{const its=L.filter(e=>e.pg===g.name);return its.length?`<h2>${g.name}<small class="muted">${g.lesson||''}</small></h2><div class="tiles">${its.map(tile).join('')}</div>`:''}).join('');
- $('#main').innerHTML=`<div class="viewsw"><button data-view="grade" aria-pressed="${!hsk}">按年级</button><button data-view="hsk" aria-pressed="${hsk}">按 HSK</button><button class="big purple" id="daily" style="margin-left:auto;font-size:17px;padding:6px 14px">🎯 今日闯关</button></div>`+head+`
+ const hw=(()=>{const C=myClass();const A=C&&C.assign.chars||[];if(!C||!A.length)return '';const done=A.filter(c=>starsOf(c)).length;return `<div class="hw"><div class="hwh">🏫 ${esc(C.name)} · 老师留的字 <b>${done}/${A.length}</b>${done>=A.length?' 全部完成 🎉':''}</div>${C.assign.note?`<p class="muted" style="margin:4px 0">${esc(C.assign.note)}</p>`:''}<div class="hwcs">${A.map(c=>BY[c]?`<button class="hwc s${starsOf(c)}" data-w="${esc(c)}" aria-label="写 ${esc(c)}">${esc(c)}<small>${'★'.repeat(starsOf(c))||'·'}</small></button>`:`<span class="hwc s0" title="这个字字库里还没有">${esc(c)}</span>`).join('')}</div></div>`})();
+ $('#main').innerHTML=hw+`<div class="viewsw"><button data-view="grade" aria-pressed="${!hsk}">按年级</button><button data-view="hsk" aria-pressed="${hsk}">按 HSK</button><button class="big purple" id="daily" style="margin-left:auto;font-size:17px;padding:6px 14px">🎯 今日闯关</button></div>`+head+`
  <p class="muted">${sub}。已经召唤 ${got} / ${items.length} 只字灵。写得越好，字灵进化得越厉害：1 星小字灵，2 星字灵，3 星字灵大王。</p>
  ${S.tf&&TYPES[S.tf]?`<button class="chip" id="tfclear">只看 ${TYPES[S.tf].n} ✕</button>`:''}${S.tfb&&TRIBE_BY_ID[S.tfb]?`<button class="chip" id="tfbclear">只看 ${TRIBE_BY_ID[S.tfb].emoji} ${TRIBE_BY_ID[S.tfb].name} ✕</button>`:''}
  ${pyHtml}
@@ -865,8 +878,10 @@ if(typeof HanziWriter==='undefined'){$('#main').innerHTML='<h1>写字工具没�
 else if(/[?&]print=(\d+)/.test(location.search)){/* 导出打印版 PDF：index.html?print=300 → 前 300 号字卡（三星）铺在 #print 里，不弹打印框，由无头 Chrome 打印 */
  const N=+RegExp.$1;const list=ALL.filter(e=>e.num<=N).sort((a,b)=>a.num-b.num);
  $('#print').innerHTML=list.map((e,i)=>`<div class="pcard">${charCardSVG(e,3,{uid:'p'+i})}</div>`).join('');document.body.classList.add('printing');document.title='字灵卡 '+list.length+' 张'}
-else{const famParam=new URLSearchParams(location.search).get('fam');
+else{const P=new URLSearchParams(location.search);const famParam=P.get('fam'),clsParam=P.get('cls'),cardsParam=P.get('cards');
  if(SYNC_API&&famParam&&/^[A-Z2-9]{8}$/i.test(famParam)){history.replaceState(null,'',location.pathname);joinFamily(famParam.toUpperCase()).then(r=>{go('players');if(r!==true&&$('#fammsg'))$('#fammsg').textContent=r})}
+ else if(SYNC_API&&clsParam&&/^[A-Z2-9]{8}$/i.test(clsParam)){history.replaceState(null,'',location.pathname);go('players');parentGuide({cls:clsParam.toUpperCase()});scheduleSync()}/* 老师发的加入链接 */
+ else if(cardsParam){history.replaceState(null,'',location.pathname);go(me()?'grades':'players');const list=[...new Set([...cardsParam.replace(/[a-zü]+/g,'')].concat(cardsParam.match(/[a-zü]+/g)||[]))].map(c=>BY[c]).filter(Boolean);if(list.length)setTimeout(()=>printCards(list.map(e=>[e,3])),600)}/* 老师版：打印这些字的字卡 */
  else{go(me()?'grades':'players');scheduleSync()}
  tickPlay()}
 </script>

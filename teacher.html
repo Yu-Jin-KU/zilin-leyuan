@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>字灵乐园 · 老师版</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<style>
+:root{--bg:#E8F6FF;--paper:#fff;--ink:#27304a;--soft:#6b7590;--line:#cfe0ef;--sun:#FFD84D;--grass:#3FBF6A;--berry:#FF6B9A;--sky:#39A6F2}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,"PingFang SC","Microsoft YaHei","Noto Sans CJK SC",sans-serif;font-size:17px;line-height:1.55}
+header{display:flex;align-items:center;gap:12px;padding:12px 20px;background:var(--paper);box-shadow:0 2px 8px rgba(0,0,0,.06);position:sticky;top:0;z-index:5}
+header h1{font-size:20px;margin:0}header a{color:var(--soft);text-decoration:none;font-size:15px;margin-left:auto}
+main{max-width:1040px;margin:0 auto;padding:20px 16px 60px}
+.card{background:var(--paper);border-radius:18px;padding:18px 20px;margin-bottom:18px;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.card h2{margin:0 0 10px;font-size:20px}.muted{color:var(--soft);font-size:15px}
+input,textarea,select,button{font:inherit}
+input[type=text],textarea,select{padding:9px 12px;border-radius:12px;border:2px solid var(--line);background:#fbfdff;color:var(--ink);min-width:0}
+textarea{width:100%;min-height:70px;font-size:22px;letter-spacing:4px}
+button{cursor:pointer;border:0;border-radius:12px;padding:9px 16px;background:var(--line);color:var(--ink)}
+button.green{background:var(--grass);color:#fff}button.blue{background:var(--sky);color:#fff}button.ghost{background:transparent;border:2px solid var(--line)}button.danger{background:#fde8ee;color:#b4264f}
+button:disabled{opacity:.5;cursor:default}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:8px 0}
+code.big{font-family:ui-monospace,Consolas,monospace;font-size:28px;letter-spacing:3px;background:#fff7d6;padding:4px 10px;border-radius:10px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.chip{display:inline-flex;align-items:center;justify-content:center;min-width:40px;height:40px;padding:0 8px;border-radius:10px;background:#f1f6fb;border:2px solid var(--line);font-size:22px;cursor:pointer;user-select:none}
+.chip.on{background:var(--sun);border-color:#e6b800}
+.chip.s0{background:#f1f6fb}.chip.s1{background:#fff1d6}.chip.s2{background:#fff7c2}.chip.s3{background:#d7f5df;border-color:#8fd9a3}
+.chip.small{min-width:30px;height:30px;font-size:17px;cursor:default}
+table{width:100%;border-collapse:collapse;margin-top:8px}th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:top}th{font-size:14px;color:var(--soft);font-weight:600}
+.bar{height:10px;background:#eef3f8;border-radius:6px;overflow:hidden;min-width:90px}.bar i{display:block;height:100%;background:var(--grass)}
+.ok{color:#2a8a4a}.warn{color:#b4264f}
+details summary{cursor:pointer;color:var(--soft)}
+@media (max-width:640px){td.hide,th.hide{display:none}}
+</style>
+</head>
+<body>
+<header><img src="icon.svg" alt="" width="34" height="34"><h1>字灵乐园 · 老师版</h1><a href="./">← 回到游戏</a></header>
+<main id="main"></main>
+<script>
+const API='https://zilin-sync.zilingleyuan.workers.dev';
+const SITE=location.origin+location.pathname.replace(/teacher\.html$/,'');
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+const KEYS='zilin_teacher';
+let classes=[];try{classes=JSON.parse(localStorage.getItem(KEYS)||'[]')}catch(_){}
+const saveKeys=()=>{try{localStorage.setItem(KEYS,JSON.stringify(classes))}catch(_){}};
+let GRADES=null;const grades=async()=>GRADES||(GRADES=await fetch('data/grades.json').then(r=>r.json()).catch(()=>[]));
+const fmt=c=>c.slice(0,4)+'-'+c.slice(4);
+const ago=t=>{if(!t)return '还没玩过';const d=(Date.now()-t)/864e5;return d<1?'今天':d<2?'昨天':d<7?Math.floor(d)+' 天前':new Date(t).toLocaleDateString('zh-CN')};
+async function api(path,opt){const r=await fetch(API+path,opt);const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||('HTTP '+r.status));return j}
+let cur=null;
+
+function home(msg){
+ $('#main').innerHTML=`<div class="card"><h2>👩‍🏫 这是什么</h2><p>孩子们各自在家用字灵乐园写字，老师在这里看全班：谁写了多少、哪些字大家都没过，还可以布置「本周生字」，孩子一打开游戏就看到。学生端永远免费，不用注册；家长只要把<b>班级码</b>输进游戏的「家长看这里」就行。</p></div>
+ ${classes.length?`<div class="card"><h2>我的班</h2>${classes.map((c,i)=>`<div class="row"><button class="blue" data-open="${i}">${esc(c.name)}</button><span class="muted">班级码 ${fmt(c.code)}</span><button class="ghost" data-forget="${i}" title="只是从这台电脑上忘掉，班级还在">忘掉</button></div>`).join('')}</div>`:''}
+ <div class="card"><h2>新建一个班</h2><div class="row"><input type="text" id="newName" placeholder="班级名，比如 一年级 B 班" maxlength="30" style="flex:1 1 220px"><button class="green" id="newGo">建好</button></div><p class="muted">会得到两样东西：<b>班级码</b>发给家长；<b>老师钥匙</b>只有你自己留着，用它才能看报告、布置生字。</p></div>
+ <div class="card"><h2>用老师钥匙打开已有的班</h2><div class="row"><input type="text" id="openKey" placeholder="16 位老师钥匙" maxlength="19" autocapitalize="characters" style="flex:1 1 220px"><input type="text" id="openCode" placeholder="8 位班级码" maxlength="9" autocapitalize="characters" style="flex:0 1 160px"><button id="openGo">打开</button></div><p class="muted" id="msg">${msg||''}</p></div>`;
+ document.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>openClass(classes[+b.dataset.open]));
+ document.querySelectorAll('[data-forget]').forEach(b=>b.onclick=()=>{classes.splice(+b.dataset.forget,1);saveKeys();home()});
+ $('#newGo').onclick=async()=>{const name=$('#newName').value.trim();if(!name)return $('#newName').focus();$('#newGo').disabled=true;try{const j=await api('/c/new',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({name})});classes.unshift(j);saveKeys();openClass(j,true)}catch(e){$('#msg').textContent='建不了：'+e.message;$('#newGo').disabled=false}};
+ $('#openGo').onclick=async()=>{const key=($('#openKey').value||'').toUpperCase().replace(/[^A-Z2-9]/g,''),code=($('#openCode').value||'').toUpperCase().replace(/[^A-Z2-9]/g,'');if(key.length!==16||code.length!==8)return $('#msg').textContent='老师钥匙 16 位，班级码 8 位，都要填';try{const j=await api(`/c/${code}/report?key=${key}`);const c={code,key,name:j.name};if(!classes.some(x=>x.code===code)){classes.unshift(c);saveKeys()}openClass(c)}catch(e){$('#msg').textContent='打不开：'+(e.message==='wrong key'?'钥匙不对':e.message)}};
+}
+
+async function openClass(c,fresh){
+ cur=c;$('#main').innerHTML='<div class="card">正在读取…</div>';
+ let rep;try{rep=await api(`/c/${c.code}/report?key=${c.key}`)}catch(e){return home('读不出来：'+e.message)}
+ c.name=rep.name;saveKeys();
+ const A=rep.assign&&rep.assign.chars?rep.assign.chars:[];const note=rep.assign&&rep.assign.note||'';
+ const mem=rep.members||[];
+ const done=m=>A.filter(ch=>(m.prog[ch]||0)>=1).length;
+ const stars=m=>Object.values(m.prog).reduce((a,b)=>a+b,0);
+ // 全班最难：布置的字里完成人数最少的；没布置就看所有写过的字里平均星最低的
+ let hard=[];
+ if(mem.length){const pool=A.length?A:[...new Set(mem.flatMap(m=>Object.keys(m.prog)))];
+  hard=pool.map(ch=>{const got=mem.filter(m=>m.prog[ch]);const avg=got.length?got.reduce((a,m)=>a+m.prog[ch],0)/got.length:0;return {ch,n:got.length,avg}}).sort((a,b)=>a.n-b.n||a.avg-b.avg).slice(0,10)}
+ const link=`${SITE}?cls=${c.code}`;
+ const parentMsg=`各位家长好，咱们班在用「字灵乐园」练写字（免费，不用注册）。请在孩子的平板或手机上打开 ${link} ，页面会提示把孩子的名字加入班级（班级码 ${fmt(c.code)}）。以后我每周会在里面布置几个生字，孩子打开就能看到。`;
+ $('#main').innerHTML=`
+ <div class="card"><div class="row"><h2 style="margin:0">${esc(c.name)}</h2><button class="ghost" id="back" style="margin-left:auto">换个班</button><button class="ghost" id="reload">刷新</button></div>
+  ${fresh?`<p class="ok"><b>班建好了。</b>下面这把老师钥匙请存到安全的地方（备忘录、密码本），丢了就打不开这个班的报告了：<code class="big">${c.key}</code> <button id="copyKey">复制钥匙</button></p>`:''}
+  <div class="row"><span>班级码</span><code class="big">${fmt(c.code)}</code><button id="copyCode">复制班级码</button><button class="blue" id="copyMsg">复制给家长的话</button></div>
+  <p class="muted">家长在游戏里点「家长看这里 → 加入班级」输入班级码，或者直接打开 <a href="${link}">${link}</a>。只有拿着老师钥匙的人能看到下面的报告。</p>
+  <p class="muted" id="cmsg"></p></div>
+
+ <div class="card"><h2>📝 本周生字 ${A.length?`<span class="muted">（${A.length} 个）</span>`:''}</h2>
+  ${A.length?`<div class="chips">${A.map(ch=>`<span class="chip small">${esc(ch)}</span>`).join('')}</div>${note?`<p>给孩子的话：${esc(note)}</p>`:''}<div class="row"><button id="printA">🖨️ 打印这些字的字卡</button><button class="ghost" id="clearA">清空</button></div>`:'<p class="muted">还没布置。孩子打开游戏时首页会出现「老师留的字」。</p>'}
+  <details ${A.length?'':'open'}><summary>${A.length?'换一批':'布置生字'}</summary>
+   <p class="muted">直接把课本上这课的生字打进来（其他符号会自动忽略），或者从下面按年级点选。一次最多 60 个。</p>
+   <textarea id="aText" placeholder="例如：山 水 火 土 木">${esc(A.join(' '))}</textarea>
+   <div class="row"><select id="gSel"><option value="">按年级挑选…</option></select><span class="muted" id="gHint"></span></div><div class="chips" id="gChips"></div>
+   <div class="row"><input type="text" id="aNote" placeholder="给孩子的一句话（可不填），比如：这周每天写两个" maxlength="200" style="flex:1 1 260px" value="${esc(note)}"><button class="green" id="saveA">布置</button></div>
+  </details></div>
+
+ <div class="card"><h2>👧👦 学生 <span class="muted">（${mem.length} 人）</span></h2>
+  ${mem.length?`<table><thead><tr><th>名字</th><th>${A.length?'本周生字':'进度'}</th><th class="hide">写过的字</th><th class="hide">星星</th><th>最近</th><th></th></tr></thead><tbody>
+  ${mem.map(m=>`<tr><td><b>${esc(m.name)}</b></td><td>${A.length?`<div class="row" style="margin:0"><div class="bar" title="${done(m)}/${A.length}"><i style="width:${A.length?100*done(m)/A.length:0}%"></i></div><span>${done(m)}/${A.length}</span></div><div class="chips">${A.map(ch=>`<span class="chip small s${m.prog[ch]||0}" title="${m.prog[ch]?m.prog[ch]+' 星':'还没写'}">${esc(ch)}</span>`).join('')}</div>`:`${Object.keys(m.prog).length} 个字`}</td><td class="hide">${Object.keys(m.prog).length}</td><td class="hide">⭐ ${stars(m)}</td><td>${ago(m.updated)}</td><td><button class="danger" data-rm="${esc(m.id)}" title="从班里移除（孩子自己的进度不受影响）">移除</button></td></tr>`).join('')}
+  </tbody></table><p class="muted">颜色：绿色三星，黄色一两星，灰色还没写。孩子在家写完，下次联网就会出现在这里。</p>`:'<p class="muted">还没有学生加入。把上面的班级码或链接发给家长就行。</p>'}</div>
+
+ ${hard.length?`<div class="card"><h2>🧐 最需要讲的字</h2><p class="muted">${A.length?'本周生字里，完成的人最少、星星最低的：':'全班写过的字里，星星最低的：'}</p><div class="chips">${hard.map(h=>`<span class="chip small" title="${h.n} 人写过，平均 ${h.avg.toFixed(1)} 星">${esc(h.ch)}</span>`).join('')}</div></div>`:''}`;
+ $('#back').onclick=()=>home();$('#reload').onclick=()=>openClass(c);
+ const copy=async(t,el,ok)=>{try{await navigator.clipboard.writeText(t);$('#cmsg').textContent=ok}catch(_){$('#cmsg').textContent='复制不了，请手动选中复制'}};
+ if($('#copyKey'))$('#copyKey').onclick=()=>copy(c.key,null,'钥匙已复制');
+ $('#copyCode').onclick=()=>copy(fmt(c.code),null,'班级码已复制');
+ $('#copyMsg').onclick=()=>copy(parentMsg,null,'已复制，粘到家长群就行');
+ if($('#printA'))$('#printA').onclick=()=>window.open(`${SITE}?cards=${encodeURIComponent(A.join(''))}`,'_blank');
+ if($('#clearA'))$('#clearA').onclick=()=>saveAssign([],'');
+ $('#saveA').onclick=()=>{const chars=parseChars($('#aText').value);if(!chars.length)return $('#cmsg').textContent='先填几个字';saveAssign(chars,$('#aNote').value.trim())};
+ document.querySelectorAll('[data-rm]').forEach(b=>b.onclick=async()=>{b.disabled=true;try{await api(`/c/${c.code}/m/${encodeURIComponent(b.dataset.rm)}?key=${c.key}`,{method:'DELETE'});openClass(c)}catch(e){$('#cmsg').textContent='移除失败：'+e.message;b.disabled=false}});
+ const gs=await grades();const sel=$('#gSel');gs.forEach(g=>{const o=document.createElement('option');o.value=g.id;o.textContent=`${g.name}（${g.chars.length} 个）`;sel.appendChild(o)});
+ sel.onchange=()=>{const g=gs.find(x=>String(x.id)===sel.value);const box=$('#gChips');if(!g){box.innerHTML='';return}$('#gHint').textContent='点一下加入，再点取消';
+  const chosen=new Set(parseChars($('#aText').value));
+  box.innerHTML=g.chars.map(ch=>`<span class="chip ${chosen.has(ch)?'on':''}" data-ch="${esc(ch)}">${esc(ch)}</span>`).join('');
+  box.querySelectorAll('.chip').forEach(el=>el.onclick=()=>{const set=new Set(parseChars($('#aText').value));if(set.has(el.dataset.ch))set.delete(el.dataset.ch);else{if(set.size>=60)return $('#cmsg').textContent='一次最多 60 个';set.add(el.dataset.ch)}el.classList.toggle('on',set.has(el.dataset.ch));$('#aText').value=[...set].join(' ')})};
+}
+function parseChars(t){const out=[];for(const tok of String(t||'').split(/[\s,，、;；。]+/)){if(/^[a-zü]{1,4}$/i.test(tok)){out.push(tok.toLowerCase());continue}for(const ch of tok)if(/[一-鿿]/.test(ch))out.push(ch)}return [...new Set(out)].slice(0,60)}
+async function saveAssign(chars,note){try{await api(`/c/${cur.code}/assign?key=${cur.key}`,{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify({chars,note})});openClass(cur)}catch(e){$('#cmsg').textContent='保存失败：'+e.message}}
+home();
+</script>
+</body>
+</html>
