@@ -57,4 +57,4 @@ python tools/qa_audio.py                  # 用 Whisper 听一遍，列出可疑
 - 字体：站酷快乐体、Andika（SIL Open Font License，见 `fonts/`）
 - 语音：由 [Fish Audio](https://fish.audio) 生成
 - 背景音乐：Kevin MacLeod（[incompetech.com](https://incompetech.com)），CC BY 4.0，曲目见 `music/CREDITS.txt`
-- 游戏代码与字灵形象：MIT 许可，欢迎老师和家长自由分享、修改
+- 许可：代码为 PolyForm Noncommercial 1.0.0，字义文字、字灵形象、语音等内容为 CC BY-NC-SA 4.0（详见 `LICENSE`）。老师和家长可以自由分享、打印、改编用于教学；商业使用请先联系作者。网站本身对孩子、家长和老师永久免费

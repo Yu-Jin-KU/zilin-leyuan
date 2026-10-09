@@ -1,9 +1,25 @@
-MIT License
+字灵乐园 许可说明 / License
 
-Copyright (c) 2026 字灵乐园 contributors
+一、2026-10-09 起，本项目采用以下许可（之前以 MIT 许可发布的版本不受影响）：
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+1. 代码（index.html、sw.js、tools/、sync/ 等程序文件）：
+   PolyForm Noncommercial License 1.0.0
+   https://polyformproject.org/licenses/noncommercial/1.0.0/
+   允许任何人出于非商业目的使用、复制、修改和分发；商业使用需另行取得作者书面许可。
 
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+2. 内容（字义解释 tools/meaning.tsv 与 data/meaning.json、字灵形象与立绘 art/、
+   预生成语音 audio/、字卡与海报设计、文案）：
+   知识共享 署名-非商业性使用-相同方式共享 4.0 国际（CC BY-NC-SA 4.0）
+   https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh
+   老师、家长可以自由分享、打印、改编用于教学，须署名「字灵乐园 ziling.danpicbook.com」，
+   不得用于商业用途，改编后须以相同许可分享。
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+二、第三方素材按其各自许可，不在上述范围内：
+   - Hanzi Writer（MIT）；笔顺数据 hanzi-writer-data / Make Me a Hanzi（Arphic 公共许可，见 data/LICENSE-ARPHIC.txt）
+   - HSK 3.0 字表 elkmovie/hsk30（MIT）
+   - 英文释义 CC-CEDICT（CC BY-SA 4.0）
+   - 字体：站酷快乐体、Andika（SIL Open Font License，见 fonts/）
+   - 背景音乐 Kevin MacLeod（CC BY 4.0，见 music/CREDITS.txt）
+   - 语音由 Fish Audio 生成，受 Fish Audio 服务条款约束
+
+三、本网站对所有孩子、家长和老师永久免费使用。

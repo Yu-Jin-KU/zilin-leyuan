@@ -363,12 +363,13 @@ const SYNC_API='https://zilin-sync.zilingleyuan.workers.dev';/* sync/ 里的 Wor
 const rawSave=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(_){}};
 function save(){rawSave();scheduleSync()}
 let syncTimer=null,syncing=false;
-function scheduleSync(){if(!SYNC_API||!Object.keys(S.players).length)return;clearTimeout(syncTimer);syncTimer=setTimeout(syncNow,4000)}
+function scheduleSync(){if(!SYNC_API||!Object.keys(S.players).length)return;clearTimeout(syncTimer);syncTimer=setTimeout(syncNow,45000)}/* 攒 45 秒再上传，一次游戏通常只有一两次请求；离开页面时立刻补传 */
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&syncTimer){clearTimeout(syncTimer);syncTimer=null;syncNow(true)}});
 const slimPlayers=()=>Object.fromEntries(Object.entries(S.players).map(([id,p])=>[id,{name:p.name,prog:p.prog||{}}]));
 function mergeRemote(data){let changed=false;for(const [id,p] of Object.entries(data||{})){let q=S.players[id];if(!q){q=S.players[id]={name:p.name||'?',prog:{}};changed=true}q.prog=q.prog||{};for(const [c,f] of Object.entries(p.prog||{}))if((q.prog[c]||0)<f){q.prog[c]=f;changed=true}}return changed}
-async function syncNow(){if(syncing||!navigator.onLine||!Object.keys(S.players).length)return;syncing=true;
+async function syncNow(leaving){if(syncing||!navigator.onLine||!Object.keys(S.players).length)return;syncing=true;
  try{if(!S.fam){const r=await fetch(SYNC_API+'/new',{method:'POST'});if(!r.ok)throw 0;S.fam=(await r.json()).code;rawSave()}
-  const r=await fetch(SYNC_API+'/f/'+S.fam,{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify(slimPlayers())});
+  const r=await fetch(SYNC_API+'/f/'+S.fam,{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify(slimPlayers()),keepalive:!!leaving});
   if(r.status===404){S.fam=null;rawSave();syncing=false;return syncNow()}
   if(!r.ok)throw 0;const j=await r.json();mergeRemote(j.data);S.syncAt=Date.now();rawSave();if($('#fammsg'))famRefresh()}catch(_){}
  syncing=false}
