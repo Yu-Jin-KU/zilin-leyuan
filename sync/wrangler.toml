@@ -5,4 +5,4 @@ compatibility_date = "2026-10-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "zilin-sync"
-database_id = "REPLACE_AFTER_CREATE"
+database_id = "0711cadf-ca61-449a-9d0a-a58f059b329e"

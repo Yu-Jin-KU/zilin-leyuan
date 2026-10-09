@@ -354,7 +354,7 @@ const KEY='zilin_v2';
 let S={players:{},cur:null,grade:0,agrade:0};
 try{const raw=localStorage.getItem(KEY)||localStorage.getItem('zilin_v1');if(raw)S=Object.assign(S,JSON.parse(raw))}catch(_){}
 /* ---------- 家庭码云端备份（Cloudflare Worker，见 sync/）：本机永远是主存档，云端只做备份与跨设备找回 ---------- */
-const SYNC_API='';/* 部署 sync/ 里的 Worker 后填上地址，例如 'https://zilin-sync.xxx.workers.dev'；为空则整个备份功能隐藏 */
+const SYNC_API='https://zilin-sync.zilingleyuan.workers.dev';/* sync/ 里的 Worker（Cloudflare 账号 danpicbook@gmail.com）；改成空字符串可整体关闭备份功能 */
 const rawSave=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(_){}};
 function save(){rawSave();scheduleSync()}
 let syncTimer=null,syncing=false;
