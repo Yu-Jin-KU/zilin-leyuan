@@ -158,7 +158,7 @@ h1{font-size:34px;margin:8px 0 4px;font-weight:400}h2{font-size:26px;margin:22px
 <header class="bar">
  <button class="logo" data-go="grades" aria-label="回到首页"><svg viewBox="0 0 200 200" id="logoSvg"></svg>字灵乐园</button>
  <nav class="nav" id="nav">
-  <button data-go="grades">写字</button><button data-go="album">卡册</button><button data-go="poster">字灵王国</button><button data-go="library" data-arg="book">绘本</button><button data-go="library" data-arg="poem">古诗</button>
+  <button data-go="grades">写字</button><button data-go="album">卡册</button><button data-go="poster">字灵王国</button><button data-go="library" data-arg="book">🎬 动画</button>
  </nav>
  <button class="who" id="who" data-go="players">选人</button>
  <div class="sndwrap"><button class="snd" id="snd" aria-pressed="true" title="声音" aria-label="声音设置" aria-haspopup="true">🔊</button>
@@ -852,7 +852,7 @@ async function libData(){if(!LIB){try{LIB=await fetch('data/library.json').then(
 function libLink(v){if(v.id)return v.id;const hit=(YTV||[]).find(x=>x.title===v.title)||(YTV||[]).find(x=>v.title&&x.title.startsWith(v.title.split(' | ')[0]));return hit?hit.id:null}
 function library(series){
  series=series==='poem'?'poem':series==='pinyin'?'pinyin':'book';S.lib=series;rawSave();
- $('#main').innerHTML=`<div class="libtabs">${[['book','📚 绘本'],['poem','📜 古诗'],['pinyin','🔤 拼音儿歌']].map(([k,t])=>`<button data-lib="${k}" aria-pressed="${k===series}">${t}</button>`).join('')}</div><p class="muted">每本都有中文、English、Dansk 三个版本，点开就能看；标着「即将上线」的正在陆续上传。更多在 YouTube 频道 <a href="https://www.youtube.com/@DanPicBookKids" target="_blank" rel="noopener">DanPicBook Kids</a>。</p><div class="lib" id="libgrid"><p class="muted">正在读取…</p></div>`;
+ $('#main').innerHTML=`<div class="libtabs">${[['book','🎵 识字儿歌'],['poem','📜 诗词'],['pinyin','🔤 拼音儿歌']].map(([k,t])=>`<button data-lib="${k}" aria-pressed="${k===series}">${t}</button>`).join('')}</div><p class="muted">每个视频都有中文、English、Dansk 三个版本，点开就能看；标着「即将上线」的正在陆续上传。更多在 YouTube 频道 <a href="https://www.youtube.com/@DanPicBookKids" target="_blank" rel="noopener">DanPicBook Kids</a>。</p><div class="lib" id="libgrid"><p class="muted">正在读取…</p></div>`;
  document.querySelectorAll('[data-lib]').forEach(b=>b.onclick=()=>library(b.dataset.lib));
  libData().then(L=>{if(curView!=='library'||S.lib!==series)return;const items=L.items.filter(i=>i.series===series);
   $('#libgrid').innerHTML=items.map(i=>`<div class="libc" data-n="${i.n}">${i.img?`<img src="${i.img}" alt="" loading="lazy">`:''}<div class="t">${esc(i.zh)}<small>${esc(i.en)} · ${esc(i.da)}</small></div><details><summary>中文 · English · Dansk</summary>${['zh','en','da','mv'].filter(k=>i.versions[k]).map(k=>{const v=i.versions[k];const id=libLink(v);return `<div class="libv"><b>${LANGN[k]}</b>${id?`<button data-play="${id}" data-n="${i.n}">▶ 播放</button><a href="https://www.youtube.com/watch?v=${id}" target="_blank" rel="noopener">YouTube ↗</a>`:`<span class="soon">即将上线</span>`}</div>`}).join('')}</details></div>`).join('')||'<p class="muted">还没有内容。</p>';
