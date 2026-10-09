@@ -377,11 +377,13 @@ async function syncNow(leaving){if(syncing||!navigator.onLine||!Object.keys(S.pl
   if(!r.ok)throw 0;const j=await r.json();mergeRemote(j.data);S.syncAt=Date.now();rawSave();if($('#fammsg'))famRefresh();await syncClasses(leaving)}catch(_){}
  syncing=false}
 /* 教师版：加入了班级的名字，把进度也汇总到班里（每个班一次请求），顺便拿回老师布置的本周生字 */
-async function syncClasses(leaving){const byCls={};for(const [pid,code] of Object.entries(S.cls||{})){const p=S.players[pid];if(p)(byCls[code]=byCls[code]||{})[pid]={name:p.name,prog:p.prog||{}}}
+async function syncClasses(leaving){const byCls={};for(const [pid,code] of Object.entries(S.cls||{})){const p=S.players[pid];if(p)(byCls[code]=byCls[code]||{})[pid]={name:p.name,prog:p.prog||{},rid:(S.clsRid||{})[pid]||''}}
  for(const [code,players] of Object.entries(byCls)){try{const r=await fetch(SYNC_API+'/c/'+code+'/members',{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify({fam:S.fam,players}),keepalive:!!leaving});
-  if(r.status===404){for(const pid of Object.keys(players))delete S.cls[pid];if(S.clsInfo)delete S.clsInfo[code]}else if(r.ok){const j=await r.json();S.clsInfo=S.clsInfo||{};S.clsInfo[code]={name:j.name,assign:j.assign||{}}}}catch(_){}}
+  if(r.status===404){for(const pid of Object.keys(players))delete S.cls[pid];if(S.clsInfo)delete S.clsInfo[code]}else if(r.ok){const j=await r.json();S.clsInfo=S.clsInfo||{};S.clsInfo[code]={name:j.name,assign:j.assign||{},roster:j.roster||[]}}}catch(_){}}
  rawSave()}
-async function joinClass(code,ids){try{const r=await fetch(SYNC_API+'/c/'+code);if(r.status===404)return '没有这个班级码，再检查一下';if(!r.ok)throw 0;const j=await r.json();S.cls=S.cls||{};S.clsInfo=S.clsInfo||{};S.clsInfo[code]={name:j.name,assign:j.assign||{}};for(const id of ids)S.cls[id]=code;rawSave();syncNow();scheduleSync();return true}catch(_){return '连不上云端，请检查网络后再试'}}
+async function joinClass(code,ids,rids){try{const r=await fetch(SYNC_API+'/c/'+code);if(r.status===404)return '没有这个班级码，再检查一下';if(!r.ok)throw 0;const j=await r.json();const roster=j.roster||[];
+ if(roster.length&&!rids)return {roster,name:j.name};/* 老师录了名单：先让家长选孩子是名单里的谁 */
+ S.cls=S.cls||{};S.clsInfo=S.clsInfo||{};S.clsRid=S.clsRid||{};S.clsInfo[code]={name:j.name,assign:j.assign||{},roster};for(const id of ids){S.cls[id]=code;if(rids&&rids[id])S.clsRid[id]=rids[id];else delete S.clsRid[id]}rawSave();syncNow();scheduleSync();return true}catch(_){return '连不上云端，请检查网络后再试'}}
 /* 找字：打字（汉字或拼音）或按住话筒说出来；汉字结果后面跟同音字 */
 const TONE_MAP={'ā':'a','á':'a','ǎ':'a','à':'a','ē':'e','é':'e','ě':'e','è':'e','ī':'i','í':'i','ǐ':'i','ì':'i','ō':'o','ó':'o','ǒ':'o','ò':'o','ū':'u','ú':'u','ǔ':'u','ù':'u','ǖ':'ü','ǘ':'ü','ǚ':'ü','ǜ':'ü'};
 const nopy=p=>String(p||'').toLowerCase().replace(/[āáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜ]/g,ch=>TONE_MAP[ch]).replace(/v/g,'ü').split(/[\/,\s]/)[0];
@@ -531,7 +533,7 @@ async function pgDownload(){const g=+$('#pgGrade').value,el=$('#pgDlMsg'),btn=$(
  el.textContent=fail?`存好了 ${urls.length-fail} 个文件，还有 ${fail} 个没下来（网络不稳），再点一次只会补缺的`:'✅ 下载好了，这个级别的字没网也能写（背景音乐和提示音也存好了）'}
 function parentGuide(opt){
  const lim=limitMin();const pre=opt&&typeof opt.cls==='string'?opt.cls:'';const names=Object.entries(S.players);
- const joined=Object.entries(S.cls||{}).filter(([pid])=>S.players[pid]).map(([pid,code])=>`<div class="row">✅ ${esc(S.players[pid].name)} 在「${esc((S.clsInfo&&S.clsInfo[code]&&S.clsInfo[code].name)||famFmt(code))}」<button data-leave="${pid}">退出</button></div>`).join('');
+ const joined=Object.entries(S.cls||{}).filter(([pid])=>S.players[pid]).map(([pid,code])=>{const info=S.clsInfo&&S.clsInfo[code];const rid=(S.clsRid||{})[pid];const rn=rid&&info&&info.roster&&(info.roster.find(x=>x.id===rid)||{}).name;return `<div class="row">✅ ${esc(S.players[pid].name)} 在「${esc((info&&info.name)||famFmt(code))}」${rn&&rn!==S.players[pid].name?`（名单上是 ${esc(rn)}）`:''}<button data-leave="${pid}">退出</button></div>`}).join('');
  $('#mbox').innerHTML=`<div class="pg"><h2>👨‍👩‍👧 家长看这里</h2><p class="muted">三步设置好，剩下的孩子自己玩。</p><ol>
  <li><b class="t">① 加到主屏幕</b>像 App 一样全屏打开，桌面上有图标，孩子点不到浏览器里别的东西。<div class="row" id="pgInstall"></div></li>
  <li><b class="t">② 没网也能玩</b>把要练的级别先存到这台设备上，以后坐车、出门没网也能写。<div class="row"><select id="pgGrade" aria-label="选级别">${GRADES.map(g=>`<option value="${g.id}">${g.name}（${g.items.length} 个，约 ${offlineMB(g.id)} MB）</option>`).join('')}</select><button class="green" id="pgDl">下载到这台设备</button></div><p class="muted" id="pgDlMsg"></p></li>
@@ -542,7 +544,12 @@ function parentGuide(opt){
  $('#modal').classList.add('open');pgInstallRow();
  $('#pgGrade').value=String(S.grade||0);$('#pgGrade').onchange=pgOfflineStatus;pgOfflineStatus();$('#pgDl').onclick=pgDownload;
  if($('#pgShare')){$('#pgShare').onclick=()=>famShare($('#pgFamMsg'));$('#pgCopy').onclick=()=>famCopy($('#pgFamMsg'))}
- if($('#pgJoin'))$('#pgJoin').onclick=async()=>{const code=($('#pgCls').value||'').toUpperCase().replace(/[^A-Z2-9]/g,'');const ids=[...document.querySelectorAll('#pgClsWho input:checked')].map(i=>i.value);if(code.length!==8)return $('#pgClsMsg').textContent='班级码是 8 个字母和数字';if(!ids.length)return $('#pgClsMsg').textContent='勾上要加入的名字';$('#pgClsMsg').textContent='正在加入…';const r=await joinClass(code,ids);if(r===true)parentGuide();else $('#pgClsMsg').textContent=r};
+ if($('#pgJoin'))$('#pgJoin').onclick=async()=>{const code=($('#pgCls').value||'').toUpperCase().replace(/[^A-Z2-9]/g,'');const ids=[...document.querySelectorAll('#pgClsWho input:checked')].map(i=>i.value);if(code.length!==8)return $('#pgClsMsg').textContent='班级码是 8 个字母和数字';if(!ids.length)return $('#pgClsMsg').textContent='勾上要加入的名字';$('#pgClsMsg').textContent='正在加入…';const r=await joinClass(code,ids);if(r===true)return parentGuide();if(typeof r==='string')return $('#pgClsMsg').textContent=r;
+  /* 有名单：每个勾选的名字选一下是名单里的谁 */
+  const opts=r.roster.map(x=>`<option value="${esc(x.id)}">${esc(x.name)}</option>`).join('');
+  $('#pgClsMsg').innerHTML=`<span class="ok">找到「${esc(r.name)}」。老师的名单里，孩子是哪一个？</span>`+ids.map(id=>`<div class="row"><span>${esc(S.players[id].name)} 是</span><select data-rid="${id}"><option value="">不在名单里</option>${opts}</select></div>`).join('')+`<div class="row"><button class="green" id="pgJoin2">确定加入</button></div>`;
+  ids.forEach(id=>{const sel=$(`select[data-rid="${id}"]`);const hit=r.roster.find(x=>x.name===S.players[id].name||x.name.includes(S.players[id].name)||S.players[id].name.includes(x.name));if(hit)sel.value=hit.id});
+  $('#pgJoin2').onclick=async()=>{const rids={};document.querySelectorAll('select[data-rid]').forEach(sel=>{if(sel.value)rids[sel.dataset.rid]=sel.value});const r2=await joinClass(code,ids,rids);if(r2===true)parentGuide();else $('#pgClsMsg').textContent=String(r2)}};
  document.querySelectorAll('[data-leave]').forEach(b=>b.onclick=()=>{delete S.cls[b.dataset.leave];save();parentGuide()});
  document.querySelectorAll('#pgLimit button').forEach(b=>b.onclick=()=>{S.limit=+b.dataset.lim;S.playMs=0;save();document.querySelectorAll('#pgLimit button').forEach(x=>x.setAttribute('aria-pressed',x===b))});
  $('#mClose').onclick=closeModal;

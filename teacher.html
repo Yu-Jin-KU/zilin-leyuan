@@ -71,15 +71,21 @@ async function openClass(c,fresh){
  let rep;try{rep=await api(`/c/${c.code}/report?key=${c.key}`)}catch(e){return home('读不出来：'+e.message)}
  c.name=rep.name;saveKeys();
  const A=rep.assign&&rep.assign.chars?rep.assign.chars:[];const note=rep.assign&&rep.assign.note||'';
- const mem=rep.members||[];
+ const mem=rep.members||[];const roster=rep.roster||[];
+ /* 按名单合并：同一个孩子在几台设备上玩，进度合在一起；没对上名单的设备单独列 */
+ const rows=[];const used=new Set();
+ for(const r of roster){const ms=mem.filter(m=>m.rid===r.id);ms.forEach(m=>used.add(m.id));const prog={};let upd=0;for(const m of ms){for(const [c,f] of Object.entries(m.prog))prog[c]=Math.max(prog[c]||0,f);upd=Math.max(upd,m.updated||0)}
+  rows.push({id:'roster:'+r.id,name:r.name,en:r.en,prog,updated:upd,devices:ms.length,ids:ms.map(m=>m.id),inRoster:true})}
+ for(const m of mem)if(!used.has(m.id))rows.push({id:m.id,name:m.name,en:'',prog:m.prog,updated:m.updated,devices:1,ids:[m.id],inRoster:false});
  const done=m=>A.filter(ch=>(m.prog[ch]||0)>=1).length;
  const stars=m=>Object.values(m.prog).reduce((a,b)=>a+b,0);
  // 全班最难：布置的字里完成人数最少的；没布置就看所有写过的字里平均星最低的
  let hard=[];
- if(mem.length){const pool=A.length?A:[...new Set(mem.flatMap(m=>Object.keys(m.prog)))];
-  hard=pool.map(ch=>{const got=mem.filter(m=>m.prog[ch]);const avg=got.length?got.reduce((a,m)=>a+m.prog[ch],0)/got.length:0;return {ch,n:got.length,avg}}).sort((a,b)=>a.n-b.n||a.avg-b.avg).slice(0,10)}
+ const active=rows.filter(r=>r.devices);
+ if(active.length){const pool=A.length?A:[...new Set(active.flatMap(m=>Object.keys(m.prog)))];
+  hard=pool.map(ch=>{const got=active.filter(m=>m.prog[ch]);const avg=got.length?got.reduce((a,m)=>a+m.prog[ch],0)/got.length:0;return {ch,n:got.length,avg}}).sort((a,b)=>a.n-b.n||a.avg-b.avg).slice(0,10)}
  const link=`${SITE}?cls=${c.code}`;
- const parentMsg=`各位家长好，咱们班在用「字灵乐园」练写字（免费，不用注册）。请在孩子的平板或手机上打开 ${link} ，页面会提示把孩子的名字加入班级（班级码 ${fmt(c.code)}）。以后我每周会在里面布置几个生字，孩子打开就能看到。`;
+ const parentMsg=`各位家长好，咱们班在用「字灵乐园」练写字（免费，不用注册，没有广告）。请在孩子的平板或手机上打开 ${link} ，先给孩子加一个名字，页面会提示加入班级（班级码 ${fmt(c.code)}）${roster.length?'，然后从名单里选一下自己的孩子':''}。以后我每周会在里面布置几个生字，孩子打开游戏首页就能看到。`;
  $('#main').innerHTML=`
  <div class="card"><div class="row"><h2 style="margin:0">${esc(c.name)}</h2><button class="ghost" id="back" style="margin-left:auto">换个班</button><button class="ghost" id="reload">刷新</button></div>
   ${fresh?`<p class="ok"><b>班建好了。</b>下面这把老师钥匙请存到安全的地方（备忘录、密码本），丢了就打不开这个班的报告了：<code class="big">${c.key}</code> <button id="copyKey">复制钥匙</button></p>`:''}
@@ -97,10 +103,14 @@ async function openClass(c,fresh){
    <div class="row"><input type="text" id="aNote" placeholder="给孩子的一句话（可不填），比如：这周每天写两个" maxlength="200" style="flex:1 1 260px" value="${esc(note)}"><button class="green" id="saveA">布置</button></div>
   </details></div>
 
- <div class="card"><h2>👧👦 学生 <span class="muted">（${mem.length} 人）</span></h2>
-  ${mem.length?`<table><thead><tr><th>名字</th><th>${A.length?'本周生字':'进度'}</th><th class="hide">写过的字</th><th class="hide">星星</th><th>最近</th><th></th></tr></thead><tbody>
-  ${mem.map(m=>`<tr><td><b>${esc(m.name)}</b></td><td>${A.length?`<div class="row" style="margin:0"><div class="bar" title="${done(m)}/${A.length}"><i style="width:${A.length?100*done(m)/A.length:0}%"></i></div><span>${done(m)}/${A.length}</span></div><div class="chips">${A.map(ch=>`<span class="chip small s${m.prog[ch]||0}" title="${m.prog[ch]?m.prog[ch]+' 星':'还没写'}">${esc(ch)}</span>`).join('')}</div>`:`${Object.keys(m.prog).length} 个字`}</td><td class="hide">${Object.keys(m.prog).length}</td><td class="hide">⭐ ${stars(m)}</td><td>${ago(m.updated)}</td><td><button class="danger" data-rm="${esc(m.id)}" title="从班里移除（孩子自己的进度不受影响）">移除</button></td></tr>`).join('')}
-  </tbody></table><p class="muted">颜色：绿色三星，黄色一两星，灰色还没写。孩子在家写完，下次联网就会出现在这里。</p>`:'<p class="muted">还没有学生加入。把上面的班级码或链接发给家长就行。</p>'}</div>
+ <div class="card"><h2>📋 名单 <span class="muted">（${roster.length} 人）</span></h2>
+  <p class="muted">先把全班名字录在这里，家长加入时会从名单里选自己的孩子，这样家长在家随便起什么名字都能对上，兄弟姐妹、两台设备也会合并。一行一个：中文名，后面可以跟英文名。</p>
+  <details ${roster.length?'':'open'}><summary>${roster.length?'修改名单':'录入名单'}</summary><textarea id="rosterText" style="letter-spacing:0;font-size:17px;min-height:160px" placeholder="李丽娜 Elina&#10;陈乐芸 Fiona">${esc(roster.map(r=>r.name+(r.en?' '+r.en:'')).join('\n'))}</textarea><div class="row"><button class="green" id="saveRoster">保存名单</button><span class="muted">改名字时保持顺序不变，已经对上的孩子就不会错位。</span></div></details></div>
+
+ <div class="card"><h2>👧👦 学生 <span class="muted">（名单 ${roster.length} 人，已加入 ${rows.filter(r=>r.devices).length}）</span></h2>
+  ${rows.length?`<table><thead><tr><th>名字</th><th>${A.length?'本周生字':'进度'}</th><th class="hide">写过的字</th><th class="hide">星星</th><th>最近</th><th></th></tr></thead><tbody>
+  ${rows.map(m=>`<tr${m.devices?'':' style="opacity:.55"'}><td><b>${esc(m.name)}</b>${m.en?`<br><span class="muted" style="font-size:13px">${esc(m.en)}</span>`:''}${m.inRoster?'':'<br><span class="warn" style="font-size:13px">没对上名单</span>'}${m.devices>1?`<br><span class="muted" style="font-size:13px">${m.devices} 台设备</span>`:''}</td><td>${!m.devices?'<span class="muted">还没加入</span>':A.length?`<div class="row" style="margin:0"><div class="bar" title="${done(m)}/${A.length}"><i style="width:${A.length?100*done(m)/A.length:0}%"></i></div><span>${done(m)}/${A.length}</span></div><div class="chips">${A.map(ch=>`<span class="chip small s${m.prog[ch]||0}" title="${m.prog[ch]?m.prog[ch]+' 星':'还没写'}">${esc(ch)}</span>`).join('')}</div>`:`${Object.keys(m.prog).length} 个字`}</td><td class="hide">${m.devices?Object.keys(m.prog).length:''}</td><td class="hide">${m.devices?'⭐ '+stars(m):''}</td><td>${m.devices?ago(m.updated):''}</td><td>${m.ids.map(id=>`<button class="danger" data-rm="${esc(id)}" title="把这台设备从班里移除（孩子自己的进度不受影响）">移除</button>`).join(' ')}</td></tr>`).join('')}
+  </tbody></table><p class="muted">颜色：绿色三星，黄色一两星，灰色还没写。孩子在家写完，下次联网就会出现在这里。</p>`:'<p class="muted">还没有学生加入。先录名单，再把上面的班级码或链接发给家长。</p>'}</div>
 
  ${hard.length?`<div class="card"><h2>🧐 最需要讲的字</h2><p class="muted">${A.length?'本周生字里，完成的人最少、星星最低的：':'全班写过的字里，星星最低的：'}</p><div class="chips">${hard.map(h=>`<span class="chip small" title="${h.n} 人写过，平均 ${h.avg.toFixed(1)} 星">${esc(h.ch)}</span>`).join('')}</div></div>`:''}`;
  $('#back').onclick=()=>home();$('#reload').onclick=()=>openClass(c);
@@ -111,6 +121,8 @@ async function openClass(c,fresh){
  if($('#printA'))$('#printA').onclick=()=>window.open(`${SITE}?cards=${encodeURIComponent(A.join(''))}`,'_blank');
  if($('#clearA'))$('#clearA').onclick=()=>saveAssign([],'');
  $('#saveA').onclick=()=>{const chars=parseChars($('#aText').value);if(!chars.length)return $('#cmsg').textContent='先填几个字';saveAssign(chars,$('#aNote').value.trim())};
+ $('#saveRoster').onclick=async()=>{const lines=$('#rosterText').value.split(/\n+/).map(l=>l.trim()).filter(Boolean);const r=lines.map((l,i)=>{const m=l.match(/^([\u4e00-\u9fff·]{1,8})[\s,，]*(.*)$/);const old=roster[i];return m?{id:old&&old.name===m[1]?old.id:(old?old.id:'r'+Date.now().toString(36)+i),name:m[1],en:m[2].trim()}:null}).filter(Boolean);
+  try{await api(`/c/${c.code}/roster?key=${c.key}`,{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify({roster:r})});openClass(c)}catch(e){$('#cmsg').textContent='名单保存失败：'+e.message}};
  document.querySelectorAll('[data-rm]').forEach(b=>b.onclick=async()=>{b.disabled=true;try{await api(`/c/${c.code}/m/${encodeURIComponent(b.dataset.rm)}?key=${c.key}`,{method:'DELETE'});openClass(c)}catch(e){$('#cmsg').textContent='移除失败：'+e.message;b.disabled=false}});
  const tb=(await textbooks())['中文']||{};const tbB=$('#tbBook'),tbL=$('#tbLesson'),tbU=$('#tbUse');
  Object.keys(tb).sort((a,b)=>a-b).forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=`《中文》第 ${v} 册`;tbB.appendChild(o)});
