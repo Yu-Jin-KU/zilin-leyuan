@@ -17,3 +17,5 @@ __pycache__/
 sync/.wrangler/
 sync/node_modules/
 tools/_试听_*
+tools/_录音*
+tools/_我的声音/
