@@ -161,7 +161,7 @@ h1{font-size:34px;margin:8px 0 4px;font-weight:400}h2{font-size:26px;margin:22px
  </nav>
  <button class="who" id="who" data-go="players">选人</button>
  <div class="sndwrap"><button class="snd" id="snd" aria-pressed="true" title="声音" aria-label="声音设置" aria-haspopup="true">🔊</button>
-  <div class="sndmenu" id="sndmenu" hidden><div class="sndh">朗读</div><button data-vk="adult">👩 成人声</button><button data-vk="kid">🧒 童声</button><button data-vk="off">🔇 静音</button>
+  <div class="sndmenu" id="sndmenu" hidden><div class="sndh">朗读</div><button data-vk="kid">🧒 童声</button><button data-vk="adult" class="testv" hidden>👩 成人声</button><button data-vk="teacher" class="testv" hidden>👩‍🏫 老师声</button><button data-vk="off">🔇 静音</button>
    <div class="sndh">背景音乐</div><button data-music="lib">🎵 轻快曲库</button><button data-music="gen">🎼 自动小调</button><button data-music="off">🔕 关音乐</button></div></div>
 </header>
 <main id="main"></main>
@@ -407,7 +407,8 @@ const sBad=()=>tone([220,180],.09,'sine',.12);
 const sWin=()=>tone([523,659,784,1047,1319],.11);
 /* 语音：audio/<字>.mp3 由 Fish Audio 预生成（见 tools/gen_audio.py）；文件缺失或离线时退回浏览器自带朗读 */
 const bufCache={};let curSrc=null,playToken=0;const said={};
-const voiceOn=()=>S.voice!==false;const voiceKind=()=>S.vk==='kid'?'kid':'adult';const audioDir=()=>voiceKind()==='kid'?'audio/kid/':'audio/';
+const voiceOn=()=>S.voice!==false;const TESTV=()=>{try{return localStorage.getItem('zilin_testvoice')==='1'}catch(_){return false}};/* ?teacher=1 打开隐藏的成人声/老师声选项（试听用） */
+const voiceKind=()=>(S.vk==='adult'||S.vk==='teacher')&&TESTV()?S.vk:'kid';const audioDir=()=>voiceKind()==='kid'?'audio/kid/':voiceKind()==='teacher'?'audio/teacher/':'audio/';
 function ctx(){AC=AC||new (window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume().catch(()=>{});return AC}
 document.addEventListener('pointerdown',()=>{try{ctx()}catch(_){}});
 /* iPad / iPhone：Web Audio 必须在第一次触摸里解锁，而且静音键打开时会被静音；循环播一个无声的 <audio> 能让系统把网页当成「正在播放」从而出声 */
@@ -429,7 +430,7 @@ function say(t,keys){
  next();
 }
 function setVoice(vk){stopVoice();if(vk==='off'){S.voice=false}else{S.voice=true;S.vk=vk}save();
- const b=$('#snd');b.textContent=!voiceOn()?'🔇':voiceKind()==='kid'?'🧒':'🔊';b.setAttribute('aria-pressed',voiceOn());
+ const b=$('#snd');b.textContent=!voiceOn()?'🔇':voiceKind()==='kid'?'🧒':voiceKind()==='teacher'?'👩‍🏫':'🔊';b.setAttribute('aria-pressed',voiceOn());
  document.querySelectorAll('#sndmenu button').forEach(x=>x.setAttribute('aria-pressed',x.dataset.vk===(voiceOn()?voiceKind():'off')));$('#sndmenu').hidden=true}
 function sayOnce(flag,t,key){if(said[flag])return;said[flag]=1;say(t,key)}
 /* ---------- 背景音乐：曲库（Kevin MacLeod，CC BY 4.0，见 music/CREDITS.txt）或自动生成的小调；人声出现时自动压低 ---------- */
@@ -901,6 +902,8 @@ $('#logoSvg').innerHTML=creatureSVG(BY['火']||ALL[0],2);
 fetch('data/meaning.json').then(r=>r.ok?r.json():{}).then(j=>Object.assign(MEAN,j)).catch(()=>{});
 fetch('art/manifest.json').then(r=>r.ok?r.json():[]).then(list=>{for(const k of list)ART.add(k)}).catch(()=>{});
 const FINE=window.matchMedia&&window.matchMedia('(pointer:fine)').matches;
+if(new URLSearchParams(location.search).get('teacher')==='1'){try{localStorage.setItem('zilin_testvoice','1')}catch(_){}}
+if(TESTV())document.querySelectorAll('#sndmenu .testv').forEach(b=>b.hidden=false);
 $('#snd').onclick=ev=>{ev.stopPropagation();$('#sndmenu').hidden=!$('#sndmenu').hidden};
 document.querySelectorAll('#sndmenu [data-vk]').forEach(b=>b.onclick=ev=>{ev.stopPropagation();setVoice(b.dataset.vk)});
 document.querySelectorAll('#sndmenu [data-music]').forEach(b=>{b.setAttribute('aria-pressed',b.dataset.music===musicMode());b.onclick=ev=>{ev.stopPropagation();setMusic(b.dataset.music)}});

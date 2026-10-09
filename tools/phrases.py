@@ -22,6 +22,9 @@ def numbered(py):
         else: return None
     return (out + (tone or "5")) if out else None
 
+import os
+PLAIN = os.environ.get("ZILIN_PLAIN") == "1"   # 老师克隆音色读注音标签会跑调，用它生成时直接写汉字（ZILIN_PLAIN=1）
+
 def load_data():
     html = (ROOT / "index.html").read_text(encoding="utf-8")
     return json.loads(re.search(r"^const DATA=(\[\[.*?\]\]);", html, re.M).group(1))
@@ -55,7 +58,7 @@ def char_phrase(row):
     单字用 Fish 的注音标签代替（标签是“替换”不是“标注”：写成 字+标签 会把字读两遍），保证多音字按字表读音。"""
     c, py, line = row[0], row[1], row[5]
     n = numbered(py)
-    head = f"<|phoneme_start|>{n}<|phoneme_end|>" if n else c
+    head = c if PLAIN else (f"<|phoneme_start|>{n}<|phoneme_end|>" if n else c)
     return f"{head}。{line}"
 
 def pinyin_phrase(key, item, items=None):
@@ -100,7 +103,7 @@ def load_meaning():
 def meaning_phrase(row, mean):
     """字义朗读：字（注音标签保证读音）。解释 词一，词二。文件名 m_<字>.mp3"""
     n = numbered(row[1])
-    head = f"<|phoneme_start|>{n}<|phoneme_end|>" if n else row[0]
+    head = row[0] if PLAIN else (f"<|phoneme_start|>{n}<|phoneme_end|>" if n else row[0])
     return f"{head}。{mean['m']}{'，'.join(mean['w'])}。"
 
 def meaning_phrases():

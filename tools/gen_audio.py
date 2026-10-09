@@ -25,7 +25,7 @@ VOICES = {   # 名字 -> (reference_id, 默认输出目录, 语速)
     "adult": ("faccba1a8ac54016bcfc02761285e67f", "audio", 0.88),       # 温柔动听女声
     "kid":   ("27bbdacb95f6449a806dd4a9ac85aba9", "audio/kid", 0.92),   # 小悠克隆（用美人鱼课绘本旁白训练的私有模型）
     "kid2":  ("8ab237c79d36417e84030674b8ab4cfd", "audio/kid2", 0.92),  # Fish 公共音色 童声·讲故事（备选）
-    "teacher": ("3b8efb017f58428791799d78ba02412f", "audio/teacher", 0.9),  # 金玉老师本人的克隆 v2（参考音频先降噪去爆破音；v1 是 50e0df03…）
+    "teacher": ("28fbae4b90d445f8ab8c6af33325a6ea", "audio/teacher", 0.9),  # 金玉老师本人的克隆 v3（参考音频高通 160Hz + 降噪，去掉爆破音重的古诗段；v1 50e0df03… v2 3b8efb01…）。用它生成要设 ZILIN_PLAIN=1（注音标签会跑调）
 }
 
 ap = argparse.ArgumentParser()
