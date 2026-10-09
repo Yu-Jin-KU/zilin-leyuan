@@ -14,3 +14,5 @@ art/_raw/
 tools/_kid_*
 __pycache__/
 推广消息.md
+sync/.wrangler/
+sync/node_modules/

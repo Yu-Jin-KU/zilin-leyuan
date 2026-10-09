@@ -12,6 +12,7 @@
 - `audio/`、`audio/kid/`：成人声 / 童声语音，`<字>.mp3` 和 `ui_*.mp3`（32 kbps 单声道）。
 - `data/`：笔顺 JSON（hanzi-writer-data，Arphic 许可）。拼音复合音节（zh、ang、yuan…）没有现成数据，由 `letterData()` 把单个字母的笔画拼接而成。
 - `lib/`、`fonts/`：不依赖任何 CDN。`sw.js` 离线缓存，改了核心文件记得把 VERSION 加一。
+- 家庭码云端备份（2026-10-09）：`sync/` 是 Cloudflare Worker + D1（`wrangler.toml`、`schema.sql`、`src/index.js`），接口 POST /new、GET/PUT /f/:code，服务器端按每个字取最高星合并，只存 {玩家id:{name,prog}}，不存画作和任何联系方式。前端在 index.html 的 `SYNC_API` 常量：为空则整个功能隐藏；填上 Worker 地址后 save() 会 4 秒防抖自动同步，选人页显示家庭码 + 二维码（lib/qrcode.min.js）+ 「找回进度」输入框，`?fam=CODE` 打开即恢复。本地联调：`cd sync && npx wrangler d1 execute zilin-sync --local --file=schema.sql && npx wrangler dev --port 8787 --local`，把 SYNC_API 临时指向 http://127.0.0.1:8787。部署：`npx wrangler login`（需在浏览器里登录拥有目标账号的 Cloudflare 用户）→ `npx wrangler d1 create zilin-sync`（把 database_id 填进 wrangler.toml）→ `npx wrangler d1 execute zilin-sync --remote --file=schema.sql` → `npx wrangler deploy`。
 - 2026-10-09 实测：Chrome/Edge 下 file:// 打开 index.html 时 fetch 被拦（笔顺 data/ 和语音 audio/ 都加载不出来），所以离线只能靠 PWA 缓存或本地 http 服务；README 和发布说明已改口。若要真正支持双击打开，需把 data/ 镜像成 `<script>` 可加载的 js、语音改走 `<audio>` 元素。
 - `tools/phrases.py`：所有要朗读的文本（字 + 注音标签 + 诗句；拼音读音 + 儿歌；提示语），gen / qa 共用。拼音项的读音用 `pinyin.json` 里的 `tag`（Fish 注音标签，一律一声：教拼音用一声音阶，2026-10-08 用户要求），儿歌里的字母串各按自己的 tag 读；`say` 只用于屏幕显示和无语音时的兜底。字母 i/j/ü 的点在 HDATA 里改成了正圆（原来是斜的，像四声符号）。
 - `tools/gen_audio.py`：生成语音；`tools/qa_audio.py`：用本地 faster-whisper 听写比对，找漏读乱读；`tools/pinyin.json`、`en_gloss.json`、`hsk30_chars.json`：数据源。
