@@ -12,6 +12,7 @@
 - `audio/`、`audio/kid/`：成人声 / 童声语音，`<字>.mp3` 和 `ui_*.mp3`（32 kbps 单声道）。
 - `data/`：笔顺 JSON（hanzi-writer-data，Arphic 许可）。拼音复合音节（zh、ang、yuan…）没有现成数据，由 `letterData()` 把单个字母的笔画拼接而成。
 - `lib/`、`fonts/`：不依赖任何 CDN。`sw.js` 离线缓存，改了核心文件记得把 VERSION 加一。
+- 2026-10-09 实测：Chrome/Edge 下 file:// 打开 index.html 时 fetch 被拦（笔顺 data/ 和语音 audio/ 都加载不出来），所以离线只能靠 PWA 缓存或本地 http 服务；README 和发布说明已改口。若要真正支持双击打开，需把 data/ 镜像成 `<script>` 可加载的 js、语音改走 `<audio>` 元素。
 - `tools/phrases.py`：所有要朗读的文本（字 + 注音标签 + 诗句；拼音读音 + 儿歌；提示语），gen / qa 共用。拼音项的读音用 `pinyin.json` 里的 `tag`（Fish 注音标签，一律一声：教拼音用一声音阶，2026-10-08 用户要求），儿歌里的字母串各按自己的 tag 读；`say` 只用于屏幕显示和无语音时的兜底。字母 i/j/ü 的点在 HDATA 里改成了正圆（原来是斜的，像四声符号）。
 - `tools/gen_audio.py`：生成语音；`tools/qa_audio.py`：用本地 faster-whisper 听写比对，找漏读乱读；`tools/pinyin.json`、`en_gloss.json`、`hsk30_chars.json`：数据源。
 - `设计/字灵卡美术方案.md` + `prompts_一年级.csv`：给 Gemini 出图的方案和 1161 条提示词；`tools/make_prompts.py` 可重新生成。
