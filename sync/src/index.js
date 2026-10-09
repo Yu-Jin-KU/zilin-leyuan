@@ -7,7 +7,7 @@
    data 只有 { 玩家id: { name, prog:{字:星} } }，不存画作，不存任何联系方式。
 
    教师版（见 teacher.html）
-   POST /c/new {name}           -> {code, key, name} 新建班级：班级码发给家长，老师钥匙只有老师留着
+   POST /c/new {name, invite}   -> {code, key, name} 新建班级（invite 须等于 secret TEACHER_INVITE，否则 403）：班级码发给家长，老师钥匙只有老师留着
    GET  /c/:code                -> {name, assign}    学生端取班级名和本周生字（只要班级码）
    PUT  /c/:code/members {fam, players}              学生设备把加入了这个班的名字和进度汇总上来（每个字取最高星）
    GET  /c/:code/report?key=K   -> {name, code, assign, members:[{id,name,prog,updated}]}
@@ -96,6 +96,7 @@ function cleanAssign(a) {
 async function classes(req, env, url) {
   if (url.pathname === '/c/new' && req.method === 'POST') {
     let b; try { b = await readJson(req, 2000); } catch (_) { return json({ error: 'bad json' }, 400); }
+    if (env.TEACHER_INVITE && String((b && b.invite) || '').trim() !== env.TEACHER_INVITE) return json({ error: 'invite' }, 403);   // 老师版暂不公开：建班要邀请码（wrangler secret TEACHER_INVITE）
     const name = String((b && b.name) || '').trim().slice(0, 30) || '我的班';
     for (let i = 0; i < 5; i++) {
       const code = newCode(8), key = newCode(16);

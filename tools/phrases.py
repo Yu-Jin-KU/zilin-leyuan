@@ -67,6 +67,8 @@ def pinyin_phrase(key, item, items=None):
         k = m.group(0)
         if items and k in items and items[k].get("tag"): return tag(items[k]["tag"])
         return say
+    if item.get("sent"):                      # 2026-10-10 起：一声的读音 + 一句含这个音的例句（儿歌只显示不读）
+        return f"{say}。{item['sent']}"
     line = re.sub(r"[a-zü]+", rep, item["line"])
     return f"{say}，{line}"
 
