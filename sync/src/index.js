@@ -13,11 +13,23 @@
    GET  /c/:code/report?key=K   -> {name, code, assign, members:[{id,name,prog,updated}]}
    PUT  /c/:code/assign?key=K {chars, note}          老师布置本周生字
    DELETE /c/:code/m/:id?key=K                       老师把一个名字从班里移除
+   GET  /c/:code                同时返回 roster（老师预先录的名单 [{id,name,en}]），家长加入时从名单里选孩子
+   PUT  /c/:code/roster?key=K {roster:[{id,name,en}]}  老师录名单；学生端上传时每个名字带 rid（名单里的 id），报告按名单合并多台设备
    GET  /stats                  -> 全站汇总：家庭数、1/7/30 天活跃、班级数、班里学生数（只有数字） */
 const ALPH = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 const CORS = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET,PUT,POST,DELETE,OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type', 'Access-Control-Max-Age': '86400' };
 const json = (o, s = 200) => new Response(JSON.stringify(o), { status: s, headers: { ...CORS, 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } });
 function newCode(n = 8) { const a = crypto.getRandomValues(new Uint8Array(n)); let s = ''; for (const b of a) s += ALPH[b % ALPH.length]; return s; }
+function cleanRoster(r) {
+  if (!Array.isArray(r)) return [];
+  const out = []; const seen = new Set();
+  for (const it of r.slice(0, 60)) {
+    const id = String((it && it.id) || '').replace(/[^\w-]/g, '').slice(0, 20) || ('r' + (out.length + 1));
+    if (seen.has(id)) continue; seen.add(id);
+    out.push({ id, name: String((it && it.name) || '').trim().slice(0, 16), en: String((it && it.en) || '').trim().slice(0, 30) });
+  }
+  return out.filter(x => x.name);
+}
 function cleanProg(prog) {
   const out = {};
   for (const [c, f] of Object.entries(prog || {})) { if (typeof c === 'string' && c.length <= 4) { const n = f | 0; if (n >= 1 && n <= 3) out[c] = n; } }
@@ -27,7 +39,7 @@ function clean(players) {
   const out = {}; if (!players || typeof players !== 'object') return out;
   for (const [id, p] of Object.entries(players).slice(0, 60)) {
     if (!/^[\w-]{1,32}$/.test(id) || !p || typeof p !== 'object') continue;
-    out[id] = { name: String(p.name || '').slice(0, 16), prog: cleanProg(p.prog) };
+    out[id] = { name: String(p.name || '').slice(0, 16), prog: cleanProg(p.prog), rid: String(p.rid || '').replace(/[^\w-]/g, '').slice(0, 20) };
   }
   return out;
 }
@@ -91,14 +103,14 @@ async function classes(req, env, url) {
     }
     return json({ error: 'retry' }, 500);
   }
-  const m = url.pathname.match(/^\/c\/([A-Z2-9]{8})(?:\/(members|report|assign|m\/([\w.-]{1,50})))?$/);
+  const m = url.pathname.match(/^\/c\/([A-Z2-9]{8})(?:\/(members|report|assign|roster|m\/([\w.-]{1,50})))?$/);
   if (!m) return json({ error: 'not found' }, 404);
   const code = m[1], sub = m[2] || '', mid = m[3];
-  const cls = await env.DB.prepare('SELECT code,key,name,assign FROM cls WHERE code=?1').bind(code).first();
+  const cls = await env.DB.prepare('SELECT code,key,name,assign,roster FROM cls WHERE code=?1').bind(code).first();
   if (!cls) return json({ error: 'no such class' }, 404);
-  const assign = JSON.parse(cls.assign || '{}');
+  const assign = JSON.parse(cls.assign || '{}'); const roster = JSON.parse(cls.roster || '[]');
 
-  if (!sub && req.method === 'GET') return json({ name: cls.name, assign });
+  if (!sub && req.method === 'GET') return json({ name: cls.name, assign, roster: roster.map(r => ({ id: r.id, name: r.name })) });
 
   if (sub === 'members' && req.method === 'PUT') {
     let b; try { b = await readJson(req); } catch (_) { return json({ error: 'bad json' }, 400); }
@@ -110,11 +122,11 @@ async function classes(req, env, url) {
       const old = await env.DB.prepare('SELECT prog FROM mem WHERE cls=?1 AND id=?2').bind(code, id).first();
       if (!old && (cnt.n + n) >= 60) break;
       const prog = old ? mergeProg(JSON.parse(old.prog), p.prog) : p.prog;
-      await env.DB.prepare('INSERT INTO mem(cls,id,name,prog,updated) VALUES(?1,?2,?3,?4,?5) ON CONFLICT(cls,id) DO UPDATE SET name=excluded.name,prog=excluded.prog,updated=excluded.updated')
-        .bind(code, id, p.name || '?', JSON.stringify(prog), now).run();
+      await env.DB.prepare('INSERT INTO mem(cls,id,name,prog,updated,rid) VALUES(?1,?2,?3,?4,?5,?6) ON CONFLICT(cls,id) DO UPDATE SET name=excluded.name,prog=excluded.prog,updated=excluded.updated,rid=excluded.rid')
+        .bind(code, id, p.name || '?', JSON.stringify(prog), now, p.rid || '').run();
       n++;
     }
-    return json({ ok: true, n, name: cls.name, assign });
+    return json({ ok: true, n, name: cls.name, assign, roster: roster.map(r => ({ id: r.id, name: r.name })) });
   }
 
   // 下面的都要老师钥匙
@@ -122,8 +134,14 @@ async function classes(req, env, url) {
   if (key !== cls.key) return json({ error: 'wrong key' }, 403);
 
   if (sub === 'report' && req.method === 'GET') {
-    const rows = (await env.DB.prepare('SELECT id,name,prog,updated FROM mem WHERE cls=?1 ORDER BY updated DESC').bind(code).all()).results || [];
-    return json({ name: cls.name, code, assign, members: rows.map(r => ({ id: r.id, name: r.name, prog: JSON.parse(r.prog), updated: r.updated })) });
+    const rows = (await env.DB.prepare('SELECT id,name,prog,updated,rid FROM mem WHERE cls=?1 ORDER BY updated DESC').bind(code).all()).results || [];
+    return json({ name: cls.name, code, assign, roster, members: rows.map(r => ({ id: r.id, name: r.name, prog: JSON.parse(r.prog), updated: r.updated, rid: r.rid || '' })) });
+  }
+  if (sub === 'roster' && req.method === 'PUT') {
+    let b; try { b = await readJson(req, 20000); } catch (_) { return json({ error: 'bad json' }, 400); }
+    const r = cleanRoster(b && b.roster);
+    await env.DB.prepare('UPDATE cls SET roster=?2,updated=?3 WHERE code=?1').bind(code, JSON.stringify(r), Date.now()).run();
+    return json({ roster: r });
   }
   if (sub === 'assign' && req.method === 'PUT') {
     let b; try { b = await readJson(req, 5000); } catch (_) { return json({ error: 'bad json' }, 400); }
