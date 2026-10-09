@@ -9,11 +9,12 @@
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="字灵乐园">
 <style>
 @font-face{font-family:'ZCOOL KuaiLe';src:url(fonts/ZCOOLKuaiLe-sub.woff2) format('woff2');font-display:swap}
+@font-face{font-family:'LXGW WenKai';src:url(fonts/LXGWWenKai-sub.woff2) format('woff2');font-display:swap}
 @font-face{font-family:'Andika';font-weight:400;src:url(fonts/Andika-Regular-sub.woff2) format('woff2');font-display:swap}
 @font-face{font-family:'Andika';font-weight:700;src:url(fonts/Andika-Bold-sub.woff2) format('woff2');font-display:swap}
 :root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
  --bg:#E8F6FF;--bg2:#CFEBFF;--ink:#1F2340;--soft:#5E6488;--paper:#FFFFFF;--line:#C9D8EA;--sun:#FFC72C;--berry:#FF5C8A;--grass:#3FBF6A;--btn:#2F6BFF;--locked:#E3E9F4;
- --han:'ZCOOL KuaiLe','Noto Sans CJK SC','PingFang SC','Microsoft YaHei',sans-serif;--lat:'Andika','Noto Sans',Arial,sans-serif}
+ --han:'ZCOOL KuaiLe','Noto Sans CJK SC','PingFang SC','Microsoft YaHei',sans-serif;--lat:'Andika','Noto Sans',Arial,sans-serif;--kai:'LXGW WenKai','Kaiti SC','STKaiti',KaiTi,'Noto Serif CJK SC',serif}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141A33;--bg2:#1D2547;--ink:#F2F4FF;--soft:#A9B0D6;--paper:#232C52;--line:#36406B;--locked:#2A3359}}
 :root[data-theme="dark"]{--bg:#141A33;--bg2:#1D2547;--ink:#F2F4FF;--soft:#A9B0D6;--paper:#232C52;--line:#36406B;--locked:#2A3359}
 *{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
@@ -44,7 +45,7 @@ h1{font-size:34px;margin:8px 0 4px;font-weight:400}h2{font-size:26px;margin:22px
 .fam{margin-top:22px;background:#fff;border-radius:16px;padding:12px 16px;box-shadow:0 2px 8px rgba(0,0,0,.06)}.fam summary{cursor:pointer;font-size:18px}.fam b{font-family:ui-monospace,Consolas,monospace;letter-spacing:2px;font-size:20px}.famin{margin-top:10px}#famqr{width:150px;margin:6px 0}#famqr svg{width:150px;height:150px;display:block}.famrow{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}.famrow button{font-size:17px;padding:8px 14px;border-radius:14px;background:var(--bg);border:3px solid var(--line)}
 .mean{background:#fff;border-radius:16px;padding:12px 16px;margin-top:10px;display:flex;gap:14px;align-items:center;box-shadow:0 2px 8px rgba(0,0,0,.06)}.mean[hidden]{display:none}.mean .em{font-size:54px;line-height:1;flex:0 0 auto}.mean p{margin:0;font-size:19px;line-height:1.5}.mean .w{color:var(--soft);font-size:17px;margin-top:4px}.mean .w b{color:var(--ink);margin-right:12px;font-weight:600}
 .srch{display:flex;gap:8px;align-items:center;margin:0 0 12px}.srch input{font:inherit;font-size:20px;padding:9px 14px;border-radius:999px;border:3px solid var(--line);background:var(--paper);color:var(--ink);flex:1 1 160px;min-width:0}.srch button{font-size:22px;width:48px;height:48px;border-radius:50%;background:var(--paper);border:3px solid var(--line)}.srch button[aria-pressed="true"]{background:var(--berry);color:#fff;border-color:transparent}.srch .x{font-size:18px}.found{background:#fff;border-radius:18px;padding:12px 16px;margin:0 0 14px;box-shadow:0 2px 8px rgba(0,0,0,.05)}.found h2{margin:0 0 8px;font-size:19px}
-.hw{background:#fff;border:3px solid var(--sun);border-radius:18px;padding:12px 16px;margin:4px 0 14px}.hwh{font-size:19px}.hwcs{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.hwc{font:inherit;font-size:26px;min-width:52px;padding:4px 8px;border-radius:12px;background:#f1f6fb;border:2px solid var(--line);display:inline-flex;flex-direction:column;align-items:center;line-height:1.1;color:var(--ink)}.hwc small{font-size:12px;color:#c9a200}.hwc.s3{background:#d7f5df;border-color:#8fd9a3}.hwc.s1,.hwc.s2{background:#fff7c2}.pg label{font-size:16px;margin-right:10px}
+.hw{background:#fff;border:3px solid var(--sun);border-radius:18px;padding:12px 16px;margin:4px 0 14px}.hwh{font-size:19px}.hwcs{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.hwc{font:inherit;font-family:var(--kai);font-size:26px;min-width:52px;padding:4px 8px;border-radius:12px;background:#f1f6fb;border:2px solid var(--line);display:inline-flex;flex-direction:column;align-items:center;line-height:1.1;color:var(--ink)}.hwc small{font-size:12px;color:#c9a200}.hwc.s3{background:#d7f5df;border-color:#8fd9a3}.hwc.s1,.hwc.s2{background:#fff7c2}.pg label{font-size:16px;margin-right:10px}
 .parentbtn{margin-top:18px;font-size:17px;padding:10px 16px;border-radius:14px;background:#fff;border:3px solid var(--line);text-align:left}
 .pg{text-align:left;background:var(--paper);color:var(--ink);border-radius:18px;padding:16px 18px;max-width:460px;margin:0 auto}.pg h2{margin:0 0 4px;font-size:22px}.pg ol{padding-left:0;margin:0;list-style:none}.pg li{margin:14px 0;padding-top:12px;border-top:2px dashed var(--line)}.pg li b.t{display:block;font-size:19px;margin-bottom:4px}.pg .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}.pg button,.pg select{font:inherit;font-size:16px;padding:8px 12px;border-radius:12px;background:var(--bg);border:3px solid var(--line);color:var(--ink)}.pg button.green{background:var(--grass);color:#fff;border-color:transparent}.pg .seg button[aria-pressed="true"]{background:var(--sun);color:#3a2a00}.pg .muted{font-size:14px;margin:6px 0 0}.pg .ok{color:#2a8a4a}.pg code{font-family:ui-monospace,Consolas,monospace;letter-spacing:2px;font-size:19px}
 #rest{position:fixed;inset:0;background:#0f1430;color:#fff;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;z-index:50;padding:24px}#rest.open{display:flex}#rest svg{width:170px;height:170px}#rest h1{font-size:28px;margin:10px 0 4px}#rest p{margin:4px 0;font-size:18px}#rest .cd{font-family:ui-monospace,Consolas,monospace;font-size:46px;margin:12px 0}#rest .gate{margin-top:28px;font-size:15px;color:#aab}#rest .gate button{font-size:15px;padding:6px 12px;border-radius:10px;background:#2a3160;color:#fff}#rest input{font:inherit;font-size:20px;width:80px;text-align:center;border-radius:10px;padding:5px;border:0}
@@ -64,7 +65,7 @@ h1{font-size:34px;margin:8px 0 4px;font-weight:400}h2{font-size:26px;margin:22px
 .tabs button[aria-selected="true"]{background:var(--sun);border-color:#E0A800;color:#3a2a00}
 .tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px}
 .tile{position:relative;background:var(--paper);border:3px solid var(--line);border-radius:20px;aspect-ratio:1/1.12;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px}
-.tile .ch{font-size:46px;line-height:1}.tile .ch.lat{font-family:var(--lat);font-weight:700}
+.tile .ch{font-size:46px;line-height:1;font-family:var(--kai)}.tile .ch.lat{font-family:var(--lat);font-weight:700}
 .tile .st{font-size:16px;color:#E0A800;letter-spacing:1px;margin-top:4px}
 .tile .mini{position:absolute;right:-6px;top:-10px;width:44px;height:44px}
 .tile.done{border-color:var(--grass)}
@@ -75,7 +76,7 @@ h1{font-size:34px;margin:8px 0 4px;font-weight:400}h2{font-size:26px;margin:22px
 .board svg.grid{position:absolute;inset:0;pointer-events:none}
 .board #hw{position:relative}
 .info{background:var(--paper);border-radius:26px;border:3px solid var(--line);padding:18px}
-.info .big-ch{font-size:72px;line-height:1}.info .big-ch.lat{font-family:var(--lat);font-weight:700}
+.info .big-ch{font-size:72px;line-height:1;font-family:var(--kai)}.info .big-ch.lat{font-family:var(--lat);font-weight:700}
 .info .py{font-family:var(--lat);font-size:30px}.info .da{font-family:var(--lat);font-size:20px;color:var(--soft)}
 .kind{display:inline-block;font-size:16px;border-radius:999px;padding:3px 12px;color:#fff;margin-top:14px}
 .poem{font-size:26px;line-height:1.6;margin:8px 0 2px}.poem b{color:var(--berry);font-weight:400}
@@ -217,7 +218,7 @@ function charCardSVG(e,f,opts={}){const uid='k'+hashStr(e.c)+(opts.uid||'');cons
  <text x="64" y="812" font-size="40" fill="#FFC72C">${'★'.repeat(f)}</text><text x="${64+f*44}" y="812" font-size="40" fill="#E3E9F4">${'★'.repeat(3-f)}</text>
  <text x="64" y="782" font-size="22" fill="#5E6488" font-family="${HAN_FONT}">${lat?'拼音':n+' 笔 · 部首 '+esc(e.rad)} · ${['普通','稀有','史诗','传说'][rar]}</text></svg>`}
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')}
-const HAN_FONT="'ZCOOL KuaiLe','Noto Sans CJK SC','PingFang SC','Microsoft YaHei',sans-serif";
+const HAN_FONT="'LXGW WenKai','Kaiti SC','STKaiti',KaiTi,'Noto Serif CJK SC',serif";/* 字卡和海报上的字用楷体（霞鹜文楷，OFL），不用卡通字体，免得孩子记错字形 */
 const LAT_FONT="'Andika','Noto Sans',Arial,sans-serif";
 // creature drawn in a 200x200 box
 function creatureSVG(e,f,opts={}){
@@ -407,6 +408,11 @@ const bufCache={};let curSrc=null,playToken=0;const said={};
 const voiceOn=()=>S.voice!==false;const voiceKind=()=>S.vk==='kid'?'kid':'adult';const audioDir=()=>voiceKind()==='kid'?'audio/kid/':'audio/';
 function ctx(){AC=AC||new (window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume().catch(()=>{});return AC}
 document.addEventListener('pointerdown',()=>{try{ctx()}catch(_){}});
+/* iPad / iPhone：Web Audio 必须在第一次触摸里解锁，而且静音键打开时会被静音；循环播一个无声的 <audio> 能让系统把网页当成「正在播放」从而出声 */
+let iosUnlocked=false;function iosUnlock(){if(iosUnlocked)return;iosUnlocked=true;try{const c=ctx();const b=c.createBuffer(1,1,22050);const src=c.createBufferSource();src.buffer=b;src.connect(c.destination);src.start(0)}catch(_){}
+ try{const n=2205,buf=new ArrayBuffer(44+n*2),v=new DataView(buf);const w=(o,t)=>{for(let i=0;i<t.length;i++)v.setUint8(o+i,t.charCodeAt(i))};w(0,'RIFF');v.setUint32(4,36+n*2,true);w(8,'WAVEfmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,22050,true);v.setUint32(28,44100,true);v.setUint16(32,2,true);v.setUint16(34,16,true);w(36,'data');v.setUint32(40,n*2,true);
+  const a=new Audio(URL.createObjectURL(new Blob([buf],{type:'audio/wav'})));a.loop=true;a.volume=0.01;a.setAttribute('playsinline','');a.play().catch(()=>{});window.__silent=a}catch(_){}}
+for(const ev of ['touchend','pointerup','click'])document.addEventListener(ev,iosUnlock,{once:false,passive:true});
 function loadClip(key){const ck=voiceKind()+'|'+key;if(!bufCache[ck]){bufCache[ck]=fetch(audioDir()+encodeURIComponent(key)+'.mp3').then(r=>{if(!r.ok)throw new Error(r.status);return r.arrayBuffer()}).then(ab=>new Promise((ok,bad)=>ctx().decodeAudioData(ab,ok,bad)));bufCache[ck].catch(()=>{delete bufCache[ck]})}return bufCache[ck]}
 function preloadVoice(keys){for(const k of keys)loadClip(k).catch(()=>{})}
 function stopVoice(){playToken++;if(curSrc){try{curSrc.stop()}catch(_){}curSrc=null}try{speechSynthesis.cancel()}catch(_){}try{duck(false)}catch(_){}}
@@ -462,7 +468,7 @@ function burst(x,y,n=14){const em=['⭐','✨','🌟','💫'];for(let i=0;i<n;i+
 const $=s=>document.querySelector(s);
 const mini=(e,f)=>`<svg viewBox="0 0 200 200" aria-hidden="true">${creatureSVG(e,f)}</svg>`;
 function setNav(v){document.querySelectorAll('#nav button').forEach(b=>b.setAttribute('aria-current',b.dataset.go===v));const p=me();$('#who').textContent=p?`${p.name} ⭐${totalStars(p)}`:'选人'}
-document.addEventListener('click',ev=>{const b=ev.target.closest('[data-go]');if(b){if(b.dataset.go!=='players'&&!me())return go('players');go(b.dataset.go)}});
+document.addEventListener('click',ev=>{const b=ev.target.closest('[data-go]');if(b){if(b.dataset.go!=='players'&&!me())return go('players');go(b.dataset.go,b.dataset.arg)}});
 let writer=null,autoT=null;
 function go(v,arg){if(writer){try{writer.cancelQuiz()}catch(_){}writer=null}closeModal();setNav(v);window.scrollTo(0,0);curView=v;({players,grades,write,album,poster,draw})[v](arg);playMusic(v==='write'?'write':(v==='album'||v==='poster')?'album':'menu')}
 function gradeTabs(cur,attr){return `<div class="tabs" role="tablist">${GRADES.map(g=>`<button role="tab" aria-selected="${g.id===cur}" ${attr}="${g.id}">${g.name}</button>`).join('')}</div>`}
@@ -777,7 +783,7 @@ function mascotHTML(e){const st=tribeStats(me(),e.tribe);return tribeArt(e.tribe
 /* ---------- 画给字灵：画板，作品存在本机卡册里 ---------- */
 function draw(c){const e=BY[c],p=me();const size=Math.max(260,Math.min(window.innerWidth-48,window.innerHeight-260,420));
  const COLORS=['#1F2340','#FF5C8A','#FF8C42','#FFC72C','#3FBF6A','#2F6BFF','#8A5CF6','#8B5A2B'];
- $('#main').innerHTML=`<button class="big ghost" data-go="write" style="font-size:18px;padding:8px 14px;margin-bottom:12px">← 回到 ${esc(e.c)}</button>
+ $('#main').innerHTML=`<button class="big ghost" data-go="write" data-arg="${esc(e.c)}" style="font-size:18px;padding:8px 14px;margin-bottom:12px">← 回到 ${esc(e.c)}</button>
  <div class="drawwrap"><div><div class="canvasbox" style="width:${size}px;height:${size}px"><canvas id="cv" width="${size*2}" height="${size*2}"></canvas></div>
   <div class="tools">${COLORS.map((col,i)=>`<button data-col="${col}" style="background:${col}" aria-pressed="${i===0}" aria-label="颜色"></button>`).join('')}<button data-col="#ffffff" aria-label="橡皮" style="background:#fff">⌫</button><button class="sz" data-sz="6">细</button><button class="sz" data-sz="14" aria-pressed="true">中</button><button class="sz" data-sz="28">粗</button><button class="sz" id="dUndo">撤销</button><button class="sz" id="dClear">清空</button></div></div>
  <div class="info"><div style="display:flex;gap:16px;align-items:center"><div class="big-ch ${e.letter?'lat':''}">${esc(e.c)}</div><div><div class="py">${esc(e.letter?(e.pg||'拼音'):e.p)}</div><div class="da">${esc(e.da)}${EN[e.c]?' · '+esc(EN[e.c]):''}</div></div><div class="mascot" style="margin-left:auto">${mascotHTML(e)}</div></div>
