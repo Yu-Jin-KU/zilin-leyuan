@@ -2,7 +2,7 @@
 
 「字灵乐园」是汉字 / 拼音笔顺小游戏，已发布在 GitHub Pages：
 
-- 网址：https://yu-jin-ku.github.io/zilin-leyuan/
+- 网址：https://ziling.danpicbook.com/
 - 仓库：https://github.com/Yu-Jin-KU/zilin-leyuan （GitHub 账号 Yu-Jin-KU，本机 `gh` 已登录）
 - 本地目录就是仓库工作区：改完 `git commit` + `git push`，一两分钟后网站自动更新。
 
