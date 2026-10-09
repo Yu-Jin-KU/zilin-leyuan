@@ -25,7 +25,7 @@ VOICES = {   # 名字 -> (reference_id, 默认输出目录, 语速)
     "adult": ("faccba1a8ac54016bcfc02761285e67f", "audio", 0.88),       # 温柔动听女声
     "kid":   ("27bbdacb95f6449a806dd4a9ac85aba9", "audio/kid", 0.92),   # 小悠克隆（用美人鱼课绘本旁白训练的私有模型）
     "kid2":  ("8ab237c79d36417e84030674b8ab4cfd", "audio/kid2", 0.92),  # Fish 公共音色 童声·讲故事（备选）
-    "teacher": ("50e0df039a7c4c34987064ddc40152fe", "audio/teacher", 0.9),  # 金玉老师本人的克隆（2026-10-10 用 tools/_我的声音 的录音训练，私有）
+    "teacher": ("3b8efb017f58428791799d78ba02412f", "audio/teacher", 0.9),  # 金玉老师本人的克隆 v2（参考音频先降噪去爆破音；v1 是 50e0df03…）
 }
 
 ap = argparse.ArgumentParser()
