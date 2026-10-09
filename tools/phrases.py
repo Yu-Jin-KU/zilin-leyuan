@@ -81,7 +81,29 @@ def all_phrases():
         out.append((r[0], char_phrase(r)))
     for k, t in UI.items():
         out.append((k, t))
+    out += meaning_phrases()
     return out
+
+def load_meaning():
+    """tools/meaning.tsv：字<TAB>小朋友版解释<TAB>两个词（空格分开）<TAB>表情（可空）。没有文件就返回空。"""
+    f = ROOT / "tools" / "meaning.tsv"
+    if not f.exists(): return {}
+    out = {}
+    for ln in f.read_text(encoding="utf-8").splitlines():
+        if not ln.strip() or ln.startswith("#"): continue
+        c, m, w, e = (ln.split("	") + ["", "", ""])[:4]
+        out[c] = {"m": m, "w": w.split(), "e": e}
+    return out
+
+def meaning_phrase(row, mean):
+    """字义朗读：字（注音标签保证读音）。解释 词一，词二。文件名 m_<字>.mp3"""
+    n = numbered(row[1])
+    head = f"<|phoneme_start|>{n}<|phoneme_end|>" if n else row[0]
+    return f"{head}。{mean['m']}{'，'.join(mean['w'])}。"
+
+def meaning_phrases():
+    mean = load_meaning()
+    return [("m_" + r[0], meaning_phrase(r, mean[r[0]])) for r in load_data() if r[0] in mean]
 
 if __name__ == "__main__":
     import sys, io
