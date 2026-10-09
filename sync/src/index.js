@@ -15,6 +15,7 @@
    DELETE /c/:code/m/:id?key=K                       老师把一个名字从班里移除
    GET  /c/:code                同时返回 roster（老师预先录的名单 [{id,name,en}]），家长加入时从名单里选孩子
    PUT  /c/:code/roster?key=K {roster:[{id,name,en}]}  老师录名单；学生端上传时每个名字带 rid（名单里的 id），报告按名单合并多台设备
+   GET  /yt                     -> 频道全部视频 {videos:[{id,title}]}（抓频道页 + 翻页，缓存 1 小时）
    GET  /stats                  -> 全站汇总：家庭数、1/7/30 天活跃、班级数、班里学生数（只有数字） */
 const ALPH = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 const CORS = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET,PUT,POST,DELETE,OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type', 'Access-Control-Max-Age': '86400' };
@@ -157,11 +158,55 @@ async function classes(req, env, url) {
   return json({ error: 'method' }, 405);
 }
 
+/* 频道视频列表（给绘本 / 古诗页面自动补链接）：抓 YouTube 频道页的 ytInitialData，再用页面里的 innertube key 翻页。
+   GET /yt -> {videos:[{id,title}], at}   缓存 1 小时 */
+const YT_CHANNEL = 'UC6JD2Ej48LIp_iLkkFN6Xqg';
+function* walk(o) { if (o && typeof o === 'object') { yield o; for (const v of Object.values(o)) yield* walk(v); } }
+function pickVideos(data, out, seen) {
+  let cont = null;
+  for (const o of walk(data)) {
+    if (o.videoRenderer && o.videoRenderer.videoId) {
+      const vr = o.videoRenderer; const id = vr.videoId; if (seen.has(id)) continue; seen.add(id);
+      const title = (vr.title && vr.title.runs && vr.title.runs.map(r => r.text).join('')) || '';
+      out.push({ id, title });
+    }
+    if (o.continuationItemRenderer && o.continuationItemRenderer.continuationEndpoint && o.continuationItemRenderer.continuationEndpoint.continuationCommand) cont = o.continuationItemRenderer.continuationEndpoint.continuationCommand.token;
+  }
+  return cont;
+}
+async function ytVideos() {
+  const cache = caches.default; const key = new Request('https://zilin-sync.cache/yt/' + YT_CHANNEL);
+  const hit = await cache.match(key); if (hit) return hit;
+  // 先用公开的 RSS（最近 15 条，不会被 Google 的机器人拦截）；频道页抓取只作补充
+  try {
+    const xml = await (await fetch(`https://www.youtube.com/feeds/videos.xml?channel_id=${YT_CHANNEL}`, { headers: { 'user-agent': 'Mozilla/5.0' } })).text();
+    const ids = [...xml.matchAll(/<yt:videoId>([^<]+)<\/yt:videoId>/g)].map(m => m[1]);
+    const titles = [...xml.matchAll(/<media:title>([^<]*)<\/media:title>/g)].map(m => m[1].replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'"));
+    if (ids.length) {
+      const res = new Response(JSON.stringify({ videos: ids.map((id, i) => ({ id, title: titles[i] || '' })), source: 'rss', at: Date.now() }), { headers: { ...CORS, 'content-type': 'application/json; charset=utf-8', 'cache-control': 'public, max-age=1800' } });
+      await cache.put(key, res.clone()); return res;
+    }
+  } catch (_) {}
+  const html = await (await fetch(`https://www.youtube.com/channel/${YT_CHANNEL}/videos?hl=zh-CN`, { headers: { 'accept-language': 'zh-CN,zh;q=0.9', 'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36', 'cookie': 'CONSENT=YES+1; SOCS=CAI' } })).text();
+  const m = html.match(/ytInitialData\s*=\s*(\{.*?\});\s*<\/script>/s) || html.match(/ytInitialData\s*=\s*(\{.*?\});/s); if (!m) return json({ error: 'no data', len: html.length, head: html.slice(0, 400), consent: /consent/i.test(html) }, 502);
+  const apiKey = (html.match(/"INNERTUBE_API_KEY":"([^"]+)"/) || [])[1]; const ver = (html.match(/"INNERTUBE_CLIENT_VERSION":"([^"]+)"/) || [])[1] || '2.20240101.00.00';
+  const out = [], seen = new Set(); let cont = pickVideos(JSON.parse(m[1]), out, seen);
+  for (let i = 0; cont && apiKey && i < 12; i++) {
+    const r = await fetch(`https://www.youtube.com/youtubei/v1/browse?key=${apiKey}&prettyPrint=false`, { method: 'POST', headers: { 'content-type': 'application/json', 'user-agent': 'Mozilla/5.0', 'x-youtube-client-name': '1', 'x-youtube-client-version': ver },
+      body: JSON.stringify({ context: { client: { clientName: 'WEB', clientVersion: ver, hl: 'zh-CN', gl: 'DK' } }, continuation: cont }) });
+    if (!r.ok) break;
+    cont = pickVideos(await r.json(), out, seen);
+  }
+  const res = new Response(JSON.stringify({ videos: out, at: Date.now() }), { headers: { ...CORS, 'content-type': 'application/json; charset=utf-8', 'cache-control': 'public, max-age=3600' } });
+  await cache.put(key, res.clone()); return res;
+}
+
 export default {
   async fetch(req, env) {
     if (req.method === 'OPTIONS') return new Response(null, { headers: CORS });
     const url = new URL(req.url);
     try {
+      if (url.pathname === '/yt' && req.method === 'GET') return await ytVideos();
       if (url.pathname === '/stats' && req.method === 'GET') {   // 只给汇总数字，不含任何个人信息
         const now = Date.now(), d1 = now - 864e5, d7 = now - 7 * 864e5, d30 = now - 30 * 864e5;
         const f = await env.DB.prepare('SELECT COUNT(*) n, SUM(updated>?1) d1, SUM(updated>?2) d7, SUM(updated>?3) d30, SUM(created>?2) new7 FROM fam').bind(d1, d7, d30).first();
