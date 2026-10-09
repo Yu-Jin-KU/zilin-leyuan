@@ -41,7 +41,10 @@ h2 small{font-size:15px;margin-left:8px}
 main{max-width:1100px;margin:0 auto;padding:16px}
 h1{font-size:34px;margin:8px 0 4px;font-weight:400}h2{font-size:26px;margin:22px 0 10px;font-weight:400}
 .muted{color:var(--soft)}
-.fam{margin-top:22px;background:#fff;border-radius:16px;padding:12px 16px;box-shadow:0 2px 8px rgba(0,0,0,.06)}.fam summary{cursor:pointer;font-size:18px}.fam b{font-family:ui-monospace,Consolas,monospace;letter-spacing:2px;font-size:20px}.famin{margin-top:10px}#famqr{width:150px;margin:6px 0}#famqr svg{width:150px;height:150px;display:block}
+.fam{margin-top:22px;background:#fff;border-radius:16px;padding:12px 16px;box-shadow:0 2px 8px rgba(0,0,0,.06)}.fam summary{cursor:pointer;font-size:18px}.fam b{font-family:ui-monospace,Consolas,monospace;letter-spacing:2px;font-size:20px}.famin{margin-top:10px}#famqr{width:150px;margin:6px 0}#famqr svg{width:150px;height:150px;display:block}.famrow{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}.famrow button{font-size:17px;padding:8px 14px;border-radius:14px;background:var(--bg);border:3px solid var(--line)}
+.parentbtn{margin-top:18px;font-size:17px;padding:10px 16px;border-radius:14px;background:#fff;border:3px solid var(--line);text-align:left}
+.pg{text-align:left;background:var(--paper);color:var(--ink);border-radius:18px;padding:16px 18px;max-width:460px;margin:0 auto}.pg h2{margin:0 0 4px;font-size:22px}.pg ol{padding-left:0;margin:0;list-style:none}.pg li{margin:14px 0;padding-top:12px;border-top:2px dashed var(--line)}.pg li b.t{display:block;font-size:19px;margin-bottom:4px}.pg .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}.pg button,.pg select{font:inherit;font-size:16px;padding:8px 12px;border-radius:12px;background:var(--bg);border:3px solid var(--line);color:var(--ink)}.pg button.green{background:var(--grass);color:#fff;border-color:transparent}.pg .seg button[aria-pressed="true"]{background:var(--sun);color:#3a2a00}.pg .muted{font-size:14px;margin:6px 0 0}.pg .ok{color:#2a8a4a}.pg code{font-family:ui-monospace,Consolas,monospace;letter-spacing:2px;font-size:19px}
+#rest{position:fixed;inset:0;background:#0f1430;color:#fff;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;z-index:50;padding:24px}#rest.open{display:flex}#rest svg{width:170px;height:170px}#rest h1{font-size:28px;margin:10px 0 4px}#rest p{margin:4px 0;font-size:18px}#rest .cd{font-family:ui-monospace,Consolas,monospace;font-size:46px;margin:12px 0}#rest .gate{margin-top:28px;font-size:15px;color:#aab}#rest .gate button{font-size:15px;padding:6px 12px;border-radius:10px;background:#2a3160;color:#fff}#rest input{font:inherit;font-size:20px;width:80px;text-align:center;border-radius:10px;padding:5px;border:0}
 /* players */
 .players{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-top:16px}
 .pl{background:var(--paper);border:3px solid var(--line);border-radius:22px;padding:14px;font-size:24px;text-align:center}
@@ -160,6 +163,7 @@ h1{font-size:34px;margin:8px 0 4px;font-weight:400}h2{font-size:26px;margin:22px
 <main id="main"></main>
 <div id="print" aria-hidden="true"></div>
 <div class="modal" id="modal" role="dialog" aria-modal="true"><div class="mbox" id="mbox"></div></div>
+<div id="rest" role="dialog" aria-modal="true" aria-label="休息一下"></div>
 <script src="lib/hanzi-writer.min.js"></script><script src="lib/qrcode.min.js"></script>
 <script>
 const PINYIN={"_说明":"人教版一年级上册汉语拼音教学顺序。say = 朗读时代表这个音的汉字（必要时后面跟 Fish 注音标签）；line = 儿歌，里面的拉丁字母在朗读时会替换成 say 的读音。","groups":[{"name":"单韵母","lesson":"第1、2课","items":["a","o","e","i","u","ü"]},{"name":"声母","lesson":"第2到8课","items":["y","w","b","p","m","f","d","t","n","l","g","k","h","j","q","x","z","c","s","zh","ch","sh","r"]},{"name":"复韵母","lesson":"第9到11课","items":["ai","ei","ui","ao","ou","iu","ie","üe","er"]},{"name":"鼻韵母","lesson":"第12、13课","items":["an","en","in","un","ün","ang","eng","ing","ong"]},{"name":"整体认读音节","lesson":"第2到13课","items":["zhi","chi","shi","ri","zi","ci","si","yi","wu","yu","ye","yue","yuan","yin","yun","ying"]}],"items":{"a":{"say":"啊","line":"张大嘴巴 a a a","lesson":1,"lesson_2024":1},"o":{"say":"喔","line":"圆圆嘴巴 o o o","lesson":1,"lesson_2024":1},"e":{"say":"鹅","line":"扁扁嘴巴 e e e","lesson":1,"lesson_2024":1},"i":{"say":"衣","line":"牙齿对齐 i i i","lesson":2,"lesson_2024":2},"u":{"say":"乌","line":"嘴巴突出 u u u","lesson":2,"lesson_2024":2},"ü":{"say":"迂","line":"嘴吹口哨 ü ü ü","lesson":2,"lesson_2024":2},"y":{"say":"衣","line":"树杈树杈 y y y","lesson":2,"lesson_2024":9},"w":{"say":"乌","line":"屋顶屋顶 w w w","lesson":2,"lesson_2024":9},"b":{"say":"玻","line":"右下半圆 b b b","lesson":3,"lesson_2024":3},"p":{"say":"坡","line":"右上半圆 p p p","lesson":3,"lesson_2024":3},"m":{"say":"摸","line":"两个门洞 m m m","lesson":3,"lesson_2024":3},"f":{"say":"佛","line":"一根拐杖 f f f","lesson":3,"lesson_2024":3},"d":{"say":"得","line":"左下半圆 d d d","lesson":4,"lesson_2024":4},"t":{"say":"特","line":"伞柄朝下 t t t","lesson":4,"lesson_2024":4},"n":{"say":"讷","line":"一个门洞 n n n","lesson":4,"lesson_2024":4},"l":{"say":"勒","line":"一根小棒 l l l","lesson":4,"lesson_2024":4},"g":{"say":"哥","line":"9字加弯 g g g","lesson":5,"lesson_2024":5},"k":{"say":"科","line":"蝌蚪水草 k k k","lesson":5,"lesson_2024":5},"h":{"say":"喝","line":"一把椅子 h h h","lesson":5,"lesson_2024":5},"j":{"say":"基","line":"竖弯加点 j j j","lesson":6,"lesson_2024":6},"q":{"say":"欺","line":"左上半圆 q q q","lesson":6,"lesson_2024":6},"x":{"say":"希","line":"一个大叉 x x x","lesson":6,"lesson_2024":6},"z":{"say":"资","line":"像个2字 z z z","lesson":7,"lesson_2024":7},"c":{"say":"雌","line":"半个圆圈 c c c","lesson":7,"lesson_2024":7},"s":{"say":"思","line":"半个8字 s s s","lesson":7,"lesson_2024":7},"zh":{"say":"知","line":"z加h zh zh zh，织毛衣 zh zh zh","lesson":8,"lesson_2024":8},"ch":{"say":"吃","line":"c加h ch ch ch，吃苹果 ch ch ch","lesson":8,"lesson_2024":8},"sh":{"say":"诗","line":"s加h sh sh sh，小狮子 sh sh sh","lesson":8,"lesson_2024":8},"r":{"say":"日","line":"小苗发芽 r r r","lesson":8,"lesson_2024":8},"ai":{"say":"哀","line":"弟弟矮 ai ai ai","lesson":9,"lesson_2024":10},"ei":{"say":"诶","line":"干活用劲 ei ei ei","lesson":9,"lesson_2024":10},"ui":{"say":"威","line":"围上围巾 ui ui ui","lesson":9,"lesson_2024":10},"ao":{"say":"熬","line":"冬天穿袄 ao ao ao","lesson":10,"lesson_2024":11},"ou":{"say":"欧","line":"莲花长藕 ou ou ou","lesson":10,"lesson_2024":11},"iu":{"say":"优","line":"邮筒邮信 iu iu iu","lesson":10,"lesson_2024":11},"ie":{"say":"耶","line":"一棵椰树 ie ie ie","lesson":11,"lesson_2024":12},"üe":{"say":"约","line":"月亮月亮 üe üe üe","lesson":11,"lesson_2024":12},"er":{"say":"儿","line":"一只耳朵 er er er","lesson":11,"lesson_2024":12},"an":{"say":"安","line":"马匹配鞍 an an an","lesson":12,"lesson_2024":13},"en":{"say":"恩","line":"点点头 en en en","lesson":12,"lesson_2024":13},"in":{"say":"因","line":"树下乘凉 in in in","lesson":12,"lesson_2024":13},"un":{"say":"温","line":"蚊子叫 un un un","lesson":12,"lesson_2024":13},"ün":{"say":"晕","line":"白云朵朵 ün ün ün","lesson":12,"lesson_2024":13},"ang":{"say":"昂","line":"小手肮脏 ang ang ang","lesson":13,"lesson_2024":14},"eng":{"say":"鞥<|phoneme_start|>eng1<|phoneme_end|>","line":"打开电灯 eng eng eng","lesson":13,"lesson_2024":14},"ing":{"say":"英","line":"老鹰飞翔 ing ing ing","lesson":13,"lesson_2024":14},"ong":{"say":"翁","line":"天上彩虹 ong ong ong","lesson":13,"lesson_2024":14},"zhi":{"say":"知","line":"白鸽飞上小树枝 zhi zhi zhi","lesson":8,"lesson_2024":8},"chi":{"say":"吃","line":"测量长度小皮尺 chi chi chi","lesson":8,"lesson_2024":8},"shi":{"say":"诗","line":"大家一起背唐诗 shi shi shi","lesson":8,"lesson_2024":8},"ri":{"say":"日","line":"冉冉升起大红日 ri ri ri","lesson":8,"lesson_2024":8},"zi":{"say":"资","line":"手握毛笔写大字 zi zi zi","lesson":7,"lesson_2024":7},"ci":{"say":"雌","line":"小小刺猬满身刺 ci ci ci","lesson":7,"lesson_2024":7},"si":{"say":"思","line":"春蚕结茧吐细丝 si si si","lesson":7,"lesson_2024":7},"yi":{"say":"衣","line":"微风拂面柳依依 yi yi yi","lesson":2,"lesson_2024":9},"wu":{"say":"乌","line":"大家一起来跳舞 wu wu wu","lesson":2,"lesson_2024":9},"yu":{"say":"迂","line":"乌云密布要下雨 yu yu yu","lesson":2,"lesson_2024":9},"ye":{"say":"耶","line":"水珠滚滚绿荷叶 ye ye ye","lesson":11,"lesson_2024":12},"yue":{"say":"约","line":"点点星空挂明月 yue yue yue","lesson":11,"lesson_2024":12},"yuan":{"say":"冤","line":"绿树红花小花园 yuan yuan yuan","lesson":12,"lesson_2024":13},"yin":{"say":"因","line":"榆槐树下绿成荫 yin yin yin","lesson":12,"lesson_2024":13},"yun":{"say":"晕","line":"蓝蓝天上飘白云 yun yun yun","lesson":12,"lesson_2024":13},"ying":{"say":"英","line":"蓝蓝天上飞雄鹰 ying ying ying","lesson":13,"lesson_2024":14}}};
@@ -448,8 +452,9 @@ function players(){
  $('#main').innerHTML=`<h1>谁来写字？</h1><p class="muted">点自己的名字。每个人的星星和卡片分开保存在这台设备上${S.fam?'，并自动备份到云端':''}。</p>
  <div class="players">${list.map(([id,p])=>`<button class="pl" data-p="${id}">${esc(p.name)}<small>⭐ ${totalStars(p)}　🃏 ${Object.keys(p.prog).length}</small></button>`).join('')}</div>
  <div class="addp"><input id="pname" maxlength="16" placeholder="写上名字，比如 Emil 或 小明" aria-label="新名字"><button class="big green" id="padd">加一个人</button></div>
- <div id="fambox"></div>`;
- famRefresh();
+ <div id="fambox"></div>
+ <button class="parentbtn" id="pguide">👨‍👩‍👧 家长看这里：加到主屏幕 · 没网也能玩 · 保存进度 · 每次玩多久</button>`;
+ famRefresh();$('#pguide').onclick=parentGuide;
  document.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{S.cur=b.dataset.p;save();go('grades')});
  const add=()=>{const n=$('#pname').value.trim();if(!n)return $('#pname').focus();const id='p'+Date.now();S.players[id]={name:n,prog:{}};S.cur=id;save();go('grades')};
  $('#padd').onclick=add;$('#pname').onkeydown=e=>{if(e.key==='Enter')add()};
@@ -459,12 +464,80 @@ function famRefresh(){
  const box=$('#fambox');if(!box||!SYNC_API)return;const n=Object.keys(S.players).length;
  const st=S.fam?(S.syncAt?'上次备份 '+new Date(S.syncAt).toLocaleString('zh-CN',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}):'等待联网后自动备份'):(n?'联网后会自动生成家庭码并备份':'加了名字以后会自动生成家庭码');
  box.innerHTML=`<details class="fam"${S.fam?'':' open'}><summary>☁️ 家庭码 ${S.fam?`<b>${famFmt(S.fam)}</b>`:''}<small class="muted"> · ${st}</small></summary><div class="famin">
-  ${S.fam?`<div id="famqr"></div><p>进度会自动备份到云端。换平板、换浏览器，或者浏览器数据被清掉时，在新设备输入这个家庭码（或用相机扫二维码），所有人的进度都会回来。请家长记下：<b>${famFmt(S.fam)}</b></p>`:''}
+  ${S.fam?`<div id="famqr"></div><p>进度会自动备份到云端。换平板、换浏览器，或者浏览器数据被清掉时，在新设备输入这个家庭码（扫二维码或点链接也行），所有人的进度都会回来。</p>
+  <div class="famrow"><button id="famshare">📤 发给自己</button><button id="famcopy">📋 复制家庭码</button></div><p class="muted">请家长把它存到不会丢的地方：微信文件传输助手、手机备忘录，或者拍张照都行。</p>`:''}
   <div class="addp"><input id="famcode" maxlength="9" placeholder="输入家庭码，比如 AB2C-D3EF" autocapitalize="characters" autocomplete="off" aria-label="家庭码"><button class="big" id="famgo">找回进度</button></div><p class="muted" id="fammsg"></p></div></details>`;
  const qr=$('#famqr');if(qr&&window.qrcode){try{const q=qrcode(0,'M');q.addData(location.origin+location.pathname+'?fam='+S.fam);q.make();qr.innerHTML=q.createSvgTag({cellSize:4,margin:2,scalable:true})}catch(_){}}
  const go2=async()=>{const c=($('#famcode').value||'').toUpperCase().replace(/[^A-Z2-9]/g,'');if(c.length!==8)return $('#fammsg').textContent='家庭码是 8 个字母和数字';$('#fammsg').textContent='正在找回…';const r=await joinFamily(c);if(r===true)players();else $('#fammsg').textContent=r};
  $('#famgo').onclick=go2;$('#famcode').onkeydown=e=>{if(e.key==='Enter')go2()};
+ if($('#famshare')){$('#famshare').onclick=()=>famShare($('#fammsg'));$('#famcopy').onclick=()=>famCopy($('#fammsg'))}
 }
+/* 家庭码「发给自己」：有系统分享就弹分享面板（微信、备忘录、邮件随便选），没有就复制到剪贴板 */
+const famText=()=>`字灵乐园 家庭码 ${famFmt(S.fam)}\n换设备找回进度，点这个链接就行：${location.origin+location.pathname}?fam=${S.fam}`;
+async function famCopy(msgEl){let ok=false;try{await navigator.clipboard.writeText(famText());ok=true}catch(_){}
+ if(!ok){try{const ta=document.createElement('textarea');ta.value=famText();ta.style.cssText='position:fixed;left:-999px';document.body.appendChild(ta);ta.select();ok=document.execCommand('copy');ta.remove()}catch(_){}}
+ if(msgEl)msgEl.textContent=ok?'已复制，粘贴到微信文件传输助手或备忘录里存好就行':'复制不了，请手动记下：'+famFmt(S.fam)}
+async function famShare(msgEl){if(navigator.share){try{await navigator.share({title:'字灵乐园家庭码',text:famText()});return}catch(e){if(e&&e.name==='AbortError')return}}return famCopy(msgEl)}
+/* ---------- 家长看这里：加到主屏幕、离线下载、家庭码、时间限制 ---------- */
+let installPrompt=null;window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e;pgInstallRow()});
+const isStandalone=()=>{try{return matchMedia('(display-mode: standalone)').matches||navigator.standalone===true}catch(_){return false}};
+const isIOS=()=>/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+function pgInstallRow(){const el=$('#pgInstall');if(!el)return;
+ if(isStandalone())el.innerHTML='<span class="ok">✅ 已经加到主屏幕了，以后从桌面图标打开就行。</span>';
+ else if(installPrompt)el.innerHTML='<button class="green" id="pgDoInstall">一键加到主屏幕</button>';
+ else if(isIOS())el.innerHTML='<span>点浏览器的 <b>分享按钮 ⬆️</b>（Safari 在底部，Chrome 在地址栏右边），往下翻，选 <b>「添加到主屏幕」</b>，再点右上角「添加」。</span>';
+ else el.innerHTML='<span>点浏览器右上角的 <b>⋮ 菜单</b>，选 <b>「添加到主屏幕」</b> 或 <b>「安装应用」</b>。</span>';
+ const b=$('#pgDoInstall');if(b)b.onclick=async()=>{try{installPrompt.prompt();await installPrompt.userChoice}catch(_){}installPrompt=null;setTimeout(pgInstallRow,800)}}
+const UI_CLIPS=['ui_again3','ui_almost','ui_card','ui_chief','ui_crack','ui_evolve','ui_good1','ui_good2','ui_good3','ui_good4','ui_good5','ui_good6','ui_good7','ui_good8','ui_hatch','ui_hint','ui_intro','ui_keep','ui_retry','ui_star1','ui_star2','ui_star3','ui_start','ui_summon','ui_tryagain','ui_watch','ui_welcome','ui_who'];
+const MUSIC_FILES=['music/menu_fluffing_a_duck.mp3','music/write_carefree.mp3','music/write_wallpaper.mp3','music/album_monkeys.mp3'];
+function offlineUrls(g){const u=[];for(const e of GRADES[g].items){const k=encodeURIComponent(e.c);if(!e.letter)u.push('data/'+k+'.json');u.push('audio/'+k+'.mp3','audio/kid/'+k+'.mp3')}
+ for(const k of UI_CLIPS)u.push('audio/'+k+'.mp3','audio/kid/'+k+'.mp3');u.push(...MUSIC_FILES);return u}
+const offlineMB=g=>Math.max(1,Math.round((GRADES[g].items.length*22+5500)/1024));
+async function pgOfflineStatus(){const el=$('#pgDlMsg'),g=+$('#pgGrade').value;if(!el)return;const items=GRADES[g].items;let have=0;
+ try{for(const e of items){const k=encodeURIComponent(e.c);if(await caches.match(e.letter?'audio/'+k+'.mp3':'data/'+k+'.json'))have++}}catch(_){el.textContent='';return}
+ if($('#pgGrade')&&+$('#pgGrade').value!==g)return;el.textContent=have>=items.length?'✅ 这个级别已经全部存在这台设备上了':have?`这台设备已存 ${have}/${items.length} 个字，点一下只补缺的`:'还没存，点「下载到这台设备」'}
+async function pgDownload(){const g=+$('#pgGrade').value,el=$('#pgDlMsg'),btn=$('#pgDl');if(!navigator.onLine)return el.textContent='现在没有网，连上网再下载';
+ const urls=offlineUrls(g);let done=0,fail=0;btn.disabled=true;el.textContent='正在下载 0/'+urls.length;
+ let cacheName=null;try{if(navigator.serviceWorker)await Promise.race([navigator.serviceWorker.ready,new Promise(r=>setTimeout(r,3000))]);cacheName=(await caches.keys()).find(k=>k.startsWith('zilin-'))}catch(_){}
+ const q=urls.slice();const work=async()=>{while(q.length){const u=q.shift();try{if(!(await caches.match(u))){const r=await fetch(u);if(!r.ok)throw 0;if(!navigator.serviceWorker.controller&&cacheName){const c=await caches.open(cacheName);await c.put(u,r.clone())}}}catch(_){fail++}done++;if(done%10===0||done===urls.length)el.textContent=`正在下载 ${done}/${urls.length}`}};
+ await Promise.all([0,1,2,3,4,5].map(work));btn.disabled=false;
+ el.textContent=fail?`存好了 ${urls.length-fail} 个文件，还有 ${fail} 个没下来（网络不稳），再点一次只会补缺的`:'✅ 下载好了，这个级别的字没网也能写（背景音乐和提示音也存好了）'}
+function parentGuide(){
+ const lim=limitMin();
+ $('#mbox').innerHTML=`<div class="pg"><h2>👨‍👩‍👧 家长看这里</h2><p class="muted">三步设置好，剩下的孩子自己玩。</p><ol>
+ <li><b class="t">① 加到主屏幕</b>像 App 一样全屏打开，桌面上有图标，孩子点不到浏览器里别的东西。<div class="row" id="pgInstall"></div></li>
+ <li><b class="t">② 没网也能玩</b>把要练的级别先存到这台设备上，以后坐车、出门没网也能写。<div class="row"><select id="pgGrade" aria-label="选级别">${GRADES.map(g=>`<option value="${g.id}">${g.name}（${g.items.length} 个，约 ${offlineMB(g.id)} MB）</option>`).join('')}</select><button class="green" id="pgDl">下载到这台设备</button></div><p class="muted" id="pgDlMsg"></p></li>
+ <li><b class="t">③ 进度不会丢</b>${S.fam?`进度自动备份到云端，钥匙就是这个家庭码：<code>${famFmt(S.fam)}</code>。请存到不会丢的地方，微信文件传输助手、手机备忘录、拍张照都行。换设备时点那个链接或输入家庭码，所有人的进度都回来。<div class="row"><button id="pgShare">📤 发给自己</button><button id="pgCopy">📋 复制</button></div><p class="muted" id="pgFamMsg"></p>`:'加了名字并联网以后会自动生成一个家庭码做云端备份，到时候记一下就行。'}<p class="muted">清理浏览器数据或换平板之前，联网打开一次，选人页看到「上次备份」是刚刚，就放心。</p></li>
+ <li><b class="t">⏰ 每次玩多久</b>到时间会出现休息画面，休息 10 分钟才能继续；家长答一道乘法题可以提前解锁。<div class="row seg" id="pgLimit">${[[0,'不限'],[15,'15 分钟'],[20,'20 分钟'],[30,'30 分钟']].map(([v,t])=>`<button data-lim="${v}" aria-pressed="${v===lim}">${t}</button>`).join('')}</div></li>
+ </ol><div class="row" style="justify-content:center;margin-top:16px"><button class="big" id="mClose">好了</button></div></div>`;
+ $('#modal').classList.add('open');pgInstallRow();
+ $('#pgGrade').value=String(S.grade||0);$('#pgGrade').onchange=pgOfflineStatus;pgOfflineStatus();$('#pgDl').onclick=pgDownload;
+ if($('#pgShare')){$('#pgShare').onclick=()=>famShare($('#pgFamMsg'));$('#pgCopy').onclick=()=>famCopy($('#pgFamMsg'))}
+ document.querySelectorAll('#pgLimit button').forEach(b=>b.onclick=()=>{S.limit=+b.dataset.lim;S.playMs=0;save();document.querySelectorAll('#pgLimit button').forEach(x=>x.setAttribute('aria-pressed',x===b))});
+ $('#mClose').onclick=closeModal;
+}
+/* ---------- 休息提醒：连续玩够 S.limit 分钟（默认 20，0 = 不限）就强制休息 REST_MIN 分钟，家长答题可解锁 ---------- */
+const REST_MIN=10;let lastAct=Date.now(),restTimer=null;
+document.addEventListener('pointerdown',()=>{lastAct=Date.now()});
+const limitMin=()=>S.limit===undefined?20:S.limit;
+function tickPlay(){const now=Date.now(),gap=now-(S.tick||now);S.tick=now;
+ if(S.restUntil&&now<S.restUntil){rawSave();return showRest()}
+ if(!limitMin()){rawSave();return}
+ if(gap>30*60000)S.playMs=0;/* 隔了半小时以上算新的一次 */
+ else if(document.visibilityState==='visible'&&now-lastAct<90000)S.playMs=(S.playMs||0)+Math.min(gap,20000);/* 只算屏幕亮着、手在动的时间 */
+ if(S.playMs>=limitMin()*60000){S.restUntil=now+REST_MIN*60000;S.playMs=0;rawSave();return showRest()}
+ rawSave()}
+setInterval(tickPlay,15000);
+function showRest(){const el=$('#rest');if(el.classList.contains('open'))return;stopVoice();stopMusic();closeModal();
+ el.innerHTML=`<svg viewBox="0 0 200 200" id="restSvg"></svg><h1>写了好一会儿啦，休息一下 👀</h1><p>看看窗外远处的东西，让眼睛歇一歇。</p><p>休息好了，字灵还在这儿等你。</p><div class="cd" id="restCd"></div>
+ <div class="gate">家长解锁：<span id="gateQ"></span> = <input id="gateA" inputmode="numeric" maxlength="3" aria-label="答案"> <button id="gateGo">解锁</button> <span id="gateMsg"></span></div>`;
+ el.classList.add('open');try{$('#restSvg').innerHTML=$('#logoSvg').innerHTML}catch(_){}
+ const a=3+Math.floor(Math.random()*7),b=4+Math.floor(Math.random()*6);$('#gateQ').textContent=`${a} × ${b}`;
+ const unlock=()=>{if(+$('#gateA').value===a*b)endRest();else{$('#gateMsg').textContent='不对哦';$('#gateA').value=''}};
+ $('#gateGo').onclick=unlock;$('#gateA').onkeydown=e=>{if(e.key==='Enter')unlock()};
+ const cd=()=>{const left=S.restUntil-Date.now();if(left<=0)return endRest();$('#restCd').textContent=`${Math.floor(left/60000)}:${String(Math.floor(left%60000/1000)).padStart(2,'0')}`};
+ cd();clearInterval(restTimer);restTimer=setInterval(cd,1000)}
+function endRest(){clearInterval(restTimer);S.restUntil=0;S.playMs=0;rawSave();const el=$('#rest');el.classList.remove('open');el.innerHTML='';playMusic(curView==='write'?'write':(curView==='album'||curView==='poster')?'album':'menu')}
 /* ---------- grades ---------- */
 function grades(gid){
  if(gid!==undefined){S.grade=gid;save()}
@@ -786,6 +859,7 @@ else if(/[?&]print=(\d+)/.test(location.search)){/* 导出打印版 PDF：index.
  $('#print').innerHTML=list.map((e,i)=>`<div class="pcard">${charCardSVG(e,3,{uid:'p'+i})}</div>`).join('');document.body.classList.add('printing');document.title='字灵卡 '+list.length+' 张'}
 else{const famParam=new URLSearchParams(location.search).get('fam');
  if(SYNC_API&&famParam&&/^[A-Z2-9]{8}$/i.test(famParam)){history.replaceState(null,'',location.pathname);joinFamily(famParam.toUpperCase()).then(r=>{go('players');if(r!==true&&$('#fammsg'))$('#fammsg').textContent=r})}
- else{go(me()?'grades':'players');scheduleSync()}}
+ else{go(me()?'grades':'players');scheduleSync()}
+ tickPlay()}
 </script>
 </body></html>
