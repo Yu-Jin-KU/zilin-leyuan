@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+Disallow: /teacher.html
+Sitemap: https://ziling.danpicbook.com/sitemap.xml
