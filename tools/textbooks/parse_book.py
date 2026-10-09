@@ -40,6 +40,10 @@ def parse(stem):
             if l['h'] >= 45 and l['y'] < 260 and l['x'] < 220 and re.fullmatch(r'\d{1,2}', l['t'].strip()):
                 n = int(l['t'])
                 if 1 <= n <= 15 and n not in starts: starts[n] = i
+    try:   # 手工指定课头页（OCR 没认出大数字时）：overrides.json 里 "zwNN": {"_starts": {"9": 84}}
+        ov = json.loads((ROOT / 'tools' / 'textbooks' / 'overrides.json').read_text(encoding='utf-8')).get(Path(stem).name, {}).get('_starts', {})
+        for k, v in ov.items(): starts[int(k)] = int(v)
+    except Exception as e: print('override error', e)
     lessons = sorted(starts.items())
     # 本册的音序生字表是后面第一个「生字表」标题页，到「生词表」标题页为止（后面还会有前几册的累计表，不能要）
     heading = lambda p, word: any(word in l['t'].replace(' ', '') and l['h'] >= 25 for l in p)
