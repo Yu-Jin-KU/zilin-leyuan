@@ -55,7 +55,7 @@ h1{font-size:34px;margin:8px 0 4px;font-weight:400}h2{font-size:26px;margin:22px
 /* players */
 .players{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-top:16px}
 .pl{background:var(--paper);border:3px solid var(--line);border-radius:22px;padding:14px;font-size:24px;text-align:center}
-.pl small{display:block;font-size:15px;color:var(--soft);margin-top:4px}
+.pl small{display:block;font-size:15px;color:var(--soft);margin-top:4px}.plw{position:relative}.plw .pl{width:100%}.pldel{position:absolute;top:-6px;right:-6px;width:30px;height:30px;border-radius:50%;border:2px solid var(--line);background:var(--paper);color:var(--soft);font-size:14px;line-height:1;padding:0;cursor:pointer}.big.red{background:var(--berry);box-shadow:0 5px 0 #7d2443}
 .addp{display:flex;gap:8px;margin-top:18px;flex-wrap:wrap}
 .addp input{font:inherit;font-size:22px;padding:10px 14px;border-radius:16px;border:3px solid var(--line);background:var(--paper);color:var(--ink);min-width:0;flex:1 1 200px}
 .big{background:var(--btn);color:#fff;font-size:22px;border-radius:18px;padding:12px 22px;box-shadow:0 5px 0 #1C46B3}
@@ -374,9 +374,9 @@ let syncTimer=null,syncing=false;
 function scheduleSync(){if(!SYNC_API||!Object.keys(S.players).length)return;clearTimeout(syncTimer);syncTimer=setTimeout(syncNow,120000)}/* 攒 2 分钟再上传（本地已即时保存，离开页面时立刻补传）：一直玩的孩子每小时最多 30 次同步 */
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&syncTimer){clearTimeout(syncTimer);syncTimer=null;syncNow(true)}});
 const slimPlayers=()=>Object.fromEntries(Object.entries(S.players).map(([id,p])=>[id,{name:p.name,prog:p.prog||{}}]));
-function mergeRemote(data){let changed=false;for(const [id,p] of Object.entries(data||{})){let q=S.players[id];if(!q){q=S.players[id]={name:p.name||'?',prog:{}};changed=true}q.prog=q.prog||{};for(const [c,f] of Object.entries(p.prog||{}))if((q.prog[c]||0)<f){q.prog[c]=f;changed=true}}return changed}
+function mergeRemote(data){let changed=false;for(const [id,p] of Object.entries(data||{})){if(id==='_del'){for(const d of Object.keys(p||{}))if(S.players[d]){delete S.players[d];if(S.cur===d)S.cur=null;changed=true}continue}if((S.del||[]).includes(id))continue;/* 别的设备删掉的名字，这里也删；本机刚删还没传上去的，不合并回来 */let q=S.players[id];if(!q){q=S.players[id]={name:p.name||'?',prog:{}};changed=true}q.prog=q.prog||{};for(const [c,f] of Object.entries(p.prog||{}))if((q.prog[c]||0)<f){q.prog[c]=f;changed=true}}return changed}
 async function syncNow(leaving){if(syncing||!navigator.onLine||!Object.keys(S.players).length)return;syncing=true;
- try{if(!S.fam){const r=await fetch(SYNC_API+'/new',{method:'POST'});if(!r.ok)throw 0;S.fam=(await r.json()).code;rawSave()}
+ try{await syncDel();if(!S.fam){const r=await fetch(SYNC_API+'/new',{method:'POST'});if(!r.ok)throw 0;S.fam=(await r.json()).code;rawSave()}
   const r=await fetch(SYNC_API+'/f/'+S.fam,{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify(slimPlayers()),keepalive:!!leaving});
   if(r.status===404){S.fam=null;rawSave();syncing=false;return syncNow()}
   if(!r.ok)throw 0;const j=await r.json();mergeRemote(j.data);S.syncAt=Date.now();rawSave();if($('#fammsg'))famRefresh();await syncClasses(leaving)}catch(_){}
@@ -486,15 +486,23 @@ function gradeTabs(cur,attr){return `<div class="tabs" role="tablist">${GRADES.m
 function players(){
  const list=Object.entries(S.players);
  $('#main').innerHTML=`<h1>谁来写字？</h1><p class="muted">点自己的名字。每个人的星星和卡片分开保存在这台设备上${S.fam?'，并自动备份到云端':''}。</p>
- <div class="players">${list.map(([id,p])=>`<button class="pl" data-p="${id}">${esc(p.name)}<small>⭐ ${totalStars(p)}　🃏 ${Object.keys(p.prog).length}</small></button>`).join('')}</div>
+ <div class="players">${list.map(([id,p])=>`<div class="plw"><button class="pl" data-p="${id}">${esc(p.name)}<small>⭐ ${totalStars(p)}　🃏 ${Object.keys(p.prog).length}</small></button><button class="pldel" data-del="${id}" aria-label="删除 ${esc(p.name)}" title="删除这个名字">✕</button></div>`).join('')}</div>
  <div class="addp"><input id="pname" maxlength="16" placeholder="写上名字，比如 Emil 或 小明" aria-label="新名字"><button class="big green" id="padd">加一个人</button></div>
  <div id="fambox"></div>
  <button class="parentbtn" id="pguide">👨‍👩‍👧 家长看这里<small>加到主屏幕 · 没网也能玩 · 保存进度 · 每次玩多久</small>${clsStatus()}</button>`;
  famRefresh();$('#pguide').onclick=parentGuide;
  document.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{S.cur=b.dataset.p;save();go('grades')});
+ document.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>confirmDel(b.dataset.del));
  const add=()=>{const n=$('#pname').value.trim();if(!n)return $('#pname').focus();const id='p'+Date.now();S.players[id]={name:n,prog:{}};S.cur=id;save();if(S.clsPending){players();parentGuide({cls:S.clsPending})}else go('grades')};
  $('#padd').onclick=add;$('#pname').onkeydown=e=>{if(e.key==='Enter')add()};
 }
+/* 删掉一个名字（比如建重了）：说明会删掉什么，家长算术确认后，本机和云端备份（含班级汇总）一起删，不可恢复 */
+function confirmDel(id){const p=S.players[id];if(!p)return;const a=3+Math.floor(Math.random()*7),b=4+Math.floor(Math.random()*6);
+ $('#mbox').innerHTML=`<div class="pg"><h2>🗑️ 删除「${esc(p.name)}」？</h2><p>这个名字的 <b>${totalStars(p)} 颗星星、${Object.keys(p.prog||{}).length} 张卡片</b>和全部进度都会删掉${S.fam?'，云端备份和班级里的记录也一起删掉':''}。<b>删了就找不回来了。</b></p><p class="muted">只是想换个名字？先加一个新名字，再把旧的删掉就行。</p><div class="gate" style="margin-top:12px;color:var(--soft)">家长确认：<b>${a} × ${b}</b> = <input id="delA" inputmode="numeric" maxlength="3" aria-label="答案" style="width:64px;font:inherit;font-size:18px;text-align:center;border-radius:10px;border:3px solid var(--line);background:var(--paper);color:var(--ink)"> <span id="delMsg"></span></div><div class="row" style="justify-content:center;margin-top:16px;gap:12px"><button class="big ghost" id="delNo">不删了</button><button class="big red" id="delYes">删除</button></div></div>`;
+ $('#modal').classList.add('open');$('#delNo').onclick=closeModal;
+ $('#delYes').onclick=()=>{if(+$('#delA').value!==a*b){$('#delMsg').textContent='不对哦';$('#delA').value='';$('#delA').focus();return}closeModal();delPlayer(id)}}
+async function delPlayer(id){delete S.players[id];if(S.cur===id)S.cur=null;for(const k of ['cls','clsRid','dayMs'])if(S[k])delete S[k][id];S.del=(S.del||[]).filter(x=>x!==id).concat(S.fam?[id]:[]);rawSave();players();await syncDel()}
+async function syncDel(){if(!SYNC_API||!S.fam||!(S.del||[]).length||!navigator.onLine)return;for(const id of [...S.del]){try{const r=await fetch(SYNC_API+'/f/'+S.fam+'/p/'+encodeURIComponent(id),{method:'DELETE'});if(r.ok||r.status===404){S.del=S.del.filter(x=>x!==id);rawSave()}}catch(_){}}}
 const famFmt=c=>c.slice(0,4)+'-'+c.slice(4);
 function famRefresh(){
  const box=$('#fambox');if(!box||!SYNC_API)return;const n=Object.keys(S.players).length;

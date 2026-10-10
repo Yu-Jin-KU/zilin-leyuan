@@ -4,6 +4,7 @@
    POST /new                    -> {code}            新建一个家庭码（8 位，去掉易混字母）
    GET  /f/:code                -> {data, updated}   取回这个家庭的进度
    PUT  /f/:code  body          -> {data, updated}   上传并合并（每个字取最高星，名字以最新为准）
+   DELETE /f/:code/p/:pid       -> {ok}             家长删掉一个名字：云端备份和班级汇总里一起删；data._del 记墓碑，别的设备再传也不会复活
    data 只有 { 玩家id: { name, prog:{字:星} } }，不存画作，不存任何联系方式。
 
    教师版（见 teacher.html）
@@ -50,8 +51,9 @@ function clean(players) {
 }
 function mergeProg(a, b) { const out = { ...a }; for (const [c, f] of Object.entries(b)) out[c] = Math.max(out[c] || 0, f); return out; }
 function merge(base, inc) {
-  const out = { ...base };
+  const out = { ...base }; const del = base._del || {};
   for (const [id, p] of Object.entries(inc)) {
+    if (id === '_del' || del[id]) continue;   // 删过的名字不再合并回来
     const q = out[id] ? { name: out[id].name, prog: { ...out[id].prog } } : { name: p.name, prog: {} };
     if (p.name) q.name = p.name;
     q.prog = mergeProg(q.prog, p.prog);
@@ -72,6 +74,15 @@ async function family(req, env, url) {
       try { await env.DB.prepare('INSERT INTO fam(code,data,updated,created) VALUES(?1,?2,?3,?3)').bind(c, '{}', Date.now()).run(); return json({ code: c }); } catch (_) {}
     }
     return json({ error: 'retry' }, 500);
+  }
+  const d = url.pathname.match(/^\/f\/([A-Z2-9]{8})\/p\/([\w.-]{1,50})$/);   // 家长删掉一个名字（知道家庭码即可）
+  if (d && req.method === 'DELETE') {
+    const r = await env.DB.prepare('SELECT data FROM fam WHERE code=?1').bind(d[1]).first();
+    if (!r) return json({ error: 'no such code' }, 404);
+    const data = JSON.parse(r.data); delete data[d[2]]; data._del = { ...(data._del || {}), [d[2]]: Date.now() };
+    await env.DB.prepare('UPDATE fam SET data=?2,updated=?3 WHERE code=?1').bind(d[1], JSON.stringify(data), Date.now()).run();
+    try { await env.DB.prepare('DELETE FROM mem WHERE id=?1').bind(d[1] + '.' + d[2]).run(); } catch (_) {}
+    return json({ ok: true });
   }
   const m = url.pathname.match(/^\/f\/([A-Z2-9]{8})$/);
   if (!m) return json({ error: 'not found' }, 404);
