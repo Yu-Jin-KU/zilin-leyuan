@@ -25,3 +25,6 @@ _media/
 .wrangler/
 sync/.ntfy_topic
 sync/.vapid.json
+
+# 语音原文件（成人声 / 童声 / 老师声）只留在本机做备份，页面从 Cloudflare Worker 托管地址加载，不再进 git
+audio/

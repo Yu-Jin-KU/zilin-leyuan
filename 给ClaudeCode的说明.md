@@ -9,7 +9,7 @@
 ## 目录
 
 - `index.html`：游戏本体。字表 DATA、拼音表 PINYIN、英文释义 EN、HSK 表 HSK 都内嵌在里面（由 `tools/patch_*.js` 从 `tools/*.json` 注入过，之后直接改 index.html 即可）。
-- `audio/`、`audio/kid/`：成人声 / 童声语音，`<字>.mp3` 和 `ui_*.mp3`（32 kbps 单声道）。
+- `audio/`、`audio/kid/`：成人声 / 童声语音，`<字>.mp3` 和 `ui_*.mp3`（32 kbps 单声道）。（本机备份，不进 git；线上用 MEDIA/MEDIA2 托管地址）
 - `data/`：笔顺 JSON（hanzi-writer-data，Arphic 许可）。拼音复合音节（zh、ang、yuan…）没有现成数据，由 `letterData()` 把单个字母的笔画拼接而成。
 - `lib/`、`fonts/`：不依赖任何 CDN。`sw.js` 离线缓存，改了核心文件记得把 VERSION 加一。
 - 家庭码云端备份（2026-10-09）：`sync/` 是 Cloudflare Worker + D1（`wrangler.toml`、`schema.sql`、`src/index.js`），接口 POST /new、GET/PUT /f/:code，服务器端按每个字取最高星合并，只存 {玩家id:{name,prog}}，不存画作和任何联系方式。前端在 index.html 的 `SYNC_API` 常量：为空则整个功能隐藏；填上 Worker 地址后 save() 会 4 秒防抖自动同步，选人页显示家庭码 + 二维码（lib/qrcode.min.js）+ 「找回进度」输入框，`?fam=CODE` 打开即恢复。本地联调：`cd sync && npx wrangler d1 execute zilin-sync --local --file=schema.sql && npx wrangler dev --port 8787 --local`，把 SYNC_API 临时指向 http://127.0.0.1:8787。部署：`npx wrangler login`（需在浏览器里登录拥有目标账号的 Cloudflare 用户）→ `npx wrangler d1 create zilin-sync`（把 database_id 填进 wrangler.toml）→ `npx wrangler d1 execute zilin-sync --remote --file=schema.sql` → `npx wrangler deploy`。
@@ -66,7 +66,8 @@
 - 构建：`python -X utf8 tools/build_media.py` 把 audio/ 三套和 D:\美人鱼课\绘本_*\ 的 assets、audio/{zh,en,da} 整理到 `_media/`（不进 git，可断点续跑）；然后 `cd media && npx wrangler deploy`、`cd media2 && npx wrangler deploy`（只上传有变化的文件）。
 - 新生成或改了语音后：先跑 gen_audio，再 build_media + deploy。
 - 绘本目录 `data/books.json` 由 `tools/build_books.py` 生成：每本书每页的文字、有哪些语言旁白、有没有配图，以及「字 / 拼音 → 哪本书哪一页」的索引（规则见脚本开头）。字页 / 拼音页的「📖 绘本里的…」、动画页的「翻书听故事」、阅读器（视图 `book`，自动连播、中英丹切换、读完接着下一本）都用它。
-- 仓库里的 audio/ 目录暂时保留做备份，页面已不再引用；确认托管稳定后可以删掉以缩小仓库。
+- 2026-10-10 起 audio/ 不再进 git（.gitignore），文件仍留在本机 audio/ 做原始备份，build_media.py 和 gen_audio.py 照旧读写它；页面只从托管地址加载。历史提交里仍有旧音频，要彻底清掉得重写历史（未做）。
+- 绘本 / 连播正文和字页绘本块的中文用楷体（var(--kai)，LXGW WenKai 子集 6806 字，覆盖做完的书里除 晞曈焜 外全部字）；英 / 丹用 Andika。
 
 ## 用量预警 / 每日上限（2026-10-10 起）
 - 只有 zilin-sync Worker 的请求计入免费额度（每天 10 万次）；静态资源（音频、配图、books.json）不计。Worker 抽样计数（D1 表 usage），cron 每 30 分钟检查，60% / 90% / 100% 各推送一次（Web Push，订阅存 D1 表 push，`POST /push/sub?key=邀请码`）。
