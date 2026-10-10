@@ -87,10 +87,21 @@ for book in sorted(BOOKS.glob('绘本_*')):
 for b in books:   # ready：中文旁白齐（≥80% 页）且配图过半，动画页才给「翻书听故事」；没做完的书页面上不出现
     n = len(b['pages']) or 1
     b['ready'] = 1 if sum(1 for p in b['pages'] if 'zh' in p['au']) >= 0.8 * n and sum(1 for p in b['pages'] if p['img']) >= 0.5 * n else 0
-out = {'books': books, 'idx': idx}
+# 第二档 occ：没有专门讲它的页，就找做完的书里「句子里出现这个字」的页（最多 3 页：词语页 > 诗句页 > 句子短的），页面上标成「绘本里有「X」的句子」
+occ = {}
+rank = {'word': 0, 'poem': 1, 'poem_full': 1}
+for bi, b in enumerate(books):
+    if not b['ready']: continue
+    for p in b['pages']:
+        if 'zh' not in p['au'] or not p['img'] or p['k'] in ('cover', 'secret'): continue
+        for c in set(p['zh']):
+            if c in BY and c not in idx: occ.setdefault(c, []).append((rank.get(p['k'], 2), len(p['zh']), bi, p['n']))
+occ = {c: [[bi, n] for _, _, bi, n in sorted(v)[:3]] for c, v in occ.items()}
+out = {'books': books, 'idx': idx, 'occ': occ}
 (ROOT / 'data' / 'books.json').write_text(json.dumps(out, ensure_ascii=False, separators=(',', ':')), encoding='utf-8')
 npg = sum(len(b['pages']) for b in books)
 print(f"{len(books)} 本（做完的 {sum(b['ready'] for b in books)} 本），{npg} 页，索引 {len(idx)} 个字/拼音项，有视频链接的书 {sum(1 for b in books if b['lib'] is not None)} 本，books.json {round((ROOT/'data'/'books.json').stat().st_size/1e3)} KB")
 print('没做完的书：', [b['t'] for b in books if not b['ready']])
+print('第二档（句子里出现）又覆盖', len(occ), '个字')
 print('没对上的 slug', len(unmatched), unmatched[:25])
 print('拼音项覆盖', sum(1 for k in PY if k in idx), '/', len(PY), '缺', [k for k in PY if k not in idx])
