@@ -601,7 +601,7 @@ function grades(gid){
  const pyHtml=PINYIN.groups.map(g=>{const its=L.filter(e=>e.pg===g.name);return its.length?`<h2>${g.name}<small class="muted">${g.lesson||''}</small></h2><div class="tiles">${its.map(tile).join('')}</div>`:''}).join('');
  const hw=(()=>{const C=myClass();const A=C&&C.assign.chars||[];if(!C||!A.length)return '';const done=A.filter(c=>starsOf(c)).length;return `<div class="hw"><div class="hwh">🏫 ${esc(C.name)} · 老师留的字 <b>${done}/${A.length}</b>${done>=A.length?' 全部完成 🎉':''}</div>${C.assign.note?`<p class="muted" style="margin:4px 0">${esc(C.assign.note)}</p>`:''}<div class="hwcs">${A.map(c=>BY[c]?`<button class="hwc s${starsOf(c)}" data-w="${esc(c)}" aria-label="写 ${esc(c)}">${esc(c)}<small>${'★'.repeat(starsOf(c))||'·'}</small></button>`:`<span class="hwc s0" title="这个字字库里还没有">${esc(c)}</span>`).join('')}</div></div>`})();
  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
- const srch=`<div class="srch"><input id="q" placeholder="找字：打一个字或拼音${SR?'，或者按话筒说出来':''}" autocomplete="off" aria-label="找字" value="${esc(S.q||'')}">${SR?'<button id="mic" title="说出要找的字" aria-label="语音找字" aria-pressed="false">🎤</button>':''}<button class="x" id="qx" title="清空" aria-label="清空">✕</button></div><div id="found"></div>`;
+ const srch=`<div class="srch"><input id="q" placeholder="找字：打一个字或拼音，或者按话筒说出来" autocomplete="off" aria-label="找字" value="${esc(S.q||'')}"><button id="mic" title="说出要找的字" aria-label="语音找字" aria-pressed="false">🎤</button><button class="x" id="qx" title="清空" aria-label="清空">✕</button></div><p class="muted" id="micmsg" style="margin:4px 0 0;display:none"></p><div id="found"></div>`;
  $('#main').innerHTML=hw+srch+`<div class="viewsw"><button data-view="grade" aria-pressed="${!hsk}">按年级</button><button data-view="hsk" aria-pressed="${hsk}">按 HSK</button><button class="big purple" id="daily" style="margin-left:auto;font-size:17px;padding:6px 14px">🎯 今日闯关</button></div>`+head+`
  <p class="muted">${sub}。已经召唤 ${got} / ${items.length} 只字灵。写得越好，字灵进化得越厉害：1 星小字灵，2 星字灵，3 星字灵大王。</p>
  ${S.tf&&TYPES[S.tf]?`<button class="chip" id="tfclear">只看 ${TYPES[S.tf].n} ✕</button>`:''}${S.tfb&&TRIBE_BY_ID[S.tfb]?`<button class="chip" id="tfbclear">只看 ${TRIBE_BY_ID[S.tfb].emoji} ${TRIBE_BY_ID[S.tfb].name} ✕</button>`:''}
@@ -615,9 +615,14 @@ function grades(gid){
   box.innerHTML=`<div class="found"><h2>${r.length?`找到 ${r.length} 个字，点一个开始写`:'没找到这个字，换个说法试试'}</h2>${r.length?`<div class="tiles">${r.map(tile).join('')}</div>`:''}</div>`;
   box.querySelectorAll('[data-w]').forEach(b=>b.onclick=()=>go('write',b.dataset.w))};
  $('#q').oninput=showFound;$('#qx').onclick=()=>{$('#q').value='';showFound();$('#q').focus()};if(S.q)showFound();
- if($('#mic')){$('#mic').onclick=()=>{try{const rec=new SR();rec.lang='zh-CN';rec.interimResults=false;rec.maxAlternatives=3;const b=$('#mic');b.setAttribute('aria-pressed','true');$('#q').placeholder='请说…';
-   rec.onresult=ev=>{const alts=[...ev.results[0]].map(a=>a.transcript).join('');$('#q').value=alts.replace(/[。，！？\s]/g,'').slice(0,12);showFound()};
-   rec.onerror=()=>{$('#q').placeholder='没听清，再试一次'};rec.onend=()=>{b.setAttribute('aria-pressed','false')};rec.start()}catch(_){}}}
+ const micMsg=t=>{const m=$('#micmsg');m.textContent=t;m.style.display=t?'':'none'};
+ const standalone=navigator.standalone===true||matchMedia('(display-mode: standalone)').matches,ios=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+ $('#mic').onclick=()=>{micMsg('');if(!SR){micMsg(ios?(standalone?'从主屏幕打开的版本不能用语音找字。请打开 Safari，输入 ziling.danpicbook.com 再按话筒。':'这个浏览器不支持语音找字。iPad 上请用 Safari 打开 ziling.danpicbook.com 再试。'):'这个浏览器不支持语音找字，请换 Chrome、Edge 或 Safari。');return}
+  if(!navigator.onLine){micMsg('语音找字需要联网。');return}
+  const b=$('#mic');let got=false;try{const rec=new SR();rec.lang='zh-CN';rec.interimResults=false;rec.maxAlternatives=3;rec.continuous=false;b.setAttribute('aria-pressed','true');$('#q').placeholder='请说…';
+   rec.onresult=ev=>{got=true;const alts=[...ev.results[0]].map(a=>a.transcript).join('');$('#q').value=alts.replace(/[。，！？\s]/g,'').slice(0,12);showFound()};
+   rec.onerror=ev=>{const k=ev.error;micMsg(k==='not-allowed'||k==='service-not-allowed'?(ios&&standalone?'从主屏幕打开的版本用不了麦克风。请在 Safari 里打开 ziling.danpicbook.com 再按话筒。':'浏览器没有允许用麦克风。请点网址栏左边的图标（🔒 或 ⓘ），把「麦克风」改成允许，再按一次话筒。'):k==='no-speech'?'没听到声音，按一下话筒再说一遍。':k==='audio-capture'?'没找到麦克风，请检查设备。':k==='network'?'语音识别连不上服务器，请检查网络（这个功能要联网）。':k==='aborted'?'':'语音找字出错了（'+k+'），再试一次。')};
+   rec.onend=()=>{b.setAttribute('aria-pressed','false');$('#q').placeholder='找字：打一个字或拼音，或者按话筒说出来';if(!got&&!$('#micmsg').textContent)micMsg('没听到声音，按一下话筒再说一遍。')};rec.start()}catch(err){b.setAttribute('aria-pressed','false');micMsg('语音找字打不开（'+(err&&err.message||err)+'）。')}}
  if($('#tfclear'))$('#tfclear').onclick=()=>{S.tf=null;save();grades()};
  if($('#tfbclear'))$('#tfbclear').onclick=()=>{S.tfb=null;save();grades()};
  document.querySelectorAll('[data-w]').forEach(b=>b.onclick=()=>go('write',b.dataset.w));
