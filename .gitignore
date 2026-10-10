@@ -24,3 +24,4 @@ tools/_我的声音/
 _media/
 .wrangler/
 sync/.ntfy_topic
+sync/.vapid.json

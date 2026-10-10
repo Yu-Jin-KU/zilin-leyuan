@@ -18,7 +18,9 @@
    GET  /yt                     -> 频道全部视频 {videos:[{id,title}]}（抓频道页 + 翻页，缓存 1 小时）
    GET  /stats                  -> 全站汇总：家庭数、1/7/30 天活跃、班级数、班里学生数（只有数字）
    GET  /usage                  -> {day, est, limit, pct} 今天（UTC）这个 Worker 估计处理了多少请求（免费档每天 10 万）
-   GET  /usage/test?key=邀请码   -> 发一条测试提醒（看通知通不通） */
+   GET  /usage/test?key=邀请码   -> 发一条测试提醒（看通知通不通）
+   GET  /push/key               -> Web Push 的 VAPID 公钥
+   POST /push/sub?key=邀请码 {sub} -> 订阅用量提醒（浏览器推送） */
 const ALPH = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 const CORS = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET,PUT,POST,DELETE,OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type', 'Access-Control-Max-Age': '86400' };
 const json = (o, s = 200) => new Response(JSON.stringify(o), { status: s, headers: { ...CORS, 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } });
@@ -224,6 +226,31 @@ async function notify(env, title, message) {
   notify.last = r.status + ' ' + (await r.text()).slice(0, 120);
   return r.ok;
 }
+/* Web Push（VAPID）：secret VAPID_PRIVATE_JWK（私钥 JWK）、VAPID_PUBLIC（公钥 raw base64url）。只发空正文，
+   页面的 sw 收到后自己去 /usage 取数字显示，省掉正文加密。订阅存 D1 表 push(id, sub, created)。 */
+const b64u = buf => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+const utf8 = t => new TextEncoder().encode(t);
+async function vapidAuth(env, endpoint) {
+  const key = await crypto.subtle.importKey('jwk', JSON.parse(env.VAPID_PRIVATE_JWK), { name: 'ECDSA', namedCurve: 'P-256' }, false, ['sign']);
+  const head = b64u(utf8(JSON.stringify({ typ: 'JWT', alg: 'ES256' })));
+  const claims = b64u(utf8(JSON.stringify({ aud: new URL(endpoint).origin, exp: Math.floor(Date.now() / 1000) + 12 * 3600, sub: 'https://ziling.danpicbook.com' })));
+  const sig = await crypto.subtle.sign({ name: 'ECDSA', hash: 'SHA-256' }, key, utf8(head + '.' + claims));
+  return `vapid t=${head}.${claims}.${b64u(sig)}, k=${env.VAPID_PUBLIC}`;
+}
+async function sendPush(env) {
+  if (!env.VAPID_PRIVATE_JWK || !env.VAPID_PUBLIC) return 0;
+  const rows = (await env.DB.prepare('SELECT id, sub FROM push').all()).results || [];
+  let ok = 0;
+  for (const row of rows) {
+    try {
+      const sub = JSON.parse(row.sub);
+      const r = await fetch(sub.endpoint, { method: 'POST', headers: { Authorization: await vapidAuth(env, sub.endpoint), TTL: '86400', Urgency: 'high', 'Content-Length': '0' } });
+      if (r.status === 404 || r.status === 410) await env.DB.prepare('DELETE FROM push WHERE id=?1').bind(row.id).run();
+      else if (r.ok) ok++;
+    } catch (_) {}
+  }
+  return ok;
+}
 async function checkUsage(env, force) {
   const u = await usageToday(env);
   const level = u.pct >= 100 ? 3 : u.pct >= 90 ? 2 : u.pct >= 60 ? 1 : 0;
@@ -231,9 +258,10 @@ async function checkUsage(env, force) {
   const title = level >= 3 ? '字灵乐园：今天的免费请求已用完' : level === 2 ? '字灵乐园：免费请求已用到 90%' : level === 1 ? '字灵乐园：免费请求已用到 60%' : '字灵乐园：用量提醒测试';
   const message = `今天（UTC ${u.day}）云端备份 Worker 估计已处理 ${u.est.toLocaleString('en-US')} 次请求，免费额度每天 ${DAILY_LIMIT.toLocaleString('en-US')} 次，已用 ${u.pct}%。` +
     (level ? '超过以后到 UTC 午夜之前新的同步会失败，孩子照常能玩，只是进度暂时不备份。该考虑发通知、准备收费或升级 Workers 付费版（每月 5 美元，含 1000 万次）了。' : '这是一条测试，说明通知链路是通的。');
-  const ok = await notify(env, title, message);
+  const pushed = await sendPush(env);   // 浏览器推送（ntfy.sh 从 Worker 连不上，不用了；title / message 留给以后的邮件通道）
+  const ok = pushed > 0; void title; void message;
   if (ok && level > u.alerted) await env.DB.prepare('UPDATE usage SET alerted=?2 WHERE day=?1').bind(u.day, level).run();
-  return { ...u, sent: ok };
+  return { ...u, sent: ok, pushed };
 }
 
 export default {
@@ -244,7 +272,16 @@ export default {
     const url = new URL(req.url);
     try {
       if (url.pathname === '/usage' && req.method === 'GET') { const u = await usageToday(env); delete u.alerted; return new Response(JSON.stringify(u), { headers: { ...CORS, 'content-type': 'application/json; charset=utf-8', 'cache-control': 'public, max-age=60' } }); }
-      if (url.pathname === '/usage/test' && req.method === 'GET') { if (!env.TEACHER_INVITE || url.searchParams.get('key') !== env.TEACHER_INVITE) return json({ error: 'key' }, 403); return json({ ...(await checkUsage(env, true)), topic: !!env.NTFY_TOPIC, ntfy: notify.last || null }); }
+      if (url.pathname === '/usage/test' && req.method === 'GET') { if (!env.TEACHER_INVITE || url.searchParams.get('key') !== env.TEACHER_INVITE) return json({ error: 'key' }, 403); return json({ ...(await checkUsage(env, true)), devices: (await env.DB.prepare('SELECT COUNT(*) n FROM push').first()).n }); }
+      if (url.pathname === '/push/key' && req.method === 'GET') return json({ key: env.VAPID_PUBLIC || null });
+      if (url.pathname === '/push/sub' && req.method === 'POST') {   // 只有知道邀请码的人（作者 / 老师）能订阅用量提醒
+        if (!env.TEACHER_INVITE || url.searchParams.get('key') !== env.TEACHER_INVITE) return json({ error: 'key' }, 403);
+        const b = await req.json().catch(() => null); const sub = b && b.sub;
+        if (!sub || typeof sub.endpoint !== 'string' || !/^https:\/\//.test(sub.endpoint)) return json({ error: 'sub' }, 400);
+        const id = b64u(await crypto.subtle.digest('SHA-256', utf8(sub.endpoint))).slice(0, 24);
+        await env.DB.prepare('INSERT INTO push(id,sub,created) VALUES(?1,?2,?3) ON CONFLICT(id) DO UPDATE SET sub=?2').bind(id, JSON.stringify(sub).slice(0, 4000), Date.now()).run();
+        return json({ ok: true, devices: (await env.DB.prepare('SELECT COUNT(*) n FROM push').first()).n });
+      }
       if (url.pathname === '/yt' && req.method === 'GET') return await ytVideos();
       if (url.pathname === '/stats' && req.method === 'GET') {   // 只给汇总数字，不含任何个人信息
         const now = Date.now(), d1 = now - 864e5, d7 = now - 7 * 864e5, d30 = now - 30 * 864e5;
