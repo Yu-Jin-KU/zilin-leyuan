@@ -95,8 +95,8 @@ for bi, b in enumerate(books):
     for p in b['pages']:
         if 'zh' not in p['au'] or not p['img'] or p['k'] in ('cover', 'secret'): continue
         for c in set(p['zh']):
-            if c in BY and c not in idx: occ.setdefault(c, []).append((rank.get(p['k'], 2), len(p['zh']), bi, p['n']))
-occ = {c: [[bi, n] for _, _, bi, n in sorted(v)[:3]] for c, v in occ.items()}
+            if c in BY: occ.setdefault(c, []).append((rank.get(p['k'], 2), len(p['zh']), bi, p['n']))
+occ = {c: [[bi, n] for _, _, bi, n in sorted(v) if [bi, n] not in idx.get(c, [])][:3] for c, v in occ.items()}   # 专门页之外再给 3 页句子页
 out = {'books': books, 'idx': idx, 'occ': occ}
 (ROOT / 'data' / 'books.json').write_text(json.dumps(out, ensure_ascii=False, separators=(',', ':')), encoding='utf-8')
 npg = sum(len(b['pages']) for b in books)
