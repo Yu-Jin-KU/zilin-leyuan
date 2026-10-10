@@ -371,7 +371,7 @@ const SYNC_API='https://zilin-sync.zilingleyuan.workers.dev';/* sync/ 里的 Wor
 const rawSave=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(_){}};
 function save(){rawSave();scheduleSync()}
 let syncTimer=null,syncing=false;
-function scheduleSync(){if(!SYNC_API||!Object.keys(S.players).length)return;clearTimeout(syncTimer);syncTimer=setTimeout(syncNow,45000)}/* 攒 45 秒再上传，一次游戏通常只有一两次请求；离开页面时立刻补传 */
+function scheduleSync(){if(!SYNC_API||!Object.keys(S.players).length)return;clearTimeout(syncTimer);syncTimer=setTimeout(syncNow,120000)}/* 攒 2 分钟再上传（本地已即时保存，离开页面时立刻补传）：一直玩的孩子每小时最多 30 次同步 */
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&syncTimer){clearTimeout(syncTimer);syncTimer=null;syncNow(true)}});
 const slimPlayers=()=>Object.fromEntries(Object.entries(S.players).map(([id,p])=>[id,{name:p.name,prog:p.prog||{}}]));
 function mergeRemote(data){let changed=false;for(const [id,p] of Object.entries(data||{})){let q=S.players[id];if(!q){q=S.players[id]={name:p.name||'?',prog:{}};changed=true}q.prog=q.prog||{};for(const [c,f] of Object.entries(p.prog||{}))if((q.prog[c]||0)<f){q.prog[c]=f;changed=true}}return changed}
@@ -563,9 +563,9 @@ function parentGuide(opt){
  <li><b class="t">③ 进度不会丢</b>${S.fam?`进度自动备份到云端，钥匙就是这个家庭码：<code>${famFmt(S.fam)}</code>。请存到不会丢的地方，微信文件传输助手、手机备忘录、拍张照都行。换设备时点那个链接或输入家庭码，所有人的进度都回来。<div class="row"><button id="pgShare">📤 发给自己</button><button id="pgCopy">📋 复制</button></div><p class="muted" id="pgFamMsg"></p>`:'加了名字并联网以后会自动生成一个家庭码做云端备份，到时候记一下就行。'}<p class="muted">清理浏览器数据或换平板之前，联网打开一次，选人页看到「上次备份」是刚刚，就放心。</p></li>
  <li><b class="t">${joined?'🏫 班级 · <span class="ok">✅ 已加入</span>':'🏫 加入班级'}</b>${joined}${(names.length||pre)?`${joined?'<details><summary class="muted" style="cursor:pointer">再加一个孩子，或换一个班级</summary>':''}${pre?`<span class="ok">老师发的班级码已经填好了，${names.length?'勾上孩子的名字（或写上新名字）':'写上孩子的中文名字'}，点「加入班级」就行。</span>`:'老师发了班级码的话填在这里，勾上孩子的名字。老师就能看到孩子写了哪些字，还能布置本周生字。'}<div class="row"><input id="pgCls" maxlength="9" placeholder="班级码，比如 AB2C-D3EF" autocapitalize="characters" autocomplete="off" value="${esc(pre)}" style="font:inherit;font-size:18px;padding:8px 12px;border-radius:12px;border:3px solid var(--line);background:var(--paper);color:var(--ink)"></div><div class="row" id="pgClsWho">${names.map(([id,p])=>`<label><input type="checkbox" value="${id}" ${(names.length===1||pre)?'checked':''}> ${esc(p.name)}</label>`).join('')}</div><div class="row"><input id="pgNew" maxlength="16" placeholder="${names.length?'或者写一个新名字':'孩子的中文名字，和老师名单上一样'}" aria-label="孩子的名字" autocomplete="off" style="flex:1;min-width:220px;font:inherit;font-size:18px;padding:8px 12px;border-radius:12px;border:3px solid var(--line);background:var(--paper);color:var(--ink)"></div><div class="row"><button class="green" id="pgJoin">加入班级</button></div>${joined?'</details>':''}`:'先在上面加一个名字，再加入班级。'}<p class="muted" id="pgClsMsg"></p></li>
  <li><b class="t">⏰ 每次玩多久</b>到时间会出现休息画面，休息 10 分钟才能继续；家长答一道乘法题可以提前解锁。<div class="row seg" id="pgLimit">${[[0,'不限'],[15,'15 分钟'],[20,'20 分钟'],[30,'30 分钟']].map(([v,t])=>`<button data-lim="${v}" aria-pressed="${v===lim}">${t}</button>`).join('')}</div></li>
- </ol><details style="margin-top:12px"><summary class="muted" style="cursor:pointer">老师 / 作者选项</summary><div class="row"><input id="pgInv" maxlength="30" placeholder="邀请码" autocomplete="off" style="font:inherit;font-size:16px;padding:6px 10px;border-radius:12px;border:3px solid var(--line);background:var(--paper);color:var(--ink);flex:0 1 140px"><button id="pgPush">🔔 用量快超额时推送提醒到这台设备</button></div><p class="muted" id="pgPushMsg">云端备份的免费额度每天 10 万次请求，到 60%、90% 时提醒。iPad 要从主屏幕图标打开乐园再点这里。</p></details><div class="row" style="justify-content:center;margin-top:16px"><button class="big" id="mClose">好了</button></div></div>`;
+ </ol>${TESTV()?`<details style="margin-top:12px"><summary class="muted" style="cursor:pointer">老师 / 作者选项</summary><div class="row"><input id="pgInv" maxlength="30" placeholder="邀请码" autocomplete="off" style="font:inherit;font-size:16px;padding:6px 10px;border-radius:12px;border:3px solid var(--line);background:var(--paper);color:var(--ink);flex:0 1 140px"><button id="pgPush">🔔 用量快超额时推送提醒到这台设备</button></div><p class="muted" id="pgPushMsg">云端备份的免费额度每天 10 万次请求，到 60%、90% 时提醒。iPad 要从主屏幕图标打开乐园再点这里。</p></details>`:''}<div class="row" style="justify-content:center;margin-top:16px"><button class="big" id="mClose">好了</button></div></div>`;
  $('#modal').classList.add('open');pgInstallRow();$('#mClose').addEventListener('click',()=>{if(curView==='players')players()});
- $('#pgPush').onclick=()=>subscribeUsage($('#pgInv').value.trim(),$('#pgPushMsg'));
+ if($('#pgPush'))$('#pgPush').onclick=()=>subscribeUsage($('#pgInv').value.trim(),$('#pgPushMsg'));
  $('#pgGrade').value=String(S.grade||0);$('#pgGrade').onchange=pgOfflineStatus;pgOfflineStatus();$('#pgDl').onclick=pgDownload;
  if($('#pgShare')){$('#pgShare').onclick=()=>famShare($('#pgFamMsg'));$('#pgCopy').onclick=()=>famCopy($('#pgFamMsg'))}
  if($('#pgJoin'))$('#pgJoin').onclick=async()=>{const code=($('#pgCls').value||'').toUpperCase().replace(/[^A-Z2-9]/g,'');if(code.length!==8)return $('#pgClsMsg').textContent='班级码是 8 个字母和数字';
@@ -582,26 +582,33 @@ function parentGuide(opt){
 }
 /* ---------- 休息提醒：连续玩够 S.limit 分钟（默认 20，0 = 不限）就强制休息 REST_MIN 分钟，家长答题可解锁 ---------- */
 const REST_MIN=10;let lastAct=Date.now(),restTimer=null;
+const DAILY_MIN=0;/* 每个孩子每天最多玩多少分钟，到了就提示明天再来（家长可解锁）；0 = 不限。先关着，要开就改成 60 */
+const dayOver=()=>!!DAILY_MIN&&!TESTV()&&!!S.cur&&((S.dayMs||{})[S.cur]||0)>=DAILY_MIN*60000;
 document.addEventListener('pointerdown',()=>{lastAct=Date.now()});
 const limitMin=()=>S.limit===undefined?20:S.limit;
 function tickPlay(){const now=Date.now(),gap=now-(S.tick||now);S.tick=now;
+ const day=new Date().toLocaleDateString('sv');if(S.day!==day){S.day=day;S.dayMs={};if($('#rest').dataset.daily)endRest()}/* 新的一天：每个孩子的当天时长清零 */
+ const active=document.visibilityState==='visible'&&now-lastAct<90000&&gap<=30*60000;/* 只算屏幕亮着、手在动的时间 */
+ if(active&&S.cur){S.dayMs=S.dayMs||{};S.dayMs[S.cur]=(S.dayMs[S.cur]||0)+Math.min(gap,20000)}
+ if(dayOver()){rawSave();return showRest(true)}
  if(S.restUntil&&now<S.restUntil){rawSave();return showRest()}
  if(!limitMin()){rawSave();return}
  if(gap>30*60000)S.playMs=0;/* 隔了半小时以上算新的一次 */
- else if(document.visibilityState==='visible'&&now-lastAct<90000)S.playMs=(S.playMs||0)+Math.min(gap,20000);/* 只算屏幕亮着、手在动的时间 */
+ else if(active)S.playMs=(S.playMs||0)+Math.min(gap,20000);
  if(S.playMs>=limitMin()*60000){S.restUntil=now+REST_MIN*60000;S.playMs=0;rawSave();return showRest()}
  rawSave()}
 setInterval(tickPlay,15000);
-function showRest(){const el=$('#rest');if(el.classList.contains('open'))return;stopVoice();stopMusic();closeModal();
- el.innerHTML=`<svg viewBox="0 0 200 200" id="restSvg"></svg><h1>写了好一会儿啦，休息一下 👀</h1><p>看看窗外远处的东西，让眼睛歇一歇。</p><p>休息好了，字灵还在这儿等你。</p><div class="cd" id="restCd"></div>
+function showRest(daily){const el=$('#rest');if(el.classList.contains('open'))return;stopVoice();stopMusic();closeModal();if(daily)el.dataset.daily='1';else delete el.dataset.daily;
+ el.innerHTML=(daily?`<svg viewBox="0 0 200 200" id="restSvg"></svg><h1>今天玩得够多啦 🌙</h1><p>今天已经和字灵玩了 ${DAILY_MIN} 分钟，眼睛和小手都要歇一歇。</p><p>明天再来，字灵还在这儿等你。</p>`
+ :`<svg viewBox="0 0 200 200" id="restSvg"></svg><h1>写了好一会儿啦，休息一下 👀</h1><p>看看窗外远处的东西，让眼睛歇一歇。</p><p>休息好了，字灵还在这儿等你。</p><div class="cd" id="restCd"></div>`)+`
  <div class="gate">家长解锁：<span id="gateQ"></span> = <input id="gateA" inputmode="numeric" maxlength="3" aria-label="答案"> <button id="gateGo">解锁</button> <span id="gateMsg"></span></div>`;
  el.classList.add('open');try{$('#restSvg').innerHTML=$('#logoSvg').innerHTML}catch(_){}
  const a=3+Math.floor(Math.random()*7),b=4+Math.floor(Math.random()*6);$('#gateQ').textContent=`${a} × ${b}`;
- const unlock=()=>{if(+$('#gateA').value===a*b)endRest();else{$('#gateMsg').textContent='不对哦';$('#gateA').value=''}};
+ const unlock=()=>{if(+$('#gateA').value===a*b){if(daily&&S.cur){S.dayMs=S.dayMs||{};S.dayMs[S.cur]=-1e12}endRest()}else{$('#gateMsg').textContent='不对哦';$('#gateA').value=''}};/* 家长解锁每日上限 = 今天不再限 */
  $('#gateGo').onclick=unlock;$('#gateA').onkeydown=e=>{if(e.key==='Enter')unlock()};
  const cd=()=>{const left=S.restUntil-Date.now();if(left<=0)return endRest();$('#restCd').textContent=`${Math.floor(left/60000)}:${String(Math.floor(left%60000/1000)).padStart(2,'0')}`};
- cd();clearInterval(restTimer);restTimer=setInterval(cd,1000)}
-function endRest(){clearInterval(restTimer);S.restUntil=0;S.playMs=0;rawSave();const el=$('#rest');el.classList.remove('open');el.innerHTML='';playMusic(curView==='write'?'write':(curView==='album'||curView==='poster')?'album':'menu')}
+ clearInterval(restTimer);if(!daily){cd();restTimer=setInterval(cd,1000)}}
+function endRest(){clearInterval(restTimer);S.restUntil=0;S.playMs=0;rawSave();const el=$('#rest');el.classList.remove('open');el.innerHTML='';delete el.dataset.daily;playMusic(curView==='write'?'write':(curView==='album'||curView==='poster')?'album':'menu')}
 /* ---------- grades ---------- */
 function grades(gid){
  if(gid!==undefined){S.grade=gid;save()}
