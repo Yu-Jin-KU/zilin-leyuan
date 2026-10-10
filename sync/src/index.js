@@ -16,7 +16,9 @@
    GET  /c/:code                同时返回 roster（老师预先录的名单 [{id,name,en}]），家长加入时从名单里选孩子
    PUT  /c/:code/roster?key=K {roster:[{id,name,en}]}  老师录名单；学生端上传时每个名字带 rid（名单里的 id），报告按名单合并多台设备
    GET  /yt                     -> 频道全部视频 {videos:[{id,title}]}（抓频道页 + 翻页，缓存 1 小时）
-   GET  /stats                  -> 全站汇总：家庭数、1/7/30 天活跃、班级数、班里学生数（只有数字） */
+   GET  /stats                  -> 全站汇总：家庭数、1/7/30 天活跃、班级数、班里学生数（只有数字）
+   GET  /usage                  -> {day, est, limit, pct} 今天（UTC）这个 Worker 估计处理了多少请求（免费档每天 10 万）
+   GET  /usage/test?key=邀请码   -> 发一条测试提醒（看通知通不通） */
 const ALPH = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 const CORS = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET,PUT,POST,DELETE,OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type', 'Access-Control-Max-Age': '86400' };
 const json = (o, s = 200) => new Response(JSON.stringify(o), { status: s, headers: { ...CORS, 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } });
@@ -201,11 +203,48 @@ async function ytVideos() {
   await cache.put(key, res.clone()); return res;
 }
 
+/* 免费额度预警：Workers 免费档每天 10 万次请求（UTC 日界，含预检请求和 cron）。每个请求有 1/50 的概率在 D1 表 usage 里记 50 次（抽样估算，
+   不给数据库添负担）；cron 每 30 分钟算一次百分比，到 60% / 90% / 100% 各提醒一次。提醒走 ntfy.sh：手机装 ntfy 订阅 secret NTFY_TOPIC 就有推送，
+   设了 secret ALERT_EMAIL 的话同时发邮件。超额后新的同步请求会失败，孩子照常能玩，只是进度暂时不备份；升级 Workers 付费版每月 5 美元含 1000 万次。 */
+const DAILY_LIMIT = 100000, SAMPLE = 50;
+const today = () => new Date().toISOString().slice(0, 10);
+async function countReq(env) {
+  if (Math.random() * SAMPLE >= 1) return;
+  await env.DB.prepare('INSERT INTO usage(day,n,alerted) VALUES(?1,?2,0) ON CONFLICT(day) DO UPDATE SET n=n+?2').bind(today(), SAMPLE).run();
+}
+async function usageToday(env) {
+  const r = await env.DB.prepare('SELECT n, alerted FROM usage WHERE day=?1').bind(today()).first();
+  const est = (r && r.n) || 0; return { day: today(), est, limit: DAILY_LIMIT, pct: Math.round(est / DAILY_LIMIT * 100), alerted: (r && r.alerted) || 0 };
+}
+async function notify(env, title, message) {
+  if (!env.NTFY_TOPIC) return false;
+  const body = { topic: env.NTFY_TOPIC, title, message, priority: 4, tags: ['warning'] };
+  if (env.ALERT_EMAIL) body.email = env.ALERT_EMAIL;
+  const r = await fetch('https://ntfy.sh', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
+  notify.last = r.status + ' ' + (await r.text()).slice(0, 120);
+  return r.ok;
+}
+async function checkUsage(env, force) {
+  const u = await usageToday(env);
+  const level = u.pct >= 100 ? 3 : u.pct >= 90 ? 2 : u.pct >= 60 ? 1 : 0;
+  if (!force && level <= u.alerted) return { ...u, sent: false };
+  const title = level >= 3 ? '字灵乐园：今天的免费请求已用完' : level === 2 ? '字灵乐园：免费请求已用到 90%' : level === 1 ? '字灵乐园：免费请求已用到 60%' : '字灵乐园：用量提醒测试';
+  const message = `今天（UTC ${u.day}）云端备份 Worker 估计已处理 ${u.est.toLocaleString('en-US')} 次请求，免费额度每天 ${DAILY_LIMIT.toLocaleString('en-US')} 次，已用 ${u.pct}%。` +
+    (level ? '超过以后到 UTC 午夜之前新的同步会失败，孩子照常能玩，只是进度暂时不备份。该考虑发通知、准备收费或升级 Workers 付费版（每月 5 美元，含 1000 万次）了。' : '这是一条测试，说明通知链路是通的。');
+  const ok = await notify(env, title, message);
+  if (ok && level > u.alerted) await env.DB.prepare('UPDATE usage SET alerted=?2 WHERE day=?1').bind(u.day, level).run();
+  return { ...u, sent: ok };
+}
+
 export default {
-  async fetch(req, env) {
+  async scheduled(event, env, ctx) { ctx.waitUntil(checkUsage(env, false).catch(() => {})); },
+  async fetch(req, env, ctx) {
+    try { ctx.waitUntil(countReq(env).catch(() => {})); } catch (_) {}
     if (req.method === 'OPTIONS') return new Response(null, { headers: CORS });
     const url = new URL(req.url);
     try {
+      if (url.pathname === '/usage' && req.method === 'GET') { const u = await usageToday(env); delete u.alerted; return new Response(JSON.stringify(u), { headers: { ...CORS, 'content-type': 'application/json; charset=utf-8', 'cache-control': 'public, max-age=60' } }); }
+      if (url.pathname === '/usage/test' && req.method === 'GET') { if (!env.TEACHER_INVITE || url.searchParams.get('key') !== env.TEACHER_INVITE) return json({ error: 'key' }, 403); return json({ ...(await checkUsage(env, true)), topic: !!env.NTFY_TOPIC, ntfy: notify.last || null }); }
       if (url.pathname === '/yt' && req.method === 'GET') return await ytVideos();
       if (url.pathname === '/stats' && req.method === 'GET') {   // 只给汇总数字，不含任何个人信息
         const now = Date.now(), d1 = now - 864e5, d7 = now - 7 * 864e5, d30 = now - 30 * 864e5;

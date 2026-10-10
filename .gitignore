@@ -23,3 +23,4 @@ tools/_我的声音/
 # 托管用的语音/图片构建目录（tools/build_media.py 生成）
 _media/
 .wrangler/
+sync/.ntfy_topic
