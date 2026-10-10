@@ -1,0 +1,8 @@
+# 字灵乐园隐藏的两套声音（成人声 adult/、老师声 teacher/）的托管，见 media/wrangler.toml 和 tools/build_media.py。
+name = "zilin-media2"
+compatibility_date = "2026-10-01"
+
+[assets]
+directory = "../_media/zilin-media2"
+html_handling = "none"
+not_found_handling = "none"

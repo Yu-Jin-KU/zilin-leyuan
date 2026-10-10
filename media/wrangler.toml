@@ -1,0 +1,9 @@
+# 字灵乐园的语音 / 图片托管：Cloudflare Workers 静态资源（请求不限量、免费、带缓存）。
+# 目录 ../_media/zilin-media 由 tools/build_media.py 生成（不进 git）。部署：cd media && npx wrangler deploy
+name = "zilin-media"
+compatibility_date = "2026-10-01"
+
+[assets]
+directory = "../_media/zilin-media"
+html_handling = "none"
+not_found_handling = "none"

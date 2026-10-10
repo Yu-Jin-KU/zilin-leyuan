@@ -56,3 +56,14 @@
 - 编号 No. 保持最初的 26 字母 + 汉字顺序，新加的拼音排在最后，以免和打印版 PDF 的编号对不上。
 - 语音减少重复：开场提示只在每次打开网页后说一次；完成时的夸奖在 8 句里轮换。
 - 书写：笔画宽度 40/44，鼠标设备判定宽松 15%；错两次后下一笔用亮粉色高亮并持续提示。
+
+## 语音 / 绘本托管（2026-10-10 起）
+
+- 语音和绘本页的图片、旁白不再从 GitHub Pages 读，改从 Cloudflare Workers 静态资源读（账号 danpicbook@gmail.com，请求不限量、免费）：
+  - `https://zilin-media.zilingleyuan.workers.dev/`：`kid/<字>.mp3` 童声全套；`book/<主题>/<页>.webp` 绘本配图（1024 宽）；`book/<主题>/<页>.<zh|en|da>.mp3` 每页旁白（不带配乐）。
+  - `https://zilin-media2.zilingleyuan.workers.dev/`：`adult/`、`teacher/` 两套隐藏声音。
+  - 每个 Worker 静态文件上限 2 万个，所以分两个。地址写在 index.html 的 `MEDIA` / `MEDIA2`。
+- 构建：`python -X utf8 tools/build_media.py` 把 audio/ 三套和 D:\美人鱼课\绘本_*\ 的 assets、audio/{zh,en,da} 整理到 `_media/`（不进 git，可断点续跑）；然后 `cd media && npx wrangler deploy`、`cd media2 && npx wrangler deploy`（只上传有变化的文件）。
+- 新生成或改了语音后：先跑 gen_audio，再 build_media + deploy。
+- 绘本目录 `data/books.json` 由 `tools/build_books.py` 生成：每本书每页的文字、有哪些语言旁白、有没有配图，以及「字 / 拼音 → 哪本书哪一页」的索引（规则见脚本开头）。字页 / 拼音页的「📖 绘本里的…」、动画页的「翻书听故事」、阅读器（视图 `book`，自动连播、中英丹切换、读完接着下一本）都用它。
+- 仓库里的 audio/ 目录暂时保留做备份，页面已不再引用；确认托管稳定后可以删掉以缩小仓库。
