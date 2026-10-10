@@ -1,0 +1,6 @@
+-- 免费额度预警：每天（UTC）的抽样请求计数和已提醒级别
+CREATE TABLE IF NOT EXISTS usage (
+  day TEXT PRIMARY KEY,
+  n INTEGER NOT NULL DEFAULT 0,
+  alerted INTEGER NOT NULL DEFAULT 0
+);

@@ -6,3 +6,7 @@ compatibility_date = "2026-10-01"
 binding = "DB"
 database_name = "zilin-sync"
 database_id = "0711cadf-ca61-449a-9d0a-a58f059b329e"
+
+# 每 30 分钟检查一次今天的请求量，快到免费额度时提醒（见 src/index.js 的 checkUsage）
+[triggers]
+crons = ["*/30 * * * *"]
