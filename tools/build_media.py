@@ -36,6 +36,14 @@ def load_pages(book):
     exec(compile(cp.read_text(encoding='utf-8'), str(cp), 'exec'), ns)
     return ns.get('PAGES')
 
+def page_image(book, pg):
+    """页面配图：自己的 slug 图；没有就用 img 字段指的图（比如 cover）；再没有就用 refs 里引用的那页的图。"""
+    cands = [pg['slug']] + ([pg['img']] if isinstance(pg.get('img'), str) else []) + [r for r in (pg.get('refs') or []) if isinstance(r, str)]
+    for c in cands:
+        for f in sorted(book.glob(f'assets/{c}.*')):
+            if f.suffix.lower() in ('.jpg', '.jpeg', '.png', '.webp') and not f.name.startswith('_'): return f
+    return None
+
 def do_image(src, dst):
     if dst.exists(): return
     from PIL import Image
@@ -57,9 +65,8 @@ def stage_books():
         out = OUT1 / 'book' / theme
         for pg in pages:
             n = int(pg['n'])
-            imgs = sorted(book.glob(f"assets/{pg['slug']}.*"))
-            imgs = [i for i in imgs if i.suffix.lower() in ('.jpg', '.jpeg', '.png', '.webp')]
-            if imgs: jobs.append(('img', imgs[0], out / f'{n}.webp'))
+            src = page_image(book, pg)
+            if src: jobs.append(('img', src, out / f'{n}.webp'))
             for lang in ('zh', 'en', 'da'):
                 clip = book / 'audio' / lang / f'p{n:02d}.mp3'
                 if clip.exists(): jobs.append(('clip', clip, out / f'{n}.{lang}.mp3'))

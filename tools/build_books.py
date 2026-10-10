@@ -55,11 +55,13 @@ for book in sorted(BOOKS.glob('绘本_*')):
     is_py = theme.startswith('拼音')
     for pg in pages:
         n = int(pg['n']); slug = pg['slug']; kind = pg.get('kind', 'plain')
-        imgs = [i for i in book.glob(f'assets/{slug}.*') if i.suffix.lower() in ('.jpg', '.jpeg', '.png', '.webp')]
+        cands = [slug] + ([pg['img']] if isinstance(pg.get('img'), str) else []) + [r for r in (pg.get('refs') or []) if isinstance(r, str)]
+        imgs = [f for c in cands for f in book.glob(f'assets/{c}.*') if f.suffix.lower() in ('.jpg', '.jpeg', '.png', '.webp') and not f.name.startswith('_')]
         au = ''.join(l for l in ('zh', 'en', 'da') if (book / 'audio' / l / f'p{n:02d}.mp3').exists())
         P = {'n': n, 'k': kind, 'zh': pg['zh'], 'en': pg.get('en', ''), 'da': pg.get('da', ''), 'img': 1 if imgs else 0, 'au': au}
         if pg.get('word'): P['w'] = pg['word'][0]
         B['pages'].append(P)
+        if not imgs and 'zh' not in au: continue      # 还没做完的书（没配图也没中文旁白）：这一页先不挂到字上
         m = re.match(r'^\d+_([a-z]+)(?:_|$)', slug); tok = m.group(1) if m else None
         if is_py:
             parts = slug.split('_')[1:]
@@ -82,9 +84,13 @@ for book in sorted(BOOKS.glob('绘本_*')):
             cands = [c for c in dict.fromkeys(title_chars + list(pg['zh'])) if c in BY and any(strip_tone(r[1]) == tok for r in BY[c])]
             if cands: add(cands[0], bi, n)
             elif tok not in ('cover', 'opening', 'ending', 'secret', 'full', 'goodnight', 'review', 'game', 'song'): unmatched.append((theme, slug))
+for b in books:   # ready：中文旁白齐（≥80% 页）且配图过半，动画页才给「翻书听故事」；没做完的书页面上不出现
+    n = len(b['pages']) or 1
+    b['ready'] = 1 if sum(1 for p in b['pages'] if 'zh' in p['au']) >= 0.8 * n and sum(1 for p in b['pages'] if p['img']) >= 0.5 * n else 0
 out = {'books': books, 'idx': idx}
 (ROOT / 'data' / 'books.json').write_text(json.dumps(out, ensure_ascii=False, separators=(',', ':')), encoding='utf-8')
 npg = sum(len(b['pages']) for b in books)
-print(f"{len(books)} 本，{npg} 页，索引 {len(idx)} 个字/拼音项，有视频链接的书 {sum(1 for b in books if b['lib'] is not None)} 本，books.json {round((ROOT/'data'/'books.json').stat().st_size/1e3)} KB")
+print(f"{len(books)} 本（做完的 {sum(b['ready'] for b in books)} 本），{npg} 页，索引 {len(idx)} 个字/拼音项，有视频链接的书 {sum(1 for b in books if b['lib'] is not None)} 本，books.json {round((ROOT/'data'/'books.json').stat().st_size/1e3)} KB")
+print('没做完的书：', [b['t'] for b in books if not b['ready']])
 print('没对上的 slug', len(unmatched), unmatched[:25])
 print('拼音项覆盖', sum(1 for k in PY if k in idx), '/', len(PY), '缺', [k for k in PY if k not in idx])
