@@ -566,6 +566,7 @@ function parentGuide(opt){
  </ol>${TESTV()?`<details style="margin-top:12px"><summary class="muted" style="cursor:pointer">老师 / 作者选项</summary><div class="row"><input id="pgInv" maxlength="30" placeholder="邀请码" autocomplete="off" style="font:inherit;font-size:16px;padding:6px 10px;border-radius:12px;border:3px solid var(--line);background:var(--paper);color:var(--ink);flex:0 1 140px"><button id="pgPush">🔔 用量快超额时推送提醒到这台设备</button></div><p class="muted" id="pgPushMsg">云端备份的免费额度每天 10 万次请求，到 60%、90% 时提醒。iPad 要从主屏幕图标打开乐园再点这里。</p></details>`:''}<div class="row" style="justify-content:center;margin-top:16px"><button class="big" id="mClose">好了</button></div></div>`;
  $('#modal').classList.add('open');pgInstallRow();$('#mClose').addEventListener('click',()=>{if(curView==='players')players()});
  if($('#pgPush'))$('#pgPush').onclick=()=>subscribeUsage($('#pgInv').value.trim(),$('#pgPushMsg'));
+ let taps=0;$('#mbox h2').onclick=()=>{if(++taps>=5){try{localStorage.setItem('zilin_testvoice','1')}catch(_){}parentGuide(opt)}};/* 标题连点 5 下 = 老师模式（主屏幕版没法带 ?teacher=1 打开） */
  $('#pgGrade').value=String(S.grade||0);$('#pgGrade').onchange=pgOfflineStatus;pgOfflineStatus();$('#pgDl').onclick=pgDownload;
  if($('#pgShare')){$('#pgShare').onclick=()=>famShare($('#pgFamMsg'));$('#pgCopy').onclick=()=>famCopy($('#pgFamMsg'))}
  if($('#pgJoin'))$('#pgJoin').onclick=async()=>{const code=($('#pgCls').value||'').toUpperCase().replace(/[^A-Z2-9]/g,'');if(code.length!==8)return $('#pgClsMsg').textContent='班级码是 8 个字母和数字';
