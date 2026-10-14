@@ -6,6 +6,7 @@ r"""绘本目录 data/books.json：每本书的每一页（文字、三种语言
  - 拼音书：页的 slug 形如 03_ai_know / 04_ai_use，取中间那段当拼音项（ve→üe、v→ü、vn→ün）。
  - 诗句页（kind=poem / poem_full）：字表里 line 等于这句诗的字都挂上。
  - 词语页（kind=word）：word[0] 里在字表的字挂上。
+ - 成语页（kind=idiom，成语故事系列最后一页）：zh 的四个字都挂上。
  - 其他页：slug 中间那段是拼音时，页文字里读这个音的字挂上（优先封面书名里的字）。
 用法：python -X utf8 tools/build_books.py"""
 import re, json, unicodedata
@@ -76,6 +77,10 @@ for book in sorted(BOOKS.glob('绘本_*')):
             if kind == 'poem_full':
                 for c in LINE.get(norm_line(pg['zh']), []): add(c, bi, n)
             continue
+        if kind == 'idiom':      # 成语页（2026-10-13）：成语四个字都挂到这一页，孩子写「株」时能翻到《守株待兔》
+            for c in pg['zh']:
+                if c in BY: add(c, bi, n)
+            continue
         if kind == 'word' and pg.get('word'):
             for c in pg['word'][0]:
                 if c in BY: add(c, bi, n)
@@ -83,7 +88,7 @@ for book in sorted(BOOKS.glob('绘本_*')):
         if tok and not is_py:
             cands = [c for c in dict.fromkeys(title_chars + list(pg['zh'])) if c in BY and any(strip_tone(r[1]) == tok for r in BY[c])]
             if cands: add(cands[0], bi, n)
-            elif tok not in ('cover', 'opening', 'ending', 'secret', 'full', 'goodnight', 'review', 'game', 'song'): unmatched.append((theme, slug))
+            elif tok not in ('cover', 'opening', 'ending', 'secret', 'full', 'goodnight', 'review', 'game', 'song', 'use', 'today', 'idiom'): unmatched.append((theme, slug))
 for b in books:   # ready：中文旁白齐（≥80% 页）且配图过半，动画页才给「翻书听故事」；没做完的书页面上不出现
     n = len(b['pages']) or 1
     b['ready'] = 1 if sum(1 for p in b['pages'] if 'zh' in p['au']) >= 0.8 * n and sum(1 for p in b['pages'] if p['img']) >= 0.5 * n else 0

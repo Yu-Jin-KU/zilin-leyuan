@@ -5,6 +5,8 @@ r"""把要托管到 Cloudflare 的语音和图片整理到 _media/（不进 git�
                        + book/<主题>/<页>.<zh|en|da>.mp3（每页旁白，不带配乐，48k 单声道 40 kbps）
  _media/zilin-media2/  adult/ 和 teacher/（隐藏的两套声音）
  每个 Worker 的静态文件数上限 2 万个，所以分成两个。
+ 线上地址（2026-10-14 起，管 danpicbook.com 域名的账户）：zilin-media → https://media.danpicbook.com/ ，zilin-media2 → https://media2.danpicbook.com/ ；
+ 媒体文件快到 2 万个时再开 media3（新 Worker + 新域名），别往满的里面塞。
 用法：python -X utf8 tools/build_media.py [--skip-audio] [--skip-books]
 已有的文件会跳过（可以断点续跑）。"""
 import os, sys, re, glob, subprocess, shutil

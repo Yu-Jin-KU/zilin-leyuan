@@ -1,6 +1,7 @@
 name = "zilin-sync"
 main = "src/index.js"
 compatibility_date = "2026-10-01"
+account_id = "eba4f7dc84e163b980d47d1b0c73111d"   # 云端备份的账户（D1 数据库在这里）；wrangler 登录的用户是两个账户的成员
 
 [[d1_databases]]
 binding = "DB"
@@ -10,3 +11,14 @@ database_id = "0711cadf-ca61-449a-9d0a-a58f059b329e"
 # 每 30 分钟检查一次今天的请求量，快到免费额度时提醒（见 src/index.js 的 checkUsage）
 [triggers]
 crons = ["*/30 * * * *"]
+
+# 频率限制（见 src/index.js 文件头）：按 IP 计数，period 只能是 10 或 60 秒；namespace_id 是本账号里自己起的编号，不同 Worker 别重复
+[[ratelimits]]
+name = "LOOKUP_RL"
+namespace_id = "1001"
+simple = { limit = 20, period = 60 }
+
+[[ratelimits]]
+name = "WRITE_RL"
+namespace_id = "1002"
+simple = { limit = 120, period = 60 }

@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>字灵乐园 · 作者后台</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<style>
+/* 作者后台（2026-10-14）：用邀请码（TEACHER_INVITE）读云端的 /stats、/src/stats、/admin、/fb/list、/sub/list。邀请码只存在这台设备的 localStorage */
+:root{--bg:#E8F6FF;--paper:#fff;--ink:#27304a;--soft:#6b7590;--line:#cfe0ef;--grass:#3FBF6A;--sky:#39A6F2}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,"PingFang SC","Microsoft YaHei",sans-serif;font-size:16px;line-height:1.5}
+header{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--paper);box-shadow:0 2px 8px rgba(0,0,0,.06);position:sticky;top:0;z-index:5;flex-wrap:wrap}
+header h1{font-size:19px;margin:0}
+main{max-width:1100px;margin:0 auto;padding:16px 16px 60px}
+.card{background:var(--paper);border-radius:16px;padding:16px 18px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,.05);overflow-x:auto}
+.card h2{margin:0 0 8px;font-size:18px}.muted{color:var(--soft);font-size:14px}
+input,button{font:inherit}input{padding:7px 10px;border-radius:10px;border:2px solid var(--line)}
+button{cursor:pointer;border:0;border-radius:10px;padding:7px 14px;background:var(--sky);color:#fff}
+.nums{display:flex;flex-wrap:wrap;gap:10px}.nums div{background:#f1f6fb;border-radius:12px;padding:8px 14px}.nums b{display:block;font-size:24px}
+table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;padding:6px;border-bottom:1px solid var(--line);vertical-align:top}th{color:var(--soft)}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.bar{display:inline-block;height:8px;background:var(--grass);border-radius:4px;vertical-align:middle;margin-right:6px}
+.fb{border-bottom:1px solid var(--line);padding:8px 0;white-space:pre-wrap}
+</style>
+</head>
+<body>
+<header><h1>字灵乐园 · 作者后台</h1><input id="key" type="password" placeholder="邀请码" autocomplete="off"><button id="go">读取</button><span class="muted" id="msg"></span></header>
+<main id="main"><p class="muted">输入邀请码，点「读取」。</p></main>
+<script>
+const API='https://zilin-sync.zilingleyuan.workers.dev';
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+const day=t=>t?new Date(t).toLocaleDateString('sv'):'';
+const mins=s=>s>=3600?(s/3600).toFixed(1)+' 小时':Math.round(s/60)+' 分钟';
+/* 统计键的中文说明：v: 页面、g: 小游戏、w: 写字、b: 绘本、vid: 视频 */
+const VIEW={players:'选人页',grades:'字表',write:'写字',album:'卡册',poster:'字灵王国',draw:'画字灵',library:'视频库',book:'翻书听故事',quest:'闯关'};
+const label=k=>{const [a,...r]=k.split(':');const b=r.join(':');
+ return a==='v'?'页面 · '+(VIEW[b]||b):a==='g'?'小游戏 · '+b:a==='w'?'写字 · '+b:a==='b'?'绘本 · '+b:a==='vid'?'视频 · '+b:k==='quest'?'闯关（整轮）':k};
+const list=(o,fmt,n=30)=>{const e=Object.entries(o||{}).slice(0,n);if(!e.length)return '<p class="muted">还没有数据</p>';const max=e[0][1]||1;
+ return '<table>'+e.map(([k,v])=>`<tr><td>${esc(label(k))}</td><td style="white-space:nowrap"><span class="bar" style="width:${Math.max(2,80*v/max)}px"></span>${fmt(v)}</td></tr>`).join('')+'</table>'};
+const get=async u=>{const r=await fetch(API+u);if(!r.ok)throw new Error(r.status===403?'邀请码不对':r.status===429?'试得太多，过一分钟再试':'出错 '+r.status);return r.json()};
+async function load(){const k=$('#key').value.trim();if(!k)return;try{localStorage.setItem('zilin_admin_key',k)}catch(_){}
+ $('#msg').textContent='读取中…';const q='?key='+encodeURIComponent(k);
+ try{const [st,src,ad,fb]=await Promise.all([get('/stats'),get('/src/stats'+q),get('/admin'+q),get('/fb/list'+q).catch(()=>({fb:[]}))]);
+  const allW=Object.entries(ad.tot.w);const tSecs=Object.values(ad.tot.t).reduce((a,b)=>a+b,0);
+  $('#main').innerHTML=`
+  <div class="card"><h2>概况</h2><div class="nums">
+   <div><b>${st.families}</b>家庭（家庭码）</div><div><b>${st.active_1d}</b>今天活跃</div><div><b>${st.active_7d}</b>7 天活跃</div><div><b>${st.active_30d}</b>30 天活跃</div><div><b>${st.new_7d}</b>7 天新增</div>
+   <div><b>${st.classes}</b>班级</div><div><b>${st.students_in_classes}</b>班里的学生</div><div><b>${src.subs||0}</b>留邮箱</div><div><b>${mins(tSecs)}</b>累计使用</div></div>
+   <p class="muted">使用统计从这次更新以后才开始记，更新前的只有星星进度。</p></div>
+  <div class="card"><h2>推广链接带来的新设备</h2>${(src.total||[]).length?'<table>'+src.total.map(r=>`<tr><td>${esc(r.src)}</td><td>${r.n}</td></tr>`).join('')+'</table>':'<p class="muted">还没有</p>'}</div>
+  <div class="cols">
+   <div class="card"><h2>功能 / 内容打开次数</h2>${list(ad.tot.f,v=>v+' 次')}</div>
+   <div class="card"><h2>看了多久</h2>${list(ad.tot.t,mins)}</div>
+   <div class="card"><h2>写得最多的字</h2>${list(Object.fromEntries(allW.map(([c,v])=>['w:'+c,v])),v=>v+' 次')}</div>
+  </div>
+  <div class="card"><h2>💬 意见箱 <span class="muted">（${fb.fb.length} 条）</span></h2>${fb.fb.length?fb.fb.map(f=>`<div class="fb"><span class="muted">${day(f.created)} · ${esc(f.lang)} · 来源 ${esc(f.src||'-')} · 在 ${esc(VIEW[f.at]||f.at||'-')}${f.contact?' · 联系：'+esc(f.contact):''}</span><br>${esc(f.text)}</div>`).join(''):'<p class="muted">还没有</p>'}</div>
+  <div class="card"><h2>家庭 <span class="muted">（共 ${ad.n} 个家庭码，这里列最近活跃、有名字的 ${ad.fams.length} 个）</span></h2>
+   <table><tr><th>家庭码</th><th>来源</th><th>开始 / 最近</th><th>孩子：写过的字 · 星 · 写了几次 · 用了多久</th><th>常看 / 常用</th></tr>
+   ${ad.fams.map(f=>`<tr><td><code>${esc(f.code.slice(0,4))}…</code></td><td>${esc(f.src||'-')}</td><td>${day(f.created)}<br>${day(f.updated)}</td>
+    <td>${f.kids.map(c=>`<b>${esc(c.name)}</b>：${c.chars} 字 · ⭐${c.stars} · ${c.writes} 次 · ${mins(c.secs)}`).join('<br>')}</td>
+    <td class="muted">${f.kids.map(c=>[...c.topT.map(([x,v])=>esc(label(x))+' '+mins(v)),...c.topF.slice(0,3).map(([x,v])=>esc(label(x))+' ×'+v)].join('；')||'-').join('<br>')}</td></tr>`).join('')}</table>
+   <p class="muted">家庭码只显示前 4 位（完整的码等于这家进度的钥匙）。</p></div>
+  <div class="card"><h2>邮箱名单</h2><button id="csv">下载 CSV</button></div>`;
+  $('#csv').onclick=()=>window.open(API+'/sub/list'+q+'&fmt=csv','_blank');
+  $('#msg').textContent='更新于 '+new Date().toLocaleTimeString()}catch(e){$('#msg').textContent=e.message}}
+$('#go').onclick=load;$('#key').onkeydown=e=>{if(e.key==='Enter')load()};
+try{const k=localStorage.getItem('zilin_admin_key');if(k){$('#key').value=k;load()}}catch(_){}
+</script>
+</body>
+</html>
