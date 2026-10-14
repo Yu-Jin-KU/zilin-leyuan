@@ -36,7 +36,9 @@ out_img = ROOT / "img" / "lib"; out_img.mkdir(parents=True, exist_ok=True)
 covers = AP / "covers"
 for n, theme in enumerate(order):
     base = theme.replace("诗词版", "")
-    cands = [covers / f"{theme}_中文版.jpg", covers / f"{theme}_横版_YouTube.jpg", covers / f"{theme}_横版_中文版.jpg"] + sorted(covers.glob(f"{theme}*.jpg")) + sorted(covers.glob(f"{base}_*.jpg"))
+    cands = [covers / f"{theme}_中文版.jpg", covers / f"{theme}_横版_YouTube.jpg", covers / f"{theme}_横版_中文版.jpg"] + sorted(covers.glob(f"{theme}*.jpg"))
+    if base != theme: cands.append(covers / f"{base}_横版_YouTube.jpg")   # 咏鹅诗词版的封面叫 咏鹅_横版_YouTube.jpg（水墨版），别被儿歌版的 咏鹅_中文版.jpg 抢走
+    cands += sorted(covers.glob(f"{base}_*.jpg"))
     src = next((c for c in cands if c.exists()), None)
     if src:
         im = Image.open(src).convert("RGB"); im.thumbnail((400, 400)); dst = out_img / f"{n:03d}.webp"; im.save(dst, "WEBP", quality=78, method=6)
