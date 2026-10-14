@@ -190,6 +190,14 @@ h1{font-size:34px;margin:8px 0 4px;font-weight:400}h2{font-size:26px;margin:22px
 @media (max-width:520px){.logo{font-size:20px}.logo svg{width:30px;height:30px}.nav button,.who{font-size:15px;padding:6px 10px}.bar{gap:6px;padding:8px 10px}h1{font-size:28px}}
 @media (prefers-reduced-motion:reduce){.pop,.burst,.holo .holo-sheen{animation:none}}
 @media print{@page{size:A4;margin:0}body.printing{background:#fff}body.printing>*{display:none!important}body.printing #print{display:grid!important}#print{display:none;grid-template-columns:repeat(3,63mm);gap:3mm;padding:7.5mm;background:#fff}.pcard{width:63mm;height:88mm;break-inside:avoid}.pcard svg{width:63mm;height:88mm;display:block}}
+@media print{body.printing.ws #print{display:block!important;padding:0}.wsdoc{page:ws}}
+@page ws{size:A4;margin:12mm 12mm 14mm}
+.wsdoc{font-family:var(--han);color:#222;width:186mm}
+.wsb{break-inside:avoid;margin:0 0 5mm}.wsh{display:flex;align-items:baseline;gap:4mm;font-size:11pt;margin:0 0 1.5mm}.wsh b{font-size:16pt;font-family:var(--kai)}.wsh .py{font-family:var(--lat);font-size:14pt}
+.wsso{display:flex;flex-wrap:wrap;gap:1mm;margin:0 0 1.5mm}.wsso svg{width:8.5mm;height:8.5mm}
+.wsrow{display:flex}.wsrow svg{width:18.6mm;height:18.6mm;display:block}
+.wsl{display:block;width:186mm;height:15mm;margin:0 0 1mm}
+.wstitle{display:flex;justify-content:space-between;font-size:11pt;margin:0 0 4mm;border-bottom:.3mm solid #999;padding-bottom:1.5mm}
 @media screen{#print{display:none}}
 @page{size:A4;margin:8mm}
 </style></head>
@@ -532,7 +540,7 @@ function heroHTML(full){
  if(!full)return `<div class="hero mini">${parade}</div>`;
  return `<section class="hero"><div><h1>写一个字，<br>召唤一只<em>字灵</em>！</h1>
   <p>跟着笔顺动画写汉字，写对就得一张字卡，喂给 24 个部落的字灵。喂得越多，字灵从蛋里孵出来，一路长成大王。</p>
-  <p style="font-size:16px">美人鱼中华文化学校（MCCS）的一位中文老师为课堂而做：课上一起写，回家接着练。适合海外华人家庭和学中文的孩子。</p>
+  <p style="font-size:16px">美人鱼中华文化学校的一位中文老师为课堂而做：课上一起写，回家接着练。适合海外华人家庭和学中文的孩子。</p>
   <div class="htags"><span>✍️ 6700 字笔顺</span><span>🔊 真人发音</span><span>📖 古诗绘本</span><span>🎮 闯关小游戏</span><span>🌍 中文 · English · Dansk</span><span>👩‍🏫 老师可建班布置生字</span><span>💚 免费 · 无广告 · 不用注册</span></div>
   <div class="row" style="gap:10px;flex-wrap:wrap"><button class="big green" id="heroGo">写上名字，开始玩 ↓</button><button class="big ghost" id="heroVid">🎬 先看动画</button></div></div>
   <div><div class="hsteps"><div class="hstep"><div class="hw" id="heroHw"></div><b>写一个字</b></div><div class="hstep"><img src="art/egg_fire.webp" alt=""><b>得卡喂蛋</b></div><div class="hstep"><img src="art/tribe_fire_1.webp" alt=""><b>孵出字灵</b></div><div class="hstep"><img src="art/tribe_fire_3.webp" alt=""><b>变成大王</b></div></div>${parade}</div></section>`}
@@ -679,8 +687,9 @@ function parentGuide(opt){
  <li><b class="t">${joined?'🏫 班级 · <span class="ok">✅ 已加入</span>':'🏫 加入班级'}</b>${joined}${(names.length||pre)?`${joined?'<details><summary class="muted" style="cursor:pointer">再加一个孩子，或换一个班级</summary>':''}${pre?`<span class="ok">老师发的班级码已经填好了，${names.length?'勾上孩子的名字（或写上新名字）':'写上孩子的中文名字'}，点「加入班级」就行。</span>`:'老师发了班级码的话填在这里，勾上孩子的名字。老师就能看到孩子写了哪些字，还能布置本周生字。'}<div class="row"><input id="pgCls" maxlength="9" placeholder="班级码，比如 AB2C-D3EF" autocapitalize="characters" autocomplete="off" value="${esc(pre)}" style="font:inherit;font-size:18px;padding:8px 12px;border-radius:12px;border:3px solid var(--line);background:var(--paper);color:var(--ink)"></div><div class="row" id="pgClsWho">${names.map(([id,p])=>`<label><input type="checkbox" value="${id}" ${(names.length===1||pre)?'checked':''}> ${esc(p.name)}</label>`).join('')}</div><div class="row"><input id="pgNew" maxlength="16" placeholder="${names.length?'或者写一个新名字':'孩子的中文名字，和老师名单上一样'}" aria-label="孩子的名字" autocomplete="off" style="flex:1;min-width:220px;font:inherit;font-size:18px;padding:8px 12px;border-radius:12px;border:3px solid var(--line);background:var(--paper);color:var(--ink)"></div><div class="row"><button class="green" id="pgJoin">加入班级</button></div>${joined?'</details>':''}`:'先在上面加一个名字，再加入班级。'}<p class="muted" id="pgClsMsg"></p></li>
  <li><b class="t">⏰ 每次玩多久</b>到时间会出现休息画面，休息 10 分钟才能继续；家长答一道乘法题可以提前解锁。<div class="row seg" id="pgLimit">${[[0,'不限'],[15,'15 分钟'],[20,'20 分钟'],[30,'30 分钟']].map(([v,t])=>`<button data-lim="${v}" aria-pressed="${v===lim}">${t}</button>`).join('')}</div></li>
  ${SYNC_API?'<li><b class="t">📮 收更新（可选）</b><div id="pgMail"></div></li><li><b class="t">💬 意见箱</b><div id="pgFb"></div></li>':''}
- </ol><p class="muted" style="text-align:center"><a href="privacy.html" target="_blank" rel="noopener" style="color:inherit">🔒 隐私说明 · Privacy · Privatliv</a>：不注册、无广告；云端只备份账号名、星数和使用情况。</p>${TESTV()?`<details style="margin-top:12px"><summary class="muted" style="cursor:pointer">老师 / 作者选项</summary><div class="row"><input id="pgInv" maxlength="30" placeholder="邀请码" autocomplete="off" style="font:inherit;font-size:16px;padding:6px 10px;border-radius:12px;border:3px solid var(--line);background:var(--paper);color:var(--ink);flex:0 1 140px"><button id="pgPush">🔔 用量快超额时推送提醒到这台设备</button></div><p class="muted" id="pgPushMsg">云端备份的免费额度每天 10 万次请求，到 60%、90% 时提醒。iPad 要从主屏幕图标打开乐园再点这里。</p><div class="row"><a class="ghost" href="admin.html" target="_blank" rel="noopener" style="color:inherit">📈 打开作者后台（谁在用、常用内容、意见箱）</a></div><div class="row"><button id="pgSrc">📊 推广链接带来的新设备</button><button id="pgSubs">📮 导出邮箱 CSV</button></div><div class="muted" id="pgSrcMsg">推广链接后面加 ?from=名字（小写字母、数字、- 和 _），比如 ziling.danpicbook.com/?from=mama1。每台新设备只算第一次打开；(none) = 没带 from。两个按钮都要先填邀请码。</div></details>`:''}<div class="row" style="justify-content:center;margin-top:16px"><button class="big" id="mClose">好了</button></div></div>`;
+ </ol><p class="muted" style="text-align:center"><a href="privacy.html" target="_blank" rel="noopener" style="color:inherit">🔒 隐私说明 · Privacy · Privatliv</a>：不注册、无广告；云端只备份账号名、星数和使用情况。</p>${TESTV()?`<details style="margin-top:12px"><summary class="muted" style="cursor:pointer">老师 / 作者选项</summary><div class="row"><input id="pgInv" maxlength="30" placeholder="邀请码" autocomplete="off" style="font:inherit;font-size:16px;padding:6px 10px;border-radius:12px;border:3px solid var(--line);background:var(--paper);color:var(--ink);flex:0 1 140px"><button id="pgPush">🔔 用量快超额时推送提醒到这台设备</button></div><p class="muted" id="pgPushMsg">云端备份的免费额度每天 10 万次请求，到 60%、90% 时提醒。iPad 要从主屏幕图标打开乐园再点这里。</p><div class="row"><input id="pgWs" maxlength="80" placeholder="要练的字或拼音，比如：山水火 或 ba ma" style="font:inherit;font-size:16px;padding:6px 10px;border-radius:12px;border:3px solid var(--line);background:var(--paper);color:var(--ink);flex:1 1 220px"><select id="pgWsN" aria-label="描红几格"><option value="2">描 2 格</option><option value="3" selected>描 3 格</option><option value="5">描 5 格</option></select><button id="pgWsGo">🖨 田字格 / 拼音描红</button></div><p class="muted" id="pgWsMsg">打印暂时只在作者模式里出现。</p><div class="row"><a class="ghost" href="admin.html" target="_blank" rel="noopener" style="color:inherit">📈 打开作者后台（谁在用、常用内容、意见箱）</a></div><div class="row"><button id="pgSrc">📊 推广链接带来的新设备</button><button id="pgSubs">📮 导出邮箱 CSV</button></div><div class="muted" id="pgSrcMsg">推广链接后面加 ?from=名字（小写字母、数字、- 和 _），比如 ziling.danpicbook.com/?from=mama1。每台新设备只算第一次打开；(none) = 没带 from。两个按钮都要先填邀请码。</div></details>`:''}<div class="row" style="justify-content:center;margin-top:16px"><button class="big" id="mClose">好了</button></div></div>`;
  $('#modal').classList.add('open');pgInstallRow();$('#mClose').addEventListener('click',()=>{if(curView==='players')players()});
+ if($('#pgWsGo'))$('#pgWsGo').onclick=async()=>{const r=await worksheet($('#pgWs').value,{trace:+$('#pgWsN').value});if(r!==true)$('#pgWsMsg').textContent=r};
  if($('#pgPush'))$('#pgPush').onclick=()=>subscribeUsage($('#pgInv').value.trim(),$('#pgPushMsg'));
  if($('#pgSrc')){$('#pgSrc').onclick=()=>srcStats($('#pgInv').value.trim(),$('#pgSrcMsg'));$('#pgSubs').onclick=()=>subsExport($('#pgInv').value.trim(),$('#pgSrcMsg'))}
  pgMailRender();pgFbRender();
@@ -1061,6 +1070,32 @@ function library(series){
    const vt=((card.querySelector('.t')||{}).firstChild||{}).textContent||b.dataset.play;curItem='vid:'+vt;stat('f','vid:'+vt);
    const img=card.querySelector('img');if(img)img.remove();ph.innerHTML=`<iframe src="https://www.youtube-nocookie.com/embed/${b.dataset.play}?autoplay=1&rel=0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen title="视频"></iframe>`;stopMusic()})})}
 /* ---------- print ---------- */
+/* 田字格 / 拼音描红练习纸（2026-10-14）：任意汉字或拼音，暂时只给作者模式（以后和学校商量是否收费）。
+   汉字用笔顺数据画（不依赖字体，和写字页的字形一致）：第一格黑字示范，后面几格浅灰描红，再空格自己写；上面一排笔顺分解。
+   拼音画在四线三格里：黑色示范，浅灰描红，再留空。入口：「家长看这里 → 老师 / 作者选项」，或 index.html?ws=字字字（老师页「打印本周生字练习纸」） */
+const WS_RED='#E05A5A';
+function wsGrid(inner,dash){return `<svg viewBox="0 0 100 100"><rect x="1" y="1" width="98" height="98" fill="none" stroke="${WS_RED}" stroke-width="1.6"/><path d="M50 1V99M1 50H99${dash?'M1 1L99 99M99 1L1 99':''}" stroke="${WS_RED}" stroke-width=".7" stroke-dasharray="3 3" fill="none"/>${inner||''}</svg>`}
+const wsChar=(d,color,upto,hi)=>`<g transform="translate(6,88) scale(.086,-.086)">${d.strokes.slice(0,upto==null?d.strokes.length:upto).map((x,i)=>`<path d="${x}" fill="${hi&&i===upto-1?WS_RED:color}"/>`).join('')}</g>`;
+const wsLoad=c=>new Promise(ok=>loadChar(c,ok,()=>ok(null)));
+function wsLines(text,kind){/* 四线三格：kind 0 示范 1 描红 */
+ return `<svg class="wsl" viewBox="0 0 744 60" preserveAspectRatio="none"><path d="M0 6H744M0 54H744" stroke="${WS_RED}" stroke-width=".8" fill="none"/><path d="M0 22H744M0 38H744" stroke="${WS_RED}" stroke-width=".6" fill="none"/>${text}</svg>`}
+async function worksheet(input,o={}){
+ const trace=o.trace||3,rows=o.rows||2,dash=!!o.dash;const toks=String(input||'').match(/[\u3400-\u9fff]|[a-zA-ZüÜāáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜ]+/g)||[];if(!toks.length)return '先填要练的字或拼音';
+ const blocks=[];
+ for(const t of toks.slice(0,40)){
+  if(/[\u3400-\u9fff]/.test(t)){const d=await wsLoad(t);if(!d)continue;const e=BY[t];const n=d.strokes.length;
+   const cells=k=>Array.from({length:10},(_,i)=>wsGrid(k===0&&i===0?wsChar(d,'#222'):i<(k===0?1+trace:trace)?wsChar(d,'#C9C9C9'):'',dash)).join('');
+   blocks.push(`<div class="wsb"><div class="wsh"><b>${esc(t)}</b>${e&&e.p?`<span class="py">${esc(e.p)}</span>`:''}<span>${n} 画</span>${e&&e.da?`<span style="font-family:var(--lat);color:#777">${esc(e.da)}${EN[t]?' · '+esc(EN[t]):''}</span>`:''}</div>
+    <div class="wsso">${d.strokes.map((_,i)=>`<svg viewBox="0 0 100 100"><rect x="1" y="1" width="98" height="98" fill="none" stroke="#ddd"/>${wsChar(d,'#222',i+1,true)}</svg>`).join('')}</div>
+    ${Array.from({length:rows},(_,k)=>`<div class="wsrow">${cells(k)}</div>`).join('')}</div>`)}
+  else{const w=t.toLowerCase();const unit=w.length*22+40;const per=Math.max(1,Math.floor(744/unit));
+   const txt=(i,c)=>`<text x="${i*unit+14}" y="38" font-family="Andika,Arial" font-size="34" fill="${c}">${esc(w)}</text>`;
+   blocks.push(`<div class="wsb">${wsLines(Array.from({length:per},(_,i)=>txt(i,i===0?'#222':i<=trace?'#C9C9C9':'none')).join(''))}${Array.from({length:Math.max(0,rows-1)},()=>wsLines(Array.from({length:Math.min(per,trace)},(_,i)=>txt(i,'#C9C9C9')).join(''))).join('')}${wsLines('')}</div>`)}}
+ if(!blocks.length)return '这些字没有笔顺数据';
+ const box=$('#print');box.innerHTML=`<div class="wsdoc"><div class="wstitle"><span>字灵乐园 · 写字练习</span><span>姓名：__________　日期：__________</span></div>${blocks.join('')}</div>`;
+ document.body.classList.add('printing','ws');
+ const done=()=>{document.body.classList.remove('printing','ws');box.innerHTML='';window.removeEventListener('afterprint',done)};
+ window.addEventListener('afterprint',done);setTimeout(()=>{window.print();setTimeout(done,1500)},80);return true}
 function printCards(list){
  const box=$('#print');
  box.innerHTML=list.map(([e,f],i)=>`<div class="pcard">${charCardSVG(e,f,{uid:'p'+i})}</div>`).join('');
@@ -1148,6 +1183,7 @@ else if(/[?&]print=(\d+)/.test(location.search)){/* 导出打印版 PDF：index.
 else{const P=new URLSearchParams(location.search);const famParam=P.get('fam'),clsParam=P.get('cls'),cardsParam=P.get('cards');
  if(SYNC_API&&famParam&&/^[A-Z2-9]{8}$/i.test(famParam)){history.replaceState(null,'',location.pathname);joinFamily(famParam.toUpperCase()).then(r=>{go('players');if(r!==true&&$('#fammsg'))$('#fammsg').textContent=r})}
  else if(SYNC_API&&clsParam&&/^[A-Z2-9]{8}$/i.test(clsParam)){history.replaceState(null,'',location.pathname);S.clsPending=clsParam.toUpperCase();rawSave();go('players');parentGuide({cls:S.clsPending});scheduleSync()}/* 老师发的加入链接 */
+ else if(P.get('ws')&&TESTV()){const w=P.get('ws');history.replaceState(null,'',location.pathname);go(me()?'grades':'players');setTimeout(()=>worksheet(w),600)}
  else if(cardsParam){history.replaceState(null,'',location.pathname);go(me()?'grades':'players');const list=[...new Set([...cardsParam.replace(/[a-zü]+/g,'')].concat(cardsParam.match(/[a-zü]+/g)||[]))].map(c=>BY[c]).filter(Boolean);if(list.length&&TESTV())setTimeout(()=>printCards(list.map(e=>[e,3])),600)}/* 打印暂时只给老师 / 作者模式（以后可能收费） *//* 老师版：打印这些字的字卡 */
  else{go(me()?'grades':'players');scheduleSync()}
  tickPlay()}
