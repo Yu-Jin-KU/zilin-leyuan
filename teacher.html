@@ -113,7 +113,7 @@ async function openClass(c,fresh){
   <p class="muted" id="cmsg"></p></div>
 
  <div class="card"><h2>📝 本周生字 ${A.length?`<span class="muted">（${A.length} 个）</span>`:''}</h2>
-  ${A.length?`<div class="chips">${A.map(ch=>`<span class="chip small">${esc(ch)}</span>`).join('')}</div>${note?`<p>给孩子的话：${esc(note)}</p>`:''}<div class="row">${PRINT_ON?'<button id="printA">🖨️ 打印这些字的字卡</button>':''}<button class="ghost" id="clearA">清空</button></div>`:'<p class="muted">还没布置。孩子打开游戏时首页会出现「老师留的字」。</p>'}
+  ${A.length?`<div class="chips">${A.map(ch=>`<span class="chip small">${esc(ch)}</span>`).join('')}</div>${note?`<p>给孩子的话：${esc(note)}</p>`:''}<div class="row">${PRINT_ON?'<button id="printA">🖨️ 打印这些字的字卡</button><button id="printW">✏️ 打印练习纸（田字格）</button>':''}<button class="ghost" id="clearA">清空</button></div>`:'<p class="muted">还没布置。孩子打开游戏时首页会出现「老师留的字」。</p>'}
   <details ${A.length?'':'open'}><summary>${A.length?'换一批':'布置生字'}</summary>
    <p class="muted">直接把课本上这课的生字打进来（其他符号会自动忽略），或者从下面按年级点选。一次最多 60 个。</p>
    <textarea id="aText" placeholder="例如：山 水 火 土 木">${esc(A.join(' '))}</textarea>
@@ -137,6 +137,7 @@ async function openClass(c,fresh){
  if($('#copyKey'))$('#copyKey').onclick=()=>copy(c.key,null,'钥匙已复制');
  $('#copyCode').onclick=()=>copy(fmt(c.code),null,'班级码已复制');
  $('#copyMsg').onclick=()=>copy(parentMsg,null,'已复制，粘到家长群就行');
+ if($('#printW'))$('#printW').onclick=()=>window.open(`${SITE}?ws=${encodeURIComponent(A.join(''))}`,'_blank');
  if($('#printA'))$('#printA').onclick=()=>window.open(`${SITE}?cards=${encodeURIComponent(A.join(''))}`,'_blank');
  if($('#clearA'))$('#clearA').onclick=()=>saveAssign([],'');
  $('#saveA').onclick=()=>{const chars=parseChars($('#aText').value);if(!chars.length)return $('#cmsg').textContent='先填几个字';saveAssign(chars,$('#aNote').value.trim())};
