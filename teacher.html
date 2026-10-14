@@ -44,6 +44,11 @@ const SITE=location.origin+location.pathname.replace(/teacher\.html$/,'');
 const $=s=>document.querySelector(s);
 const AUTHOR=(()=>{try{if(new URLSearchParams(location.search).get('teacher')==='1')localStorage.setItem('zilin_testvoice','1');return localStorage.getItem('zilin_testvoice')==='1'}catch(_){return false}})();/* 用量 / 推送提醒只给作者看：乐园或这一页带 ?teacher=1 打开过一次即可 */
 const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+/* 使用统计（st = {w:{字:次数}, t:{内容:秒}, f:{功能:次数}}）：几台设备加在一起；内容键 w:字 / b:绘本 / vid:视频 / v:页面 */
+const addSt=list=>{const out={w:{},t:{},f:{}};for(const st of list)for(const k of ['w','t','f'])for(const [x,v] of Object.entries((st||{})[k]||{}))out[k][x]=(out[k][x]||0)+v;return out};
+const mins=s=>s>=3600?(s/3600).toFixed(1)+' 小时':Math.max(1,Math.round(s/60))+' 分钟';
+const STV={grades:'字表',write:'写字',album:'卡册',poster:'字灵王国',draw:'画字灵',library:'视频',book:'绘本',quest:'闯关'};
+const stLabel=k=>{const i=k.indexOf(':'),a=k.slice(0,i),b=k.slice(i+1);return a==='w'?'写「'+b+'」':a==='b'?'绘本《'+b+'》':a==='vid'?'视频《'+b+'》':a==='v'?(STV[b]||b):k};
 const KEYS='zilin_teacher';
 let classes=[];try{classes=JSON.parse(localStorage.getItem(KEYS)||'[]')}catch(_){}
 const saveKeys=()=>{try{localStorage.setItem(KEYS,JSON.stringify(classes))}catch(_){}};
@@ -86,8 +91,10 @@ async function openClass(c,fresh){
  /* 按名单合并：同一个孩子在几台设备上玩，进度合在一起；没对上名单的设备单独列 */
  const rows=[];const used=new Set();
  for(const r of roster){const ms=mem.filter(m=>m.rid===r.id);ms.forEach(m=>used.add(m.id));const prog={};let upd=0;for(const m of ms){for(const [c,f] of Object.entries(m.prog))prog[c]=Math.max(prog[c]||0,f);upd=Math.max(upd,m.updated||0)}
-  rows.push({id:'roster:'+r.id,name:r.name,en:r.en,prog,updated:upd,devices:ms.length,ids:ms.map(m=>m.id),inRoster:true})}
- for(const m of mem)if(!used.has(m.id))rows.push({id:m.id,name:m.name,en:'',prog:m.prog,updated:m.updated,devices:1,ids:[m.id],inRoster:false});
+  rows.push({id:'roster:'+r.id,name:r.name,en:r.en,prog,st:addSt(ms.map(m=>m.st)),updated:upd,devices:ms.length,ids:ms.map(m=>m.id),inRoster:true})}
+ for(const m of mem)if(!used.has(m.id))rows.push({id:m.id,name:m.name,en:'',prog:m.prog,st:addSt([m.st]),updated:m.updated,devices:1,ids:[m.id],inRoster:false});
+ const wN=(m,ch)=>(m.st.w||{})[ch]||0;const wAll=m=>Object.values(m.st.w||{}).reduce((a,b)=>a+b,0);const tAll=m=>Object.values(m.st.t||{}).reduce((a,b)=>a+b,0);
+ const topT=m=>Object.entries(m.st.t||{}).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([k,v])=>stLabel(k)+' '+mins(v)).join('；');
  const done=m=>A.filter(ch=>(m.prog[ch]||0)>=1).length;
  const stars=m=>Object.values(m.prog).reduce((a,b)=>a+b,0);
  // 全班最难：布置的字里完成人数最少的；没布置就看所有写过的字里平均星最低的
@@ -119,9 +126,9 @@ async function openClass(c,fresh){
   <details ${roster.length?'':'open'}><summary>${roster.length?'修改名单':'录入名单'}</summary><textarea id="rosterText" style="letter-spacing:0;font-size:17px;min-height:160px" placeholder="李丽娜 Elina&#10;陈乐芸 Fiona">${esc(roster.map(r=>r.name+(r.en?' '+r.en:'')).join('\n'))}</textarea><div class="row"><button class="green" id="saveRoster">保存名单</button><span class="muted">改名字时保持顺序不变，已经对上的孩子就不会错位。</span></div></details></div>
 
  <div class="card"><h2>👧👦 学生 <span class="muted">（名单 ${roster.length} 人，已加入 ${rows.filter(r=>r.devices).length}）</span></h2>
-  ${rows.length?`<table><thead><tr><th>名字</th><th>${A.length?'本周生字':'进度'}</th><th class="hide">写过的字</th><th class="hide">星星</th><th>最近</th><th></th></tr></thead><tbody>
-  ${rows.map(m=>`<tr${m.devices?'':' style="opacity:.55"'}><td><b>${esc(m.name)}</b>${m.en?`<br><span class="muted" style="font-size:13px">${esc(m.en)}</span>`:''}${m.inRoster?'':'<br><span class="warn" style="font-size:13px">没对上名单</span>'}${m.devices>1?`<br><span class="muted" style="font-size:13px">${m.devices} 台设备</span>`:''}</td><td>${!m.devices?'<span class="muted">还没加入</span>':A.length?`<div class="row" style="margin:0"><div class="bar" title="${done(m)}/${A.length}"><i style="width:${A.length?100*done(m)/A.length:0}%"></i></div><span>${done(m)}/${A.length}</span></div><div class="chips">${A.map(ch=>`<span class="chip small s${m.prog[ch]||0}" title="${m.prog[ch]?m.prog[ch]+' 星':'还没写'}">${esc(ch)}</span>`).join('')}</div>`:`${Object.keys(m.prog).length} 个字`}</td><td class="hide">${m.devices?Object.keys(m.prog).length:''}</td><td class="hide">${m.devices?'⭐ '+stars(m):''}</td><td>${m.devices?ago(m.updated):''}</td><td>${m.ids.map(id=>`<button class="danger" data-rm="${esc(id)}" title="把这台设备从班里移除（孩子自己的进度不受影响）">移除</button>`).join(' ')}</td></tr>`).join('')}
-  </tbody></table><p class="muted">颜色：绿色三星，黄色一两星，灰色还没写。孩子在家写完，下次联网就会出现在这里。</p>`:'<p class="muted">还没有学生加入。先录名单，再把上面的班级码或链接发给家长。</p>'}</div>
+  ${rows.length?`<table><thead><tr><th>名字</th><th>${A.length?'本周生字':'进度'}</th><th class="hide">写过的字</th><th class="hide">星星</th><th>练习</th><th class="hide">花时间最多的</th><th>最近</th><th></th></tr></thead><tbody>
+  ${rows.map(m=>`<tr${m.devices?'':' style="opacity:.55"'}><td><b>${esc(m.name)}</b>${m.en?`<br><span class="muted" style="font-size:13px">${esc(m.en)}</span>`:''}${m.inRoster?'':'<br><span class="warn" style="font-size:13px">没对上名单</span>'}${m.devices>1?`<br><span class="muted" style="font-size:13px">${m.devices} 台设备</span>`:''}</td><td>${!m.devices?'<span class="muted">还没加入</span>':A.length?`<div class="row" style="margin:0"><div class="bar" title="${done(m)}/${A.length}"><i style="width:${A.length?100*done(m)/A.length:0}%"></i></div><span>${done(m)}/${A.length}</span></div><div class="chips">${A.map(ch=>`<span class="chip small s${m.prog[ch]||0}" title="${m.prog[ch]?m.prog[ch]+' 星':'还没写'}${wN(m,ch)?' · 写了 '+wN(m,ch)+' 次':''}">${esc(ch)}</span>`).join('')}</div>`:`${Object.keys(m.prog).length} 个字`}</td><td class="hide">${m.devices?Object.keys(m.prog).length:''}</td><td class="hide">${m.devices?'⭐ '+stars(m):''}</td><td>${m.devices&&wAll(m)?`写了 ${wAll(m)} 次<br><span class="muted">${mins(tAll(m))}</span>`:''}</td><td class="hide muted" style="font-size:14px">${m.devices?esc(topT(m)):''}</td><td>${m.devices?ago(m.updated):''}</td><td>${m.ids.map(id=>`<button class="danger" data-rm="${esc(id)}" title="把这台设备从班里移除（孩子自己的进度不受影响）">移除</button>`).join(' ')}</td></tr>`).join('')}
+  </tbody></table><p class="muted">颜色：绿色三星，黄色一两星，灰色还没写；手指停在字上能看到写了几次。「练习」是写完一个字的次数和在乐园里的时间（这次更新以后才开始算）。孩子在家写完，下次联网就会出现在这里。</p>`:'<p class="muted">还没有学生加入。先录名单，再把上面的班级码或链接发给家长。</p>'}</div>
 
  ${hard.length?`<div class="card"><h2>🧐 最需要讲的字</h2><p class="muted">${A.length?'本周生字里，完成的人最少、星星最低的：':'全班写过的字里，星星最低的：'}</p><div class="chips">${hard.map(h=>`<span class="chip small" title="${h.n} 人写过，平均 ${h.avg.toFixed(1)} 星">${esc(h.ch)}</span>`).join('')}</div></div>`:''}`;
  $('#back').onclick=()=>home();$('#reload').onclick=()=>openClass(c);

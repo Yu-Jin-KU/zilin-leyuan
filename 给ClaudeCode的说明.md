@@ -60,8 +60,9 @@
 ## 语音 / 绘本托管（2026-10-10 起）
 
 - 语音和绘本页的图片、旁白不再从 GitHub Pages 读，改从 Cloudflare Workers 静态资源读（账号 danpicbook@gmail.com，请求不限量、免费）：
-  - `https://zilin-media.zilingleyuan.workers.dev/`：`kid/<字>.mp3` 童声全套；`book/<主题>/<页>.webp` 绘本配图（1024 宽）；`book/<主题>/<页>.<zh|en|da>.mp3` 每页旁白（不带配乐）。
-  - `https://zilin-media2.zilingleyuan.workers.dev/`：`adult/`、`teacher/` 两套隐藏声音。
+  - `https://media.danpicbook.com/`：`kid/<字>.mp3` 童声全套；`book/<主题>/<页>.webp` 绘本配图（1024 宽）；`book/<主题>/<页>.<zh|en|da>.mp3` 每页旁白（不带配乐）。
+  - `https://media2.danpicbook.com/`：`adult/`、`teacher/` 两套隐藏声音。
+  - 2026-10-14 起两个素材服务在 管 danpicbook.com 域名的账户，挂自定义域名，域名防火墙规则只放行 Referer 是 ziling.danpicbook.com / localhost 的请求；云端备份 sync 仍在原来的账户。各 wrangler.toml 里写死了 account_id。免费版每个素材服务最多 2 万个文件，满了就开 media3。
   - 每个 Worker 静态文件上限 2 万个，所以分两个。地址写在 index.html 的 `MEDIA` / `MEDIA2`。
 - 构建：`python -X utf8 tools/build_media.py` 把 audio/ 三套和 D:\美人鱼课\绘本_*\ 的 assets、audio/{zh,en,da} 整理到 `_media/`（不进 git，可断点续跑）；然后 `cd media && npx wrangler deploy`、`cd media2 && npx wrangler deploy`（只上传有变化的文件）。
 - 新生成或改了语音后：先跑 gen_audio，再 build_media + deploy。

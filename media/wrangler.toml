@@ -2,6 +2,11 @@
 # 目录 ../_media/zilin-media 由 tools/build_media.py 生成（不进 git）。部署：cd media && npx wrangler deploy
 name = "zilin-media"
 compatibility_date = "2026-10-01"
+account_id = "e4cb58249df01fb0932d3bc1b56b5b0f"   # 管 danpicbook.com 域名的账户；wrangler 登录的用户是两个账户的成员
+# 2026-10-14 搬到管 danpicbook.com 的 Cloudflare 账户，挂自定义域名；不开 workers.dev，所有请求都经过这个域名，
+# 这样域名上的防火墙规则（只放行从 ziling.danpicbook.com 来的请求）才管得到。静态文件不运行 Worker 代码，不算请求次数
+workers_dev = false
+routes = [{ pattern = "media.danpicbook.com", custom_domain = true }]
 
 [assets]
 directory = "../_media/zilin-media"

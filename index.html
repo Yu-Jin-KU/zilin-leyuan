@@ -368,25 +368,31 @@ let S={players:{},cur:null,grade:0,agrade:0};
 try{const raw=localStorage.getItem(KEY)||localStorage.getItem('zilin_v1');if(raw)S=Object.assign(S,JSON.parse(raw))}catch(_){}
 /* ---------- 家庭码云端备份（Cloudflare Worker，见 sync/）：本机永远是主存档，云端只做备份与跨设备找回 ---------- */
 const SYNC_API='https://zilin-sync.zilingleyuan.workers.dev';/* sync/ 里的 Worker（Cloudflare 账号 danpicbook@gmail.com）；改成空字符串可整体关闭备份功能 */
+/* 使用统计（2026-10-14）：每个孩子 p.st = {w:{字:写完几次}, t:{内容:秒}, f:{功能:次数}}，都是累计数，跟着备份 / 班级汇总一起上传（不多发请求）。
+   t 的内容键：w:字（写字页）、b:绘本名、vid:视频名、v:页面；f 的键：v:页面、g:小游戏、b:绘本名、vid:视频名、quest、print。每类最多 500 个键 */
+let curItem='';
+function stat(kind,key,n=1){const p=me();if(!p||!key)return;const st=p.st=p.st||{};const m=st[kind]=st[kind]||{};key=String(key).slice(0,40);if(!(key in m)&&Object.keys(m).length>=500)return;m[key]=(m[key]||0)+n}
 const rawSave=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(_){}};
 function save(){rawSave();scheduleSync()}
 let syncTimer=null,syncing=false;
 function scheduleSync(){if(!SYNC_API||!Object.keys(S.players).length)return;clearTimeout(syncTimer);syncTimer=setTimeout(syncNow,120000)}/* 攒 2 分钟再上传（本地已即时保存，离开页面时立刻补传）：一直玩的孩子每小时最多 30 次同步 */
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&syncTimer){clearTimeout(syncTimer);syncTimer=null;syncNow(true)}});
-const slimPlayers=()=>Object.fromEntries(Object.entries(S.players).map(([id,p])=>[id,{name:p.name,prog:p.prog||{}}]));
-function mergeRemote(data){let changed=false;for(const [id,p] of Object.entries(data||{})){if(id==='_del'){for(const d of Object.keys(p||{}))if(S.players[d]){delete S.players[d];if(S.cur===d)S.cur=null;changed=true}continue}if((S.del||[]).includes(id))continue;/* 别的设备删掉的名字，这里也删；本机刚删还没传上去的，不合并回来 */let q=S.players[id];if(!q){q=S.players[id]={name:p.name||'?',prog:{}};changed=true}q.prog=q.prog||{};for(const [c,f] of Object.entries(p.prog||{}))if((q.prog[c]||0)<f){q.prog[c]=f;changed=true}}return changed}
+const slimPlayers=()=>Object.fromEntries(Object.entries(S.players).map(([id,p])=>[id,{name:p.name,prog:p.prog||{},st:p.st||{}}]));
+function mergeRemote(data){let changed=false;for(const [id,p] of Object.entries(data||{})){if(id==='_del'){for(const d of Object.keys(p||{}))if(S.players[d]){delete S.players[d];if(S.cur===d)S.cur=null;changed=true}continue}if((S.del||[]).includes(id))continue;/* 别的设备删掉的名字，这里也删；本机刚删还没传上去的，不合并回来 */let q=S.players[id];if(!q){q=S.players[id]={name:p.name||'?',prog:{}};changed=true}q.prog=q.prog||{};for(const [c,f] of Object.entries(p.prog||{}))if((q.prog[c]||0)<f){q.prog[c]=f;changed=true}
+ for(const [k,m] of Object.entries(p.st||{})){if(!m||typeof m!=='object')continue;q.st=q.st||{};const o=q.st[k]=q.st[k]||{};for(const [x,v] of Object.entries(m))if((o[x]||0)<v)o[x]=v}}return changed}/* 统计取两边较大的数（别的设备上玩的次数也算进来） */
 async function syncNow(leaving){if(syncing||!navigator.onLine||!Object.keys(S.players).length)return;syncing=true;
  try{await syncDel();if(!S.fam){const r=await fetch(SYNC_API+'/new',{method:'POST'});if(!r.ok)throw 0;S.fam=(await r.json()).code;rawSave()}
-  const r=await fetch(SYNC_API+'/f/'+S.fam,{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify(slimPlayers()),keepalive:!!leaving});
+  let src='';try{src=localStorage.getItem('zilin_src')||''}catch(_){}
+  const r=await fetch(SYNC_API+'/f/'+S.fam+(src?'?src='+encodeURIComponent(src):''),{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify(slimPlayers()),keepalive:!!leaving});
   if(r.status===404){S.fam=null;rawSave();syncing=false;return syncNow()}
   if(!r.ok)throw 0;const j=await r.json();mergeRemote(j.data);S.syncAt=Date.now();rawSave();if($('#fammsg'))famRefresh();await syncClasses(leaving)}catch(_){}
  syncing=false}
 /* 教师版：加入了班级的名字，把进度也汇总到班里（每个班一次请求），顺便拿回老师布置的本周生字 */
-async function syncClasses(leaving){const byCls={};for(const [pid,code] of Object.entries(S.cls||{})){const p=S.players[pid];if(p)(byCls[code]=byCls[code]||{})[pid]={name:p.name,prog:p.prog||{},rid:(S.clsRid||{})[pid]||''}}
+async function syncClasses(leaving){const byCls={};for(const [pid,code] of Object.entries(S.cls||{})){const p=S.players[pid];if(p)(byCls[code]=byCls[code]||{})[pid]={name:p.name,prog:p.prog||{},st:p.st||{},rid:(S.clsRid||{})[pid]||''}}
  for(const [code,players] of Object.entries(byCls)){try{const r=await fetch(SYNC_API+'/c/'+code+'/members',{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify({fam:S.fam,players}),keepalive:!!leaving});
   if(r.status===404){for(const pid of Object.keys(players))delete S.cls[pid];if(S.clsInfo)delete S.clsInfo[code]}else if(r.ok){const j=await r.json();S.clsInfo=S.clsInfo||{};S.clsInfo[code]={name:j.name,assign:j.assign||{},roster:j.roster||[]}}}catch(_){}}
  rawSave()}
-async function joinClass(code,ids,rids){try{const r=await fetch(SYNC_API+'/c/'+code);if(r.status===404)return '没有这个班级码，再检查一下';if(!r.ok)throw 0;const j=await r.json();const roster=j.roster||[];
+async function joinClass(code,ids,rids){try{const r=await fetch(SYNC_API+'/c/'+code);if(r.status===404)return '没有这个班级码，再检查一下';if(r.status===429)return '试得太多次了，请过一分钟再试';if(!r.ok)throw 0;const j=await r.json();const roster=j.roster||[];
  if(roster.length&&!rids)return {roster,name:j.name};/* 老师录了名单：先让家长选孩子是名单里的谁 */
  S.cls=S.cls||{};S.clsInfo=S.clsInfo||{};S.clsRid=S.clsRid||{};S.clsInfo[code]={name:j.name,assign:j.assign||{},roster};for(const id of ids){S.cls[id]=code;if(rids&&rids[id])S.clsRid[id]=rids[id];else delete S.clsRid[id]}if(S.clsPending===code)delete S.clsPending;rawSave();syncNow();scheduleSync();return true}catch(_){return '连不上云端，请检查网络后再试'}}
 /* 找字：打字（汉字或拼音）或按住话筒说出来；汉字结果后面跟同音字 */
@@ -399,7 +405,7 @@ function findChars(q){q=String(q||'').trim();if(!q)return [];const out=[],seen=n
  else{const k=q.toLowerCase().replace(/v/g,'ü').replace(/[^a-zü]/g,'');if(!k)return [];if(BY[k]&&BY[k].letter)add(BY[k]);const idx=pyIndex();const keys=Object.keys(idx).filter(x=>x===k).concat(Object.keys(idx).filter(x=>x!==k&&x.startsWith(k)).sort());for(const key of keys)for(const x of idx[key].sort((a,b)=>a.g-b.g)){add(x);if(out.length>=24)break}}
  return out.slice(0,24)}
 const myClass=()=>{const code=S.cls&&S.cls[S.cur];const info=code&&S.clsInfo&&S.clsInfo[code];return info?{code,name:info.name,assign:info.assign||{}}:null};
-async function joinFamily(code){try{const r=await fetch(SYNC_API+'/f/'+code);if(r.status===404)return '没有这个家庭码，再检查一下';if(!r.ok)throw 0;const j=await r.json();S.fam=code;mergeRemote(j.data);S.syncAt=Date.now();rawSave();syncNow();return true}catch(_){return '连不上云端，请检查网络后再试'}}
+async function joinFamily(code){try{const r=await fetch(SYNC_API+'/f/'+code);if(r.status===404)return '没有这个家庭码，再检查一下';if(r.status===429)return '试得太多次了，请过一分钟再试';if(!r.ok)throw 0;const j=await r.json();S.fam=code;mergeRemote(j.data);S.syncAt=Date.now();rawSave();syncNow();return true}catch(_){return '连不上云端，请检查网络后再试'}}
 window.addEventListener('online',scheduleSync);
 const me=()=>S.cur&&S.players[S.cur];
 const starsOf=c=>(me()&&me().prog[c])||0;
@@ -414,7 +420,7 @@ const sWin=()=>tone([523,659,784,1047,1319],.11);
 const bufCache={};let curSrc=null,playToken=0;const said={};
 const voiceOn=()=>S.voice!==false;const TESTV=()=>{try{return localStorage.getItem('zilin_testvoice')==='1'}catch(_){return false}};/* ?teacher=1 打开隐藏的成人声/老师声选项（试听用） */
 /* 语音和绘本图片 / 旁白托管在 Cloudflare（Workers 静态资源，请求不限量；见 tools/build_media.py、media/、media2/） */
-const MEDIA='https://zilin-media.zilingleyuan.workers.dev/',MEDIA2='https://zilin-media2.zilingleyuan.workers.dev/';
+const MEDIA='https://media.danpicbook.com/',MEDIA2='https://media2.danpicbook.com/';/* 2026-10-14 从 zilin-media(2).zilingleyuan.workers.dev 搬到 C28 账户的自定义域名，域名上的防火墙规则只放行从本站来的请求 */
 const voiceKind=()=>(S.vk==='adult'||S.vk==='teacher')&&TESTV()?S.vk:'kid';const audioDir=()=>voiceKind()==='kid'?MEDIA+'kid/':voiceKind()==='teacher'?MEDIA2+'teacher/':MEDIA2+'adult/';
 function ctx(){AC=AC||new (window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume().catch(()=>{});return AC}
 document.addEventListener('pointerdown',()=>{try{ctx()}catch(_){}});
@@ -480,7 +486,7 @@ const mini=(e,f)=>`<svg viewBox="0 0 200 200" aria-hidden="true">${creatureSVG(e
 function setNav(v){document.querySelectorAll('#nav button').forEach(b=>b.setAttribute('aria-current',b.dataset.go===v));const p=me();$('#who').textContent=p?`${p.name} ⭐${totalStars(p)}`:'选人'}
 document.addEventListener('click',ev=>{const b=ev.target.closest('[data-go]');if(b){if(b.dataset.go!=='players'&&b.dataset.go!=='library'&&b.dataset.go!=='book'&&!me())return go('players');go(b.dataset.go,b.dataset.arg)}});
 let writer=null,autoT=null;
-function go(v,arg){if(writer){try{writer.cancelQuiz()}catch(_){}writer=null}closeModal();setNav(v);window.scrollTo(0,0);if(BA&&v!=='book'){BA.pause();BA.onended=null}curView=v;({players,grades,write,album,poster,draw,library,book})[v](arg);playMusic(v==='write'?'write':(v==='album'||v==='poster')?'album':'menu')}
+function go(v,arg){if(writer){try{writer.cancelQuiz()}catch(_){}writer=null}closeModal();setNav(v);window.scrollTo(0,0);if(BA&&v!=='book'){BA.pause();BA.onended=null}curView=v;curItem=v==='write'&&arg?'w:'+arg:'';stat('f','v:'+v);({players,grades,write,album,poster,draw,library,book})[v](arg);playMusic(v==='write'?'write':(v==='album'||v==='poster')?'album':'menu')}
 function gradeTabs(cur,attr){return `<div class="tabs" role="tablist">${GRADES.map(g=>`<button role="tab" aria-selected="${g.id===cur}" ${attr}="${g.id}">${g.name}</button>`).join('')}</div>`}
 /* ---------- players ---------- */
 function players(){
@@ -562,6 +568,47 @@ async function subscribeUsage(inv,m){if(!inv)return m.textContent='先填邀请�
   const sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:raw});
   const r=await fetch(SYNC_API+'/push/sub?key='+encodeURIComponent(inv),{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({sub:sub.toJSON()})}).then(r=>r.json());
   m.textContent=r.ok?`✅ 已开启，这台设备会收到提醒（目前共 ${r.devices} 台设备）。`:(r.error==='key'?'邀请码不对':'没开成：'+JSON.stringify(r))}catch(e){m.textContent='没开成：'+(e&&e.message||e)}}
+/* 渠道统计 / 邮箱导出（作者用，要邀请码）：见 sync/src/index.js 的 channels()、subscribers() */
+async function srcStats(inv,m){if(!inv)return m.textContent='先填邀请码';m.textContent='正在读…';
+ try{const r=await fetch(SYNC_API+'/src/stats?key='+encodeURIComponent(inv)).then(r=>r.json());if(r.error)return m.textContent=r.error==='key'?'邀请码不对':'没读到：'+r.error;
+  const wk=new Date(Date.now()-7*864e5).toISOString().slice(0,10),w={};for(const d of r.days||[])if(d.day>=wk)w[d.src]=(w[d.src]||0)+d.n;
+  m.innerHTML=((r.total||[]).length?r.total.map(t=>`<div>${esc(t.src)}：<b>${t.n}</b> 台${w[t.src]?`（最近 7 天 ${w[t.src]}）`:''}</div>`).join(''):'<div>还没有数据</div>')+`<div>留了邮箱的家长：<b>${r.subs||0}</b> 位</div>`}catch(e){m.textContent='没读到：'+(e&&e.message||e)}}
+async function subsExport(inv,m){if(!inv)return m.textContent='先填邀请码';m.textContent='正在导出…';
+ try{const r=await fetch(SYNC_API+'/sub/list?fmt=csv&key='+encodeURIComponent(inv));if(!r.ok)return m.textContent=r.status===403?'邀请码不对':'没导出成功（'+r.status+'）';
+  const a=document.createElement('a');a.href=URL.createObjectURL(await r.blob());a.download='ziling-subs-'+new Date().toISOString().slice(0,10)+'.csv';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000);m.textContent='✅ 已下载 CSV（邮箱只给自己用，别转发）'}catch(e){m.textContent='没导出成功：'+(e&&e.message||e)}}
+/* 留邮箱收更新（自愿，勾了同意才能提交）：邮箱只存在云端 subs 表，和家庭码、孩子名字不关联；本机只记「留过了」，不存邮箱本身 */
+const MAIL_RE=/^[^\s@",;<>()]{1,64}@[^\s@",;<>()]+\.[a-z]{2,}$/i;
+const mailSubbed=()=>{try{return localStorage.getItem('zilin_sub')==='1'}catch(_){return false}};
+function pgMailRender(){const el=$('#pgMail');if(!el)return;
+ const fs='font:inherit;font-size:16px;padding:8px 12px;border-radius:12px;border:3px solid var(--line);background:var(--paper);color:var(--ink)';
+ el.innerHTML=(mailSubbed()?'<span class="ok">✅ 这台设备留过邮箱了，有新绘本、新游戏时会发邮件告诉您（大约每月一次）。谢谢！</span>'
+  :`新绘本、新游戏、新功能上线时发一封邮件，大约每月一次。不留也完全能玩。<div class="row"><input id="pgMailIn" type="email" maxlength="254" placeholder="您的邮箱" aria-label="邮箱" autocomplete="email" style="flex:1;min-width:200px;${fs}"><button class="green" id="pgMailGo" disabled>留邮箱</button></div>
+  <label style="display:flex;gap:8px;align-items:flex-start;margin:8px 0 0"><input type="checkbox" id="pgMailOk" style="margin-top:5px;flex:none"><span>我同意字灵乐园用这个邮箱给我发更新（大约每月一次），可以随时退订；邮箱不会给任何别人。<small class="muted" style="display:block">I agree that 字灵乐园 may email me updates (about once a month). I can unsubscribe at any time; my email is never shared with anyone else.<br>Jeg accepterer, at 字灵乐园 sender mig nyheder på e-mail (cirka én gang om måneden). Jeg kan altid afmelde mig; min e-mail deles aldrig med andre.</small></span></label>`)
+  +`<p class="muted" id="pgMailMsg"></p><p class="muted"><a href="#" id="pgUnsub" style="color:inherit">退订</a> · <a href="privacy.html" target="_blank" rel="noopener" style="color:inherit">隐私说明</a></p><div class="row" id="pgUnRow" style="display:none"><input id="pgUnIn" type="email" maxlength="254" placeholder="要退订的邮箱" aria-label="要退订的邮箱" autocomplete="email" style="flex:1;min-width:200px;${fs}"><button id="pgUnGo">退订这个邮箱</button></div>`;
+ const inp=$('#pgMailIn'),ok=$('#pgMailOk'),btn=$('#pgMailGo'),msg=$('#pgMailMsg');
+ if(inp){const chk=()=>{const v=inp.value.trim();btn.disabled=!(ok.checked&&v.length<=254&&MAIL_RE.test(v))};inp.oninput=chk;ok.onchange=chk;
+  btn.onclick=async()=>{chk();if(btn.disabled)return;btn.disabled=true;msg.textContent='正在提交…';
+   let src='';try{src=localStorage.getItem('zilin_src')||''}catch(_){}
+   try{const r=await fetch(SYNC_API+'/sub',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({email:inp.value.trim(),agree:true,lang:(navigator.language||'').slice(0,2).toLowerCase(),src})}).then(r=>r.json());
+    if(r.ok){try{localStorage.setItem('zilin_sub','1')}catch(_){}return pgMailRender()}
+    msg.textContent=r.error==='email'?'邮箱好像写错了，再看一下':'没提交成功，过一会儿再试'}catch(_){msg.textContent='现在连不上网，连上网再试'}
+   chk()}}
+ $('#pgUnsub').onclick=e=>{e.preventDefault();const r=$('#pgUnRow');r.style.display=r.style.display==='none'?'flex':'none'};
+ $('#pgUnGo').onclick=async()=>{const v=$('#pgUnIn').value.trim();if(!MAIL_RE.test(v))return msg.textContent='填上要退订的邮箱';msg.textContent='正在退订…';
+  try{const r=await fetch(SYNC_API+'/unsub',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({email:v})}).then(r=>r.json());
+   if(!r.ok)return msg.textContent='没退订成功，过一会儿再试';try{localStorage.removeItem('zilin_sub')}catch(_){}pgMailRender();$('#pgMailMsg').textContent='✅ 已退订，这个邮箱已经从名单里删掉了。'}catch(_){msg.textContent='现在连不上网，连上网再试'}};
+}
+/* 意见箱：家长、老师写修改建议，联系方式可不填；发到云端 fb 表，作者在 admin.html 看 */
+function pgFbRender(){const el=$('#pgFb');if(!el)return;
+ const fs='font:inherit;font-size:16px;padding:8px 12px;border-radius:12px;border:3px solid var(--line);background:var(--paper);color:var(--ink)';
+ el.innerHTML=`哪里不好用、哪个字读错了、想要什么新功能，都可以写在这里，作者每条都会看。Suggestions welcome · Forslag er velkomne.
+  <textarea id="pgFbText" maxlength="2000" rows="4" placeholder="比如：「乐」字的读音不对；希望能……" aria-label="意见" style="width:100%;margin-top:8px;resize:vertical;${fs}"></textarea>
+  <div class="row"><input id="pgFbWho" maxlength="120" placeholder="想让作者回复的话，留个邮箱或微信（可不填）" aria-label="联系方式（可不填）" style="flex:1;min-width:200px;${fs}"><button class="green" id="pgFbGo">发送</button></div><p class="muted" id="pgFbMsg"></p>`;
+ $('#pgFbGo').onclick=async()=>{const t=$('#pgFbText').value.trim(),msg=$('#pgFbMsg'),btn=$('#pgFbGo');if(t.length<2)return msg.textContent='先写几句话';
+  btn.disabled=true;msg.textContent='正在发送…';let src='';try{src=localStorage.getItem('zilin_src')||''}catch(_){}
+  try{const r=await fetch(SYNC_API+'/fb',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({text:t,contact:$('#pgFbWho').value.trim(),lang:(navigator.language||'').slice(0,2).toLowerCase(),src,where:curView})});
+   if(r.ok){$('#pgFbText').value='';msg.textContent='✅ 收到了，谢谢！'}else msg.textContent=r.status===429?'发得太快了，过一分钟再试':'没发出去，过一会儿再试'}catch(_){msg.textContent='现在连不上网，连上网再试'}
+  btn.disabled=false}}
 function parentGuide(opt){
  const lim=limitMin();if(opt&&typeof opt.cls==='string'&&opt.cls){S.clsPending=opt.cls;rawSave()}const pre=(opt&&typeof opt.cls==='string'&&opt.cls)||S.clsPending||'';const names=Object.entries(S.players);
  const joined=Object.entries(S.cls||{}).filter(([pid])=>S.players[pid]).map(([pid,code])=>{const info=S.clsInfo&&S.clsInfo[code];const rid=(S.clsRid||{})[pid];const rn=rid&&info&&info.roster&&(info.roster.find(x=>x.id===rid)||{}).name;return `<div class="row">✅ ${esc(S.players[pid].name)} 在「${esc((info&&info.name)||famFmt(code))}」${rn&&rn!==S.players[pid].name?`（名单上是 ${esc(rn)}）`:''}<button data-leave="${pid}">退出</button></div>`}).join('');
@@ -571,9 +618,12 @@ function parentGuide(opt){
  <li><b class="t">③ 进度不会丢</b>${S.fam?`进度自动备份到云端，钥匙就是这个家庭码：<code>${famFmt(S.fam)}</code>。请存到不会丢的地方，微信文件传输助手、手机备忘录、拍张照都行。换设备时点那个链接或输入家庭码，所有人的进度都回来。<div class="row"><button id="pgShare">📤 发给自己</button><button id="pgCopy">📋 复制</button></div><p class="muted" id="pgFamMsg"></p>`:'加了名字并联网以后会自动生成一个家庭码做云端备份，到时候记一下就行。'}<p class="muted">清理浏览器数据或换平板之前，联网打开一次，选人页看到「上次备份」是刚刚，就放心。</p></li>
  <li><b class="t">${joined?'🏫 班级 · <span class="ok">✅ 已加入</span>':'🏫 加入班级'}</b>${joined}${(names.length||pre)?`${joined?'<details><summary class="muted" style="cursor:pointer">再加一个孩子，或换一个班级</summary>':''}${pre?`<span class="ok">老师发的班级码已经填好了，${names.length?'勾上孩子的名字（或写上新名字）':'写上孩子的中文名字'}，点「加入班级」就行。</span>`:'老师发了班级码的话填在这里，勾上孩子的名字。老师就能看到孩子写了哪些字，还能布置本周生字。'}<div class="row"><input id="pgCls" maxlength="9" placeholder="班级码，比如 AB2C-D3EF" autocapitalize="characters" autocomplete="off" value="${esc(pre)}" style="font:inherit;font-size:18px;padding:8px 12px;border-radius:12px;border:3px solid var(--line);background:var(--paper);color:var(--ink)"></div><div class="row" id="pgClsWho">${names.map(([id,p])=>`<label><input type="checkbox" value="${id}" ${(names.length===1||pre)?'checked':''}> ${esc(p.name)}</label>`).join('')}</div><div class="row"><input id="pgNew" maxlength="16" placeholder="${names.length?'或者写一个新名字':'孩子的中文名字，和老师名单上一样'}" aria-label="孩子的名字" autocomplete="off" style="flex:1;min-width:220px;font:inherit;font-size:18px;padding:8px 12px;border-radius:12px;border:3px solid var(--line);background:var(--paper);color:var(--ink)"></div><div class="row"><button class="green" id="pgJoin">加入班级</button></div>${joined?'</details>':''}`:'先在上面加一个名字，再加入班级。'}<p class="muted" id="pgClsMsg"></p></li>
  <li><b class="t">⏰ 每次玩多久</b>到时间会出现休息画面，休息 10 分钟才能继续；家长答一道乘法题可以提前解锁。<div class="row seg" id="pgLimit">${[[0,'不限'],[15,'15 分钟'],[20,'20 分钟'],[30,'30 分钟']].map(([v,t])=>`<button data-lim="${v}" aria-pressed="${v===lim}">${t}</button>`).join('')}</div></li>
- </ol>${TESTV()?`<details style="margin-top:12px"><summary class="muted" style="cursor:pointer">老师 / 作者选项</summary><div class="row"><input id="pgInv" maxlength="30" placeholder="邀请码" autocomplete="off" style="font:inherit;font-size:16px;padding:6px 10px;border-radius:12px;border:3px solid var(--line);background:var(--paper);color:var(--ink);flex:0 1 140px"><button id="pgPush">🔔 用量快超额时推送提醒到这台设备</button></div><p class="muted" id="pgPushMsg">云端备份的免费额度每天 10 万次请求，到 60%、90% 时提醒。iPad 要从主屏幕图标打开乐园再点这里。</p></details>`:''}<div class="row" style="justify-content:center;margin-top:16px"><button class="big" id="mClose">好了</button></div></div>`;
+ ${SYNC_API?'<li><b class="t">📮 收更新（可选）</b><div id="pgMail"></div></li><li><b class="t">💬 意见箱</b><div id="pgFb"></div></li>':''}
+ </ol><p class="muted" style="text-align:center"><a href="privacy.html" target="_blank" rel="noopener" style="color:inherit">🔒 隐私说明 · Privacy · Privatliv</a>：不注册、无广告；云端只备份名字、星数和使用情况。</p>${TESTV()?`<details style="margin-top:12px"><summary class="muted" style="cursor:pointer">老师 / 作者选项</summary><div class="row"><input id="pgInv" maxlength="30" placeholder="邀请码" autocomplete="off" style="font:inherit;font-size:16px;padding:6px 10px;border-radius:12px;border:3px solid var(--line);background:var(--paper);color:var(--ink);flex:0 1 140px"><button id="pgPush">🔔 用量快超额时推送提醒到这台设备</button></div><p class="muted" id="pgPushMsg">云端备份的免费额度每天 10 万次请求，到 60%、90% 时提醒。iPad 要从主屏幕图标打开乐园再点这里。</p><div class="row"><a class="ghost" href="admin.html" target="_blank" rel="noopener" style="color:inherit">📈 打开作者后台（谁在用、常用内容、意见箱）</a></div><div class="row"><button id="pgSrc">📊 推广链接带来的新设备</button><button id="pgSubs">📮 导出邮箱 CSV</button></div><div class="muted" id="pgSrcMsg">推广链接后面加 ?from=名字（小写字母、数字、- 和 _），比如 ziling.danpicbook.com/?from=mama1。每台新设备只算第一次打开；(none) = 没带 from。两个按钮都要先填邀请码。</div></details>`:''}<div class="row" style="justify-content:center;margin-top:16px"><button class="big" id="mClose">好了</button></div></div>`;
  $('#modal').classList.add('open');pgInstallRow();$('#mClose').addEventListener('click',()=>{if(curView==='players')players()});
  if($('#pgPush'))$('#pgPush').onclick=()=>subscribeUsage($('#pgInv').value.trim(),$('#pgPushMsg'));
+ if($('#pgSrc')){$('#pgSrc').onclick=()=>srcStats($('#pgInv').value.trim(),$('#pgSrcMsg'));$('#pgSubs').onclick=()=>subsExport($('#pgInv').value.trim(),$('#pgSrcMsg'))}
+ pgMailRender();pgFbRender();
  let taps=0;$('#mbox h2').onclick=()=>{if(++taps>=5){try{localStorage.setItem('zilin_testvoice','1')}catch(_){}parentGuide(opt)}};/* 标题连点 5 下 = 老师模式（主屏幕版没法带 ?teacher=1 打开） */
  $('#pgGrade').value=String(S.grade||0);$('#pgGrade').onchange=pgOfflineStatus;pgOfflineStatus();$('#pgDl').onclick=pgDownload;
  if($('#pgShare')){$('#pgShare').onclick=()=>famShare($('#pgFamMsg'));$('#pgCopy').onclick=()=>famCopy($('#pgFamMsg'))}
@@ -585,7 +635,7 @@ function parentGuide(opt){
   $('#pgClsMsg').innerHTML=`<span class="ok">找到「${esc(r.name)}」。老师的名单里，孩子是哪一个？</span>`+ids.map(id=>`<div class="row"><span>${esc(S.players[id].name)} 是</span><select data-rid="${id}"><option value="">不在名单里</option>${opts}</select></div>`).join('')+`<div class="row"><button class="green" id="pgJoin2">确定加入</button></div>`;
   ids.forEach(id=>{const sel=$(`select[data-rid="${id}"]`);const hit=r.roster.find(x=>x.name===S.players[id].name||x.name.includes(S.players[id].name)||S.players[id].name.includes(x.name));if(hit)sel.value=hit.id});
   $('#pgJoin2').onclick=async()=>{const rids={};document.querySelectorAll('select[data-rid]').forEach(sel=>{if(sel.value)rids[sel.dataset.rid]=sel.value});const r2=await joinClass(code,ids,rids);if(r2===true)parentGuide();else $('#pgClsMsg').textContent=String(r2)}};
- document.querySelectorAll('[data-leave]').forEach(b=>b.onclick=()=>{delete S.cls[b.dataset.leave];save();parentGuide()});
+ document.querySelectorAll('[data-leave]').forEach(b=>b.onclick=()=>{const pid=b.dataset.leave,code=S.cls[pid];if(SYNC_API&&S.fam&&code)fetch(SYNC_API+'/c/'+code+'/leave',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({fam:S.fam,pid})}).catch(()=>{});/* 退出时把老师那边的记录也删掉 */delete S.cls[pid];save();parentGuide()});
  document.querySelectorAll('#pgLimit button').forEach(b=>b.onclick=()=>{S.limit=+b.dataset.lim;S.playMs=0;save();document.querySelectorAll('#pgLimit button').forEach(x=>x.setAttribute('aria-pressed',x===b))});
  $('#mClose').onclick=closeModal;
 }
@@ -597,7 +647,9 @@ document.addEventListener('pointerdown',()=>{lastAct=Date.now()});
 const limitMin=()=>S.limit===undefined?20:S.limit;
 function tickPlay(){const now=Date.now(),gap=now-(S.tick||now);S.tick=now;
  const day=new Date().toLocaleDateString('sv');if(S.day!==day){S.day=day;S.dayMs={};if($('#rest').dataset.daily)endRest()}/* 新的一天：每个孩子的当天时长清零 */
- const active=document.visibilityState==='visible'&&now-lastAct<90000&&gap<=30*60000;/* 只算屏幕亮着、手在动的时间 */
+ const inVid=curView==='library'&&curItem.startsWith('vid:')&&document.activeElement&&document.activeElement.tagName==='IFRAME';/* 看视频时手不动，焦点在视频框里也算在看 */
+ const active=document.visibilityState==='visible'&&(now-lastAct<90000||inVid)&&gap<=30*60000;
+ if(active&&S.cur&&curView!=='players')stat('t',curItem||'v:'+curView,Math.round(Math.min(gap,20000)/1000));/* 只算屏幕亮着、手在动的时间 */
  if(active&&S.cur){S.dayMs=S.dayMs||{};S.dayMs[S.cur]=(S.dayMs[S.cur]||0)+Math.min(gap,20000)}
  if(dayOver()){rawSave();return showRest(true)}
  if(S.restUntil&&now<S.restUntil){rawSave();return showRest()}
@@ -718,7 +770,7 @@ function startQuiz(e){
 function finish(e,mist){
  const per=mist/Math.max(1,e.strokes);
  const stars=mist===0?3:(mist<=1||per<=.25)?(mist<=1&&e.strokes>=4?3:2):per<=.6?2:1;
- const p=me(),old=p.prog[e.c]||0,best=Math.max(old,stars);const t=e.tribe,before=tribeStats(p,t);p.prog[e.c]=best;save();setNav('grades');const after=tribeStats(p,t);
+ const p=me(),old=p.prog[e.c]||0,best=Math.max(old,stars);stat('w',e.c);const t=e.tribe,before=tribeStats(p,t);p.prog[e.c]=best;save();setNav('grades');const after=tribeStats(p,t);
  sWin();const r=$('#hw').getBoundingClientRect();burst(r.left+r.width/2,r.top+r.height/2,18);
  let title,sub,voice;const feed=after.next?`再喂 ${after.next} 个字就${after.stage?'进化':'孵化'}`:'';
  if(after.stage>before.stage&&before.stage===0){title=`孵化啦！`;sub=`${tname(t,1)} 从蛋里出来了！「${e.c}」字卡也收进了卡册`;voice=['ui_hatch','ui_star'+stars,e.c]}
@@ -810,14 +862,14 @@ const GAMES={
 };
 let Q=null;
 function gamesFor(e,n){const avail=Object.keys(GAMES).filter(k=>GAMES[k].ok(e));return pick(avail,Math.min(n,avail.length))}
-function quest(list,o={}){if(writer){try{writer.cancelQuiz()}catch(_){}writer=null}closeModal();setNav('quest');window.scrollTo(0,0);curView='quest';playMusic('menu');
+function quest(list,o={}){if(writer){try{writer.cancelQuiz()}catch(_){}writer=null}closeModal();setNav('quest');window.scrollTo(0,0);curView='quest';curItem='';stat('f','quest');playMusic('menu');
  Q={list,o,qi:0,gi:0,games:null,score:0,total:0};nextGame()}
 function nextGame(){const e=Q.list[Q.qi];if(!Q.games){Q.games=gamesFor(e,Q.o.daily?2:3);Q.gi=0}
  if(Q.gi>=Q.games.length){const p=me();p.quest=p.quest||{};p.quest[e.c]=(p.quest[e.c]||0)+1;save();Q.qi++;Q.games=null;if(Q.qi>=Q.list.length)return questDone();return nextGame()}
  const k=Q.games[Q.gi];
  if(k==='color'&&document.fonts&&document.fonts.status!=='loaded'){$('#main').innerHTML='<p class="muted" style="text-align:center;margin-top:40px">准备颜料中…</p>';document.fonts.ready.then(()=>{if(Q&&Q.games&&Q.games[Q.gi]===k)renderGame(e,k)});return}
  renderGame(e,k)}
-function renderGame(e,k){const g=GAMES[k].build(e);Q.total++;
+function renderGame(e,k){const g=GAMES[k].build(e);Q.total++;stat('f','g:'+k);
  $('#main').innerHTML=`<button class="big ghost" id="qBack" style="font-size:18px;padding:8px 14px;margin-bottom:12px">← 退出闯关</button>
   <div class="quest"><div class="qhead"><span class="qbadge">${esc(GAMES[k].name)}</span><span class="muted">${Q.o.daily?`第 ${Q.qi+1} / ${Q.list.length} 个字`:`第 ${Q.gi+1} / ${Q.games.length} 关`} · <b class="${e.letter?'lat':''}">${esc(e.c)}</b></span></div>${g.html}<div class="msg" id="qmsg"></div></div>`;
  $('#qBack').onclick=()=>Q.o.daily?go('grades'):go('write',e.c);
@@ -892,9 +944,9 @@ async function booksData(){if(!BOOKS){try{BOOKS=await fetch('data/books.json').t
 const bookImg=(b,n)=>MEDIA+'book/'+encodeURIComponent(b.t)+'/'+n+'.webp',bookAu=(b,n,l)=>MEDIA+'book/'+encodeURIComponent(b.t)+'/'+n+'.'+l+'.mp3';
 function bookAudio(){if(!BA){BA=new Audio();BA.crossOrigin='anonymous';BA.setAttribute('playsinline','')}return BA}
 function playBookClip(b,n,l,onend){stopVoice();stopMusic();const a=bookAudio();a.onended=onend||null;a.onerror=()=>{if(onend)setTimeout(onend,1500)};a.src=bookAu(b,n,l);a.play().catch(()=>{})}
-function renderBookBox(e){let box=$('#bookbox');if(!box)return;booksData().then(B=>{box=$('#bookbox');if(!box||curView!=='write')return;const main=(B.idx[e.c]||[]).slice(0,4),more=((B.occ||{})[e.c]||[]).slice(0,3);const hits=main.concat(more);if(!hits.length){box.innerHTML='';return}
+function renderBookBox(e){let box=$('#bookbox');if(!box)return;booksData().then(B=>{box=$('#bookbox');if(!box||curView!=='write')return;const ok=([bi])=>B.books[bi]&&B.books[bi].ready;/* 中文旁白还没做好的书（ready=0，比如还没配音的成语故事、新诗词）先不在字页出现，做好重新生成 books.json 就自动出来 */const main=(B.idx[e.c]||[]).filter(ok).slice(0,4),more=((B.occ||{})[e.c]||[]).filter(ok).slice(0,3);const hits=main.concat(more);if(!hits.length){box.innerHTML='';return}
  const mark=(t,about)=>about||e.letter?pyz(t):esc(t).split(e.c).join(`<b style="color:var(--berry)">${esc(e.c)}</b>`);
- const card=([bi,n],about)=>{const b=B.books[bi],p=b.pages.find(x=>x.n===n);if(!p)return'';return `<div class="bbc">${p.img?`<img src="${bookImg(b,n)}" alt="" loading="lazy" crossorigin="anonymous" data-book="${bi}" data-n="${n}">`:''}<div class="bbt">${mark(p.zh,about).replace(/\n/g,'<br>')}</div>${['en','da'].filter(l=>p[l]).map(l=>`<div class="bbl">${p.au.includes(l)?`<button data-bau="${bi}:${n}:${l}" title="${LANGN[l]}">🔊</button>`:''}<span>${esc(p[l]).replace(/\n/g,' ')}</span></div>`).join('')}<div class="bbb"><b>${esc(b.title)}</b>${p.au.includes('zh')?`<button data-bau="${bi}:${n}:zh">🔊 听这一页</button>`:''}<button data-book="${bi}" data-n="${n}">📖 读这本书</button>${b.lib!=null?`<button data-vid="${b.lib}">▶ 看视频</button>`:''}</div></div>`};
+ const card=([bi,n],about)=>{const b=B.books[bi],p=b.pages.find(x=>x.n===n);if(!p)return'';return `<div class="bbc">${p.img?`<img src="${bookImg(b,n)}" alt="" loading="lazy" crossorigin="anonymous" data-book="${bi}" data-n="${n}">`:''}${p.k==='idiom'?`<div class="bbl" style="color:var(--berry);font-weight:600">📖 成语故事里的这一页</div>`:''}<div class="bbt">${mark(p.zh,about).replace(/\n/g,'<br>')}</div>${['en','da'].filter(l=>p[l]).map(l=>`<div class="bbl">${p.au.includes(l)?`<button data-bau="${bi}:${n}:${l}" title="${LANGN[l]}">🔊</button>`:''}<span>${esc(p[l]).replace(/\n/g,' ')}</span></div>`).join('')}<div class="bbb"><b>${esc(b.title)}</b>${p.au.includes('zh')?`<button data-bau="${bi}:${n}:zh">🔊 听这一页</button>`:''}<button data-book="${bi}" data-n="${n}">📖 读这本书</button>${b.lib!=null?`<button data-vid="${b.lib}">▶ 看视频</button>`:''}</div></div>`};
  box.innerHTML=`<div class="bookbox"><div class="bbh">📖 ${main.length?`绘本里的「${kc(e)}」`:`绘本里有「${kc(e)}」的句子`}</div>${main.length?`<div class="bbp">${main.map(h=>card(h,true)).join('')}</div>`:''}${more.length?`${main.length?`<div class="bbh" style="font-size:16px;color:var(--soft);margin-top:12px">句子里有「${kc(e)}」的页</div>`:''}<div class="bbp">${more.map(h=>card(h,false)).join('')}</div>`:''}</div>`;
  box.querySelectorAll('[data-bau]').forEach(b=>b.onclick=()=>{const [bi,n,l]=b.dataset.bau.split(':');playBookClip(B.books[+bi],+n,l||'zh')});
  box.querySelectorAll('[data-book]').forEach(b=>b.onclick=()=>go('book',{b:+b.dataset.book,n:+b.dataset.n}));
@@ -902,12 +954,12 @@ function renderBookBox(e){let box=$('#bookbox');if(!box)return;booksData().then(
 
 /* 翻页阅读器：自动连播（S.bookAuto），中 / 英 / 丹（S.bookLang），读完接着下一本（S.bookChain） */
 function book(arg){const bi=arg&&arg.b||0;const n0=arg&&arg.n||1;$('#main').innerHTML='<p class="muted">正在翻开…</p>';
- booksData().then(B=>{if(curView!=='book')return;const b=B.books[bi];if(!b)return go('library');const pages=b.pages;let i=Math.max(0,pages.findIndex(p=>p.n===n0));let token=0;
+ booksData().then(B=>{if(curView!=='book')return;const b=B.books[bi];if(!b)return go('library');curItem='b:'+b.title;stat('f','b:'+b.title);const pages=b.pages;let i=Math.max(0,pages.findIndex(p=>p.n===n0));let token=0;
   const lang=()=>S.bookLang||'zh';const auto=()=>S.bookAuto!==false;
   const stop=()=>{token++;if(BA){BA.pause();BA.onended=null}};
   const play=()=>{const my=++token;const p=pages[i];const l=p.au.includes(lang())?lang():(p.au.includes('zh')?'zh':p.au[0]||'');const after=()=>{if(my!==token||curView!=='book'||!auto())return;setTimeout(()=>{if(my===token&&curView==='book')step(1)},800)};
    if(!l){if(auto())setTimeout(after,2500);return}playBookClip(b,p.n,l,after)};
-  const step=d=>{const j=i+d;if(j<0)return;if(j>=pages.length){if(S.bookChain&&auto()){const nb=B.books.findIndex((x,k)=>k>bi&&x.pages.length);if(nb>=0)return go('book',{b:nb,n:1})}if(b.lib!=null&&!auto())return go('library',{n:b.lib});S.bookAuto=false;rawSave();render();return}i=j;render();if(auto())play()};
+  const step=d=>{const j=i+d;if(j<0)return;if(j>=pages.length){if(S.bookChain&&auto()){const nb=B.books.findIndex((x,k)=>k>bi&&x.ready&&x.pages.length);if(nb>=0)return go('book',{b:nb,n:1})}if(b.lib!=null&&!auto())return go('library',{n:b.lib});S.bookAuto=false;rawSave();render();return}i=j;render();if(auto())play()};
   const render=()=>{const p=pages[i];const last=i===pages.length-1;
    $('#main').innerHTML=`<div class="reader"><div class="rtop"><button class="big ghost" id="rBack" style="font-size:18px">← 返回</button><div class="rtitle">${esc(b.title)}<small>${i+1} / ${pages.length}${b.sub?' · '+esc(b.sub):''}</small></div><div class="seg" id="rLang">${['zh','en','da'].filter(l=>l==='zh'||pages.some(x=>x.au.includes(l))).map(l=>`<button data-l="${l}" aria-pressed="${l===lang()}">${LANGN[l]}</button>`).join('')}</div></div>
     <div class="rimg" id="rImg">${p.img?`<img src="${bookImg(b,p.n)}" alt="" crossorigin="anonymous">`:`<div class="rnoimg">${esc(b.title)}</div>`}</div>
@@ -927,14 +979,16 @@ async function libData(){if(!LIB){try{LIB=await fetch('data/library.json').then(
 function libLink(v){if(v.id)return v.id;const hit=(YTV||[]).find(x=>x.title===v.title)||(YTV||[]).find(x=>v.title&&x.title.startsWith(v.title.split(' | ')[0]));return hit?hit.id:null}
 function library(series){
  let focus=null;if(series&&typeof series==='object'){focus=series.n;const it=LIB&&LIB.items.find(i=>i.n===focus);series=it?it.series:(S.lib||'book')}
- series=series==='poem'?'poem':series==='pinyin'?'pinyin':'book';S.lib=series;rawSave();
- $('#main').innerHTML=`<div class="libtabs">${[['book','🎵 识字儿歌'],['poem','📜 诗词'],['pinyin','🔤 拼音儿歌']].map(([k,t])=>`<button data-lib="${k}" aria-pressed="${k===series}">${t}</button>`).join('')}</div><p class="muted">每个视频都有中文、English、Dansk 三个版本，点开就能看；标着「即将上线」的正在陆续上传。更多在 YouTube 频道 <a href="https://www.youtube.com/@DanPicBookKids" target="_blank" rel="noopener">DanPicBook Kids</a>。</p><div class="lib" id="libgrid"><p class="muted">正在读取…</p></div>`;
+ series=series==='poem'?'poem':series==='pinyin'?'pinyin':series==='idiom'?'idiom':'book';S.lib=series;rawSave();
+ $('#main').innerHTML=`<div class="libtabs">${[['book','🎵 识字儿歌'],['poem','📜 诗词'],['idiom','📖 成语故事'],['pinyin','🔤 拼音儿歌']].map(([k,t])=>`<button data-lib="${k}" aria-pressed="${k===series}">${t}</button>`).join('')}</div><p class="muted">每个视频都有中文、English、Dansk 三个版本，点开就能看；标着「即将上线」的正在陆续上传。更多在 YouTube 频道 <a href="https://www.youtube.com/@DanPicBookKids" target="_blank" rel="noopener">DanPicBook Kids</a>。</p><div class="lib" id="libgrid"><p class="muted">正在读取…</p></div>`;
  document.querySelectorAll('[data-lib]').forEach(b=>b.onclick=()=>library(b.dataset.lib));
- libData().then(L=>{if(curView!=='library'||S.lib!==series)return;const items=L.items.filter(i=>i.series===series);
+ libData().then(L=>{if(curView!=='library'||S.lib!==series)return;if(!L.items.some(i=>i.series==='idiom')){const t=document.querySelector('[data-lib="idiom"]');if(t)t.remove();if(series==='idiom')return library('book')}/* 成语故事还没有视频时先不显示这个标签 */const items=L.items.filter(i=>i.series===series);
+  if(!items.length){$('#libgrid').innerHTML=`<p class="muted">${series==='idiom'?'成语故事视频正在制作中，先去写字页看看：成语里的每个字都能翻到它的故事页。':'暂时还没有视频。'}</p>`;return}
   $('#libgrid').innerHTML=items.map(i=>`<div class="libc" data-n="${i.n}">${i.img?`<img src="${i.img}" alt="" loading="lazy">`:''}<div class="t">${esc(i.zh)}<small>${esc(i.en)} · ${esc(i.da)}</small></div>${BOOK_BY_LIB[i.n]!=null?`<div class="libv" style="padding:0 14px 6px"><button data-read="${BOOK_BY_LIB[i.n]}" class="green" style="background:var(--grass);color:#fff;border-color:transparent">📖 翻书听故事</button><span class="soon">不用 YouTube，一页一页听</span></div>`:''}<details ${focus===i.n?'open':''}><summary>中文 · English · Dansk</summary>${['zh','en','da','mv'].filter(k=>i.versions[k]).map(k=>{const v=i.versions[k];const id=libLink(v);return `<div class="libv"><b>${LANGN[k]}</b>${id?`<button data-play="${id}" data-n="${i.n}">▶ 播放</button><a href="https://www.youtube.com/watch?v=${id}" target="_blank" rel="noopener">YouTube ↗</a>`:`<span class="soon">即将上线</span>`}</div>`}).join('')}</details></div>`).join('')||'<p class="muted">还没有内容。</p>';
   document.querySelectorAll('[data-read]').forEach(b=>b.onclick=()=>go('book',{b:+b.dataset.read,n:1}));
   if(focus!=null){const card=document.querySelector(`.libc[data-n="${focus}"]`);if(card){card.scrollIntoView({block:'center'});card.style.outline='4px solid var(--sun)'}}
   document.querySelectorAll('[data-play]').forEach(b=>b.onclick=()=>{const card=b.closest('.libc');let ph=card.querySelector('.libp');if(!ph){ph=document.createElement('div');ph.className='libp';card.insertBefore(ph,card.firstChild)}
+   const vt=((card.querySelector('.t')||{}).firstChild||{}).textContent||b.dataset.play;curItem='vid:'+vt;stat('f','vid:'+vt);
    const img=card.querySelector('img');if(img)img.remove();ph.innerHTML=`<iframe src="https://www.youtube-nocookie.com/embed/${b.dataset.play}?autoplay=1&rel=0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen title="视频"></iframe>`;stopMusic()})})}
 /* ---------- print ---------- */
 function printCards(list){
@@ -1004,6 +1058,12 @@ fetch('data/meaning.json').then(r=>r.ok?r.json():{}).then(j=>Object.assign(MEAN,
 fetch('art/manifest.json').then(r=>r.ok?r.json():[]).then(list=>{for(const k of list)ART.add(k)}).catch(()=>{});
 const FINE=window.matchMedia&&window.matchMedia('(pointer:fine)').matches;
 if(new URLSearchParams(location.search).get('teacher')==='1'){try{localStorage.setItem('zilin_testvoice','1')}catch(_){}}
+/* 渠道统计：?from=mama1 这种推广链接带来多少台新设备。每台设备一辈子只报一次（没带 from 的记 (none)），只发渠道名，不带任何设备信息；
+   之前就有进度的老设备只在本机记 (old)、不报；本地 http 调试和老师模式不报 */
+(()=>{const P=new URLSearchParams(location.search),raw=(P.get('from')||'').toLowerCase(),src=/^[a-z0-9_-]{1,24}$/.test(raw)?raw:'';
+ if(P.has('from')){P.delete('from');const q=P.toString();history.replaceState(null,'',location.pathname+(q?'?'+q:'')+location.hash)}/* 地址栏去掉 from，免得家长转发时带上 */
+ try{if(localStorage.getItem('zilin_src')!==null)return;const old=Object.keys(S.players||{}).length>0;localStorage.setItem('zilin_src',old?'(old)':(src||'(none)'));
+  if(!old&&SYNC_API&&location.protocol==='https:'&&!TESTV())fetch(SYNC_API+'/src?from='+encodeURIComponent(src||'(none)'),{method:'POST',keepalive:true}).catch(()=>{})}catch(_){}})();
 if(TESTV())document.querySelectorAll('#sndmenu .testv').forEach(b=>b.hidden=false);
 $('#snd').onclick=ev=>{ev.stopPropagation();$('#sndmenu').hidden=!$('#sndmenu').hidden};
 document.querySelectorAll('#sndmenu [data-vk]').forEach(b=>b.onclick=ev=>{ev.stopPropagation();setVoice(b.dataset.vk)});

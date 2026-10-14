@@ -5,7 +5,7 @@
    GET  /f/:code                -> {data, updated}   取回这个家庭的进度
    PUT  /f/:code  body          -> {data, updated}   上传并合并（每个字取最高星，名字以最新为准）
    DELETE /f/:code/p/:pid       -> {ok}             家长删掉一个名字：云端备份和班级汇总里一起删；data._del 记墓碑，别的设备再传也不会复活
-   data 只有 { 玩家id: { name, prog:{字:星} } }，不存画作，不存任何联系方式。
+   data 只有 { 玩家id: { name, prog:{字:星} } }，不存画作，不存任何联系方式（家长自愿留的邮箱单独存在 subs 表，和家庭码不关联）。
 
    教师版（见 teacher.html）
    POST /c/new {name, invite}   -> {code, key, name} 新建班级（invite 须等于 secret TEACHER_INVITE，否则 403）：班级码发给家长，老师钥匙只有老师留着
@@ -14,6 +14,13 @@
    GET  /c/:code/report?key=K   -> {name, code, assign, members:[{id,name,prog,updated}]}
    PUT  /c/:code/assign?key=K {chars, note}          老师布置本周生字
    DELETE /c/:code/m/:id?key=K                       老师把一个名字从班里移除
+   使用统计 / 意见箱 / 作者后台（2026-10-14，建表脚本 schema_act.sql）
+   每个名字带 st = {w:{字:写完次数}, t:{内容:秒}, f:{功能:次数}}，跟着 PUT /f/:code 和 PUT /c/:code/members 上来，取两边较大的数合并
+   PUT /f/:code?src=xxx         顺带记这个家庭最早从哪个推广链接来（只记第一次）
+   POST /fb {text, contact, lang, src, where} -> {ok}   意见箱：contact 可不填
+   GET  /admin?key=邀请码        -> {fams:[...], tot:{w,t,f}, n}  作者后台：每个家庭的名字、来源、进度、时长，全站最常用的内容和功能
+   GET  /fb/list?key=邀请码      -> {fb:[...]}
+   POST /c/:code/leave {fam, pid}                    家长在「家长看这里」点「退出」：凭家庭码删掉班里这个孩子的记录（老师那边也看不到了）
    GET  /c/:code                同时返回 roster（老师预先录的名单 [{id,name,en}]），家长加入时从名单里选孩子
    PUT  /c/:code/roster?key=K {roster:[{id,name,en}]}  老师录名单；学生端上传时每个名字带 rid（名单里的 id），报告按名单合并多台设备
    GET  /yt                     -> 频道全部视频 {videos:[{id,title}]}（抓频道页 + 翻页，缓存 1 小时）
@@ -21,7 +28,19 @@
    GET  /usage                  -> {day, est, limit, pct} 今天（UTC）这个 Worker 估计处理了多少请求（免费档每天 10 万）
    GET  /usage/test?key=邀请码   -> 发一条测试提醒（看通知通不通）
    GET  /push/key               -> Web Push 的 VAPID 公钥
-   POST /push/sub?key=邀请码 {sub} -> 订阅用量提醒（浏览器推送） */
+   POST /push/sub?key=邀请码 {sub} -> 订阅用量提醒（浏览器推送）
+
+   渠道统计 / 家长邮箱（2026-10-13，建表脚本 schema_src.sql、schema_subs.sql）
+   POST /src?from=xxx           -> {ok}   每台设备第一次打开时报一次（前端 localStorage 记着，不再报），按 UTC 天 + 渠道计数，不存任何设备信息
+   GET  /src/stats?key=邀请码    -> {total:[{src,n}], days:[{day,src,n}]}  最近 60 天
+   POST /sub {email, lang, src}  -> {ok}   家长勾了同意才发；重复提交不报错（只更新 lang / src）
+   POST /unsub {email}          -> {ok}   退订：直接删掉这一行
+   GET  /sub/list?key=邀请码[&fmt=csv] -> {n, subs:[{email,lang,src,created}]} 或 CSV 下载（作者导出用）
+
+   频率限制（2026-10-14，wrangler.toml 的 [[ratelimits]]）：按访问者 IP 计数，只在 Cloudflare 内存里，不写数据库、不存 IP。超了回 429 {error:'slow'}。
+   LOOKUP_RL：手动输入的码（GET /f/:code 找回进度、GET /c/:code 加入班级）和要邀请码 / 老师钥匙的接口，每分钟 20 次，防止有人挨个试码；
+   WRITE_RL：其余所有写入（自动备份、班级汇总、新建家庭码、留邮箱、渠道统计），每分钟 120 次，学校同一个 Wi-Fi 下几十台平板一起同步也够用。
+   没配置这两个 binding（比如本地 wrangler dev 旧版本）就不限。 */
 const ALPH = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 const CORS = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET,PUT,POST,DELETE,OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type', 'Access-Control-Max-Age': '86400' };
 const json = (o, s = 200) => new Response(JSON.stringify(o), { status: s, headers: { ...CORS, 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } });
@@ -41,11 +60,21 @@ function cleanProg(prog) {
   for (const [c, f] of Object.entries(prog || {})) { if (typeof c === 'string' && c.length <= 4) { const n = f | 0; if (n >= 1 && n <= 3) out[c] = n; } }
   return out;
 }
+function cleanSt(st) {
+  const out = {}; if (!st || typeof st !== 'object') return out;
+  for (const k of ['w', 't', 'f']) {
+    const m = st[k]; if (!m || typeof m !== 'object') continue; const o = {};
+    for (const [x, v] of Object.entries(m).slice(0, 500)) { const n = Math.floor(+v); if (x.length <= 40 && n > 0 && n < 1e8) o[x] = n; }
+    out[k] = o;
+  }
+  return out;
+}
+function mergeSt(a, b) { const out = {}; for (const k of ['w', 't', 'f']) { const o = { ...((a && a[k]) || {}) }; for (const [x, v] of Object.entries((b && b[k]) || {})) o[x] = Math.max(o[x] || 0, v); out[k] = o; } return out; }
 function clean(players) {
   const out = {}; if (!players || typeof players !== 'object') return out;
   for (const [id, p] of Object.entries(players).slice(0, 60)) {
     if (!/^[\w-]{1,32}$/.test(id) || !p || typeof p !== 'object') continue;
-    out[id] = { name: String(p.name || '').slice(0, 16), prog: cleanProg(p.prog), rid: String(p.rid || '').replace(/[^\w-]/g, '').slice(0, 20) };
+    out[id] = { name: String(p.name || '').slice(0, 16), prog: cleanProg(p.prog), st: cleanSt(p.st), rid: String(p.rid || '').replace(/[^\w-]/g, '').slice(0, 20) };
   }
   return out;
 }
@@ -54,17 +83,133 @@ function merge(base, inc) {
   const out = { ...base }; const del = base._del || {};
   for (const [id, p] of Object.entries(inc)) {
     if (id === '_del' || del[id]) continue;   // 删过的名字不再合并回来
-    const q = out[id] ? { name: out[id].name, prog: { ...out[id].prog } } : { name: p.name, prog: {} };
+    const q = out[id] ? { name: out[id].name, prog: { ...out[id].prog }, st: out[id].st } : { name: p.name, prog: {} };
     if (p.name) q.name = p.name;
-    q.prog = mergeProg(q.prog, p.prog);
+    q.prog = mergeProg(q.prog, p.prog); q.st = mergeSt(q.st, p.st);
     out[id] = q;
   }
   return out;
+}
+const clientIp = req => req.headers.get('cf-connecting-ip') || 'unknown';
+async function tooFast(rl, req) {
+  if (!rl) return false;
+  try { const { success } = await rl.limit({ key: clientIp(req) }); return !success; } catch (_) { return false; }   // 限流出错时放行，不影响孩子玩
+}
+/* 哪个限流器管这个请求：要人手输入的码、要密钥的接口归 LOOKUP_RL，其余写入归 WRITE_RL，其他（/yt、/stats、/usage、/push/key）不限 */
+function limiterFor(req, env, url) {
+  const p = url.pathname, m = req.method;
+  if (m === 'GET' && (/^\/f\/[A-Z2-9]{8}$/.test(p) || /^\/c\/[A-Z2-9]{8}$/.test(p))) return env.LOOKUP_RL;
+  if (url.searchParams.has('key') || p === '/c/new' || p === '/fb') return env.LOOKUP_RL;
+  if (p === '/new' || p.startsWith('/f/') || p.startsWith('/c/') || p === '/sub' || p === '/unsub' || p === '/src') return env.WRITE_RL;
+  return null;
 }
 async function readJson(req, max = 300000) {
   const body = await req.text();
   if (body.length > max) throw new Error('too big');
   return JSON.parse(body);
+}
+
+/* 渠道统计：?from=mama1 这种推广链接各带来多少台新设备。只记 (天, 渠道, 次数)。
+   任何人都能调，所以渠道名只收 [a-z0-9_-]，一天最多 200 个不同渠道（再多的并到 (other)），防止被灌垃圾行 */
+const SRC_RE = /^[a-z0-9_-]{1,24}$/;
+const cleanSrc = s => { s = String(s || '').toLowerCase(); return SRC_RE.test(s) || s === '(none)' || s === '(old)' ? s : ''; };
+const ownerKey = (env, url) => !!env.TEACHER_INVITE && url.searchParams.get('key') === env.TEACHER_INVITE;   // 作者 / 老师：和 /usage/test、/push/sub 一样用邀请码
+const EMAIL_RE = /^[^\s@",;<>()]{1,64}@[^\s@",;<>()]+\.[a-z]{2,}$/i;
+const MAX_SUBS = 50000;
+const CRLF = '\r\n', CSV_BOM = String.fromCharCode(0xFEFF);
+const csvCell = v => { let t = String(v == null ? '' : v); if (/^[=+\-@]/.test(t)) t = "'" + t; return '"' + t.replace(/"/g, '""') + '"'; };   // 防 Excel 公式注入
+
+async function channels(req, env, url) {
+  if (url.pathname === '/src' && req.method === 'POST') {
+    const s = cleanSrc(url.searchParams.get('from')) || '(none)'; const day = today();
+    const has = await env.DB.prepare('SELECT 1 FROM src WHERE day=?1 AND src=?2').bind(day, s).first();
+    let k = s;
+    if (!has) { const c = await env.DB.prepare('SELECT COUNT(*) n FROM src WHERE day=?1').bind(day).first(); if (c.n >= 200) k = '(other)'; }
+    await env.DB.prepare('INSERT INTO src(day,src,n) VALUES(?1,?2,1) ON CONFLICT(day,src) DO UPDATE SET n=n+1').bind(day, k).run();
+    return json({ ok: true });
+  }
+  if (url.pathname === '/src/stats' && req.method === 'GET') {
+    if (!ownerKey(env, url)) return json({ error: 'key' }, 403);
+    const since = new Date(Date.now() - 60 * 864e5).toISOString().slice(0, 10);
+    const total = (await env.DB.prepare('SELECT src, SUM(n) n FROM src GROUP BY src ORDER BY n DESC').all()).results || [];
+    const days = (await env.DB.prepare('SELECT day, src, n FROM src WHERE day>=?1 ORDER BY day DESC, n DESC').bind(since).all()).results || [];
+    const subs = (await env.DB.prepare('SELECT COUNT(*) n FROM subs').first()).n;
+    return json({ total, days, subs });
+  }
+  return json({ error: 'not found' }, 404);
+}
+
+/* 家长自愿留邮箱收更新：只存邮箱（小写）、语言、从哪个渠道来，和家庭码 / 孩子名字不关联。现在还不发邮件，作者用 /sub/list 导出 */
+async function subscribers(req, env, url) {
+  if (url.pathname === '/sub' && req.method === 'POST') {
+    let b; try { b = await readJson(req, 1000); } catch (_) { return json({ error: 'bad json' }, 400); }
+    const email = String((b && b.email) || '').trim().toLowerCase();
+    if (email.length > 254 || !EMAIL_RE.test(email)) return json({ error: 'email' }, 400);
+    if (!(b && b.agree === true)) return json({ error: 'agree' }, 400);   // 没勾同意不收
+    const lang = /^[a-z]{2}$/.test(String(b.lang || '')) ? b.lang : '';
+    const s = cleanSrc(b.src);
+    const old = await env.DB.prepare('SELECT 1 FROM subs WHERE email=?1').bind(email).first();
+    if (!old) { const c = await env.DB.prepare('SELECT COUNT(*) n FROM subs').first(); if (c.n >= MAX_SUBS) return json({ error: 'full' }, 503); }
+    await env.DB.prepare('INSERT INTO subs(email,lang,src,created) VALUES(?1,?2,?3,?4) ON CONFLICT(email) DO UPDATE SET lang=?2').bind(email, lang, s, Date.now()).run();
+    return json({ ok: true });
+  }
+  if (url.pathname === '/unsub' && req.method === 'POST') {
+    let b; try { b = await readJson(req, 1000); } catch (_) { return json({ error: 'bad json' }, 400); }
+    const email = String((b && b.email) || '').trim().toLowerCase();
+    if (!email || email.length > 254) return json({ error: 'email' }, 400);
+    await env.DB.prepare('DELETE FROM subs WHERE email=?1').bind(email).run();
+    return json({ ok: true });   // 不告诉对方这个邮箱在不在名单里
+  }
+  if (url.pathname === '/sub/list' && req.method === 'GET') {
+    if (!ownerKey(env, url)) return json({ error: 'key' }, 403);
+    const rows = (await env.DB.prepare('SELECT email, lang, src, created FROM subs ORDER BY created').all()).results || [];
+    if (url.searchParams.get('fmt') === 'csv') {
+      const csv = CSV_BOM + 'email,lang,src,created' + CRLF + rows.map(r => [r.email, r.lang, r.src, new Date(r.created).toISOString()].map(csvCell).join(',')).join(CRLF) + CRLF;   // 带 BOM，Excel 打开不乱码
+      return new Response(csv, { headers: { ...CORS, 'content-type': 'text/csv; charset=utf-8', 'content-disposition': 'attachment; filename="ziling-subs.csv"', 'cache-control': 'no-store' } });
+    }
+    return json({ n: rows.length, subs: rows });
+  }
+  return json({ error: 'not found' }, 404);
+}
+
+/* 意见箱：任何人可提交（受 LOOKUP_RL 限流），最多存 20000 条；作者在 admin.html 看 */
+async function feedback(req, env, url) {
+  if (url.pathname === '/fb' && req.method === 'POST') {
+    let b; try { b = await readJson(req, 6000); } catch (_) { return json({ error: 'bad json' }, 400); }
+    const text = String((b && b.text) || '').trim().slice(0, 2000);
+    if (text.length < 2) return json({ error: 'text' }, 400);
+    const c = await env.DB.prepare('SELECT COUNT(*) n FROM fb').first(); if (c.n >= 20000) return json({ error: 'full' }, 503);
+    await env.DB.prepare('INSERT INTO fb(text,contact,lang,src,at,created) VALUES(?1,?2,?3,?4,?5,?6)')
+      .bind(text, String(b.contact || '').trim().slice(0, 120), /^[a-z]{2}$/.test(String(b.lang || '')) ? b.lang : '', cleanSrc(b.src), String(b.where || '').slice(0, 40), Date.now()).run();
+    return json({ ok: true });
+  }
+  if (url.pathname === '/fb/list' && req.method === 'GET') {
+    if (!ownerKey(env, url)) return json({ error: 'key' }, 403);
+    return json({ fb: (await env.DB.prepare('SELECT id,text,contact,lang,src,at,created FROM fb ORDER BY id DESC LIMIT 500').all()).results || [] });
+  }
+  return json({ error: 'not found' }, 404);
+}
+
+/* 作者后台：最近更新的 1000 个家庭逐个列出；全站汇总算所有家庭（每个字写了几次、各内容看了多久、各功能用了几次） */
+async function admin(req, env, url) {
+  if (!ownerKey(env, url)) return json({ error: 'key' }, 403);
+  const rows = (await env.DB.prepare('SELECT * FROM fam ORDER BY updated DESC').all()).results || [];
+  const tot = { w: {}, t: {}, f: {} }; const fams = [];
+  const sum = o => Object.values(o || {}).reduce((a, b) => a + b, 0);
+  const top = (o, n) => Object.entries(o || {}).sort((a, b) => b[1] - a[1]).slice(0, n);
+  for (const r of rows) {
+    let data; try { data = JSON.parse(r.data); } catch (_) { continue; }
+    const kids = [];
+    for (const [id, p] of Object.entries(data)) {
+      if (id === '_del' || !p || typeof p !== 'object') continue;
+      const st = p.st || {}; const prog = p.prog || {};
+      for (const k of ['w', 't', 'f']) for (const [x, v] of Object.entries(st[k] || {})) tot[k][x] = (tot[k][x] || 0) + v;
+      kids.push({ name: p.name, chars: Object.keys(prog).length, stars: sum(prog), writes: sum(st.w), secs: sum(st.t), topT: top(st.t, 5), topF: top(st.f, 5) });
+    }
+    if (fams.length < 1000 && kids.length) fams.push({ code: r.code, src: r.src || '', created: r.created, updated: r.updated, kids });
+  }
+  const cut = (o, n) => Object.fromEntries(top(o, n));
+  return json({ n: rows.length, fams, tot: { w: cut(tot.w, 200), t: cut(tot.t, 200), f: cut(tot.f, 200) } });
 }
 
 async function family(req, env, url) {
@@ -98,6 +243,8 @@ async function family(req, env, url) {
     if (!r) return json({ error: 'no such code' }, 404);
     const merged = merge(JSON.parse(r.data), inc); const now = Date.now();
     await env.DB.prepare('UPDATE fam SET data=?2,updated=?3 WHERE code=?1').bind(code, JSON.stringify(merged), now).run();
+    const src = cleanSrc(url.searchParams.get('src'));
+    if (src) { try { await env.DB.prepare('UPDATE fam SET src=?2 WHERE code=?1 AND src IS NULL').bind(code, src).run(); } catch (_) {} }   // 还没建 src 列时忽略
     return json({ data: merged, updated: now });
   }
   return json({ error: 'method' }, 405);
@@ -120,7 +267,7 @@ async function classes(req, env, url) {
     }
     return json({ error: 'retry' }, 500);
   }
-  const m = url.pathname.match(/^\/c\/([A-Z2-9]{8})(?:\/(members|report|assign|roster|m\/([\w.-]{1,50})))?$/);
+  const m = url.pathname.match(/^\/c\/([A-Z2-9]{8})(?:\/(members|leave|report|assign|roster|m\/([\w.-]{1,50})))?$/);
   if (!m) return json({ error: 'not found' }, 404);
   const code = m[1], sub = m[2] || '', mid = m[3];
   const cls = await env.DB.prepare('SELECT code,key,name,assign,roster FROM cls WHERE code=?1').bind(code).first();
@@ -136,14 +283,24 @@ async function classes(req, env, url) {
     const cnt = await env.DB.prepare('SELECT COUNT(*) AS n FROM mem WHERE cls=?1').bind(code).first();
     for (const [pid, p] of Object.entries(players)) {
       const id = fam + '.' + pid;
-      const old = await env.DB.prepare('SELECT prog FROM mem WHERE cls=?1 AND id=?2').bind(code, id).first();
+      const old = await env.DB.prepare('SELECT * FROM mem WHERE cls=?1 AND id=?2').bind(code, id).first();
       if (!old && (cnt.n + n) >= 60) break;
       const prog = old ? mergeProg(JSON.parse(old.prog), p.prog) : p.prog;
       await env.DB.prepare('INSERT INTO mem(cls,id,name,prog,updated,rid) VALUES(?1,?2,?3,?4,?5,?6) ON CONFLICT(cls,id) DO UPDATE SET name=excluded.name,prog=excluded.prog,updated=excluded.updated,rid=excluded.rid')
         .bind(code, id, p.name || '?', JSON.stringify(prog), now, p.rid || '').run();
+      const st = mergeSt(old && old.st ? JSON.parse(old.st) : {}, p.st);
+      try { await env.DB.prepare('UPDATE mem SET st=?3 WHERE cls=?1 AND id=?2').bind(code, id, JSON.stringify(st)).run(); } catch (_) {}   // 还没建 st 列时忽略
       n++;
     }
     return json({ ok: true, n, name: cls.name, assign, roster: roster.map(r => ({ id: r.id, name: r.name })) });
+  }
+
+  if (sub === 'leave' && req.method === 'POST') {
+    let b; try { b = await readJson(req, 1000); } catch (_) { return json({ error: 'bad json' }, 400); }
+    const fam = String((b && b.fam) || ''), pid = String((b && b.pid) || '');
+    if (!/^[A-Z2-9]{8}$/.test(fam) || !/^[\w-]{1,32}$/.test(pid)) return json({ error: 'bad id' }, 400);
+    await env.DB.prepare('DELETE FROM mem WHERE cls=?1 AND id=?2').bind(code, fam + '.' + pid).run();
+    return json({ ok: true });
   }
 
   // 下面的都要老师钥匙
@@ -151,8 +308,8 @@ async function classes(req, env, url) {
   if (key !== cls.key) return json({ error: 'wrong key' }, 403);
 
   if (sub === 'report' && req.method === 'GET') {
-    const rows = (await env.DB.prepare('SELECT id,name,prog,updated,rid FROM mem WHERE cls=?1 ORDER BY updated DESC').bind(code).all()).results || [];
-    return json({ name: cls.name, code, assign, roster, members: rows.map(r => ({ id: r.id, name: r.name, prog: JSON.parse(r.prog), updated: r.updated, rid: r.rid || '' })) });
+    const rows = (await env.DB.prepare('SELECT * FROM mem WHERE cls=?1 ORDER BY updated DESC').bind(code).all()).results || [];
+    return json({ name: cls.name, code, assign, roster, members: rows.map(r => ({ id: r.id, name: r.name, prog: JSON.parse(r.prog), st: r.st ? JSON.parse(r.st) : {}, updated: r.updated, rid: r.rid || '' })) });
   }
   if (sub === 'roster' && req.method === 'PUT') {
     let b; try { b = await readJson(req, 20000); } catch (_) { return json({ error: 'bad json' }, 400); }
@@ -281,6 +438,7 @@ export default {
     try { ctx.waitUntil(countReq(env).catch(() => {})); } catch (_) {}
     if (req.method === 'OPTIONS') return new Response(null, { headers: CORS });
     const url = new URL(req.url);
+    if (await tooFast(limiterFor(req, env, url), req)) return json({ error: 'slow' }, 429);
     try {
       if (url.pathname === '/usage' && req.method === 'GET') { const u = await usageToday(env); delete u.alerted; return new Response(JSON.stringify(u), { headers: { ...CORS, 'content-type': 'application/json; charset=utf-8', 'cache-control': 'public, max-age=60' } }); }
       if (url.pathname === '/usage/test' && req.method === 'GET') { if (!env.TEACHER_INVITE || url.searchParams.get('key') !== env.TEACHER_INVITE) return json({ error: 'key' }, 403); return json({ ...(await checkUsage(env, true)), devices: (await env.DB.prepare('SELECT COUNT(*) n FROM push').first()).n }); }
@@ -302,6 +460,10 @@ export default {
         return new Response(JSON.stringify({ families: f.n, active_1d: f.d1 || 0, active_7d: f.d7 || 0, active_30d: f.d30 || 0, new_7d: f.new7 || 0, classes: c.n, students_in_classes: m.n, students_active_7d: m.d7 || 0 }),
           { headers: { ...CORS, 'content-type': 'application/json; charset=utf-8', 'cache-control': 'public, max-age=300' } });
       }
+      if (url.pathname === '/src' || url.pathname === '/src/stats') return await channels(req, env, url);
+      if (url.pathname === '/sub' || url.pathname === '/unsub' || url.pathname === '/sub/list') return await subscribers(req, env, url);
+      if (url.pathname === '/fb' || url.pathname === '/fb/list') return await feedback(req, env, url);
+      if (url.pathname === '/admin' && req.method === 'GET') return await admin(req, env, url);
       if (url.pathname.startsWith('/c/')) return await classes(req, env, url);
       return await family(req, env, url);
     } catch (e) { return json({ error: 'server', detail: String(e && e.message || e).slice(0, 200) }, 500); }
