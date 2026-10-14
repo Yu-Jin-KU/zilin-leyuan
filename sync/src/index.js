@@ -17,7 +17,7 @@
    使用统计 / 意见箱 / 作者后台（2026-10-14，建表脚本 schema_act.sql）
    每个名字带 st = {w:{字:写完次数}, t:{内容:秒}, f:{功能:次数}}，跟着 PUT /f/:code 和 PUT /c/:code/members 上来，取两边较大的数合并
    PUT /f/:code?src=xxx         顺带记这个家庭最早从哪个推广链接来（只记第一次）
-   POST /fb {text, contact, lang, src, where} -> {ok}   意见箱：contact 可不填
+   POST /fb {text, fam, lang, src, where} -> {ok}   意见箱：自动带这台设备的家庭码，后台按家庭码显示是哪家的名字（2026-10-14 起不再收联系方式）
    GET  /admin?key=邀请码        -> {fams:[...], tot:{w,t,f}, n}  作者后台：每个家庭的名字、来源、进度、时长，全站最常用的内容和功能
    GET  /fb/list?key=邀请码      -> {fb:[...]}
    POST /c/:code/leave {fam, pid}                    家长在「家长看这里」点「退出」：凭家庭码删掉班里这个孩子的记录（老师那边也看不到了）
@@ -179,13 +179,15 @@ async function feedback(req, env, url) {
     const text = String((b && b.text) || '').trim().slice(0, 2000);
     if (text.length < 2) return json({ error: 'text' }, 400);
     const c = await env.DB.prepare('SELECT COUNT(*) n FROM fb').first(); if (c.n >= 20000) return json({ error: 'full' }, 503);
-    await env.DB.prepare('INSERT INTO fb(text,contact,lang,src,at,created) VALUES(?1,?2,?3,?4,?5,?6)')
-      .bind(text, String(b.contact || '').trim().slice(0, 120), /^[a-z]{2}$/.test(String(b.lang || '')) ? b.lang : '', cleanSrc(b.src), String(b.where || '').slice(0, 40), Date.now()).run();
+    const fam = /^[A-Z2-9]{8}$/.test(String(b.fam || '')) ? b.fam : '';
+    await env.DB.prepare('INSERT INTO fb(text,contact,lang,src,at,created,fam) VALUES(?1,?2,?3,?4,?5,?6,?7)')
+      .bind(text, '', /^[a-z]{2}$/.test(String(b.lang || '')) ? b.lang : '', cleanSrc(b.src), String(b.where || '').slice(0, 40), Date.now(), fam).run();
     return json({ ok: true });
   }
   if (url.pathname === '/fb/list' && req.method === 'GET') {
     if (!ownerKey(env, url)) return json({ error: 'key' }, 403);
-    return json({ fb: (await env.DB.prepare('SELECT id,text,contact,lang,src,at,created FROM fb ORDER BY id DESC LIMIT 500').all()).results || [] });
+    const rows = (await env.DB.prepare('SELECT fb.id,fb.text,fb.contact,fb.lang,fb.src,fb.at,fb.created,fb.fam,fam.data FROM fb LEFT JOIN fam ON fam.code=fb.fam ORDER BY fb.id DESC LIMIT 500').all()).results || [];
+    return json({ fb: rows.map(r => { let names = []; try { names = Object.entries(JSON.parse(r.data || '{}')).filter(([k]) => k !== '_del').map(([, p]) => p && p.name).filter(Boolean); } catch (_) {} delete r.data; return { ...r, fam: r.fam ? r.fam.slice(0, 4) + '…' : '', names }; }) });
   }
   return json({ error: 'not found' }, 404);
 }

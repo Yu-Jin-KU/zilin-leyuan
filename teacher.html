@@ -44,6 +44,7 @@ const SITE=location.origin+location.pathname.replace(/teacher\.html$/,'');
 const $=s=>document.querySelector(s);
 const AUTHOR=(()=>{try{if(new URLSearchParams(location.search).get('teacher')==='1')localStorage.setItem('zilin_testvoice','1');return localStorage.getItem('zilin_testvoice')==='1'}catch(_){return false}})();/* 用量 / 推送提醒只给作者看：乐园或这一页带 ?teacher=1 打开过一次即可 */
 const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+const PRINT_ON=(()=>{try{return localStorage.getItem('zilin_testvoice')==='1'}catch(_){return false}})();/* 打印字卡以后可能收费，现在只给作者模式（游戏里「家长看这里」标题连点 5 下） */
 /* 使用统计（st = {w:{字:次数}, t:{内容:秒}, f:{功能:次数}}）：几台设备加在一起；内容键 w:字 / b:绘本 / vid:视频 / v:页面 */
 const addSt=list=>{const out={w:{},t:{},f:{}};for(const st of list)for(const k of ['w','t','f'])for(const [x,v] of Object.entries((st||{})[k]||{}))out[k][x]=(out[k][x]||0)+v;return out};
 const mins=s=>s>=3600?(s/3600).toFixed(1)+' 小时':Math.max(1,Math.round(s/60))+' 分钟';
@@ -112,7 +113,7 @@ async function openClass(c,fresh){
   <p class="muted" id="cmsg"></p></div>
 
  <div class="card"><h2>📝 本周生字 ${A.length?`<span class="muted">（${A.length} 个）</span>`:''}</h2>
-  ${A.length?`<div class="chips">${A.map(ch=>`<span class="chip small">${esc(ch)}</span>`).join('')}</div>${note?`<p>给孩子的话：${esc(note)}</p>`:''}<div class="row"><button id="printA">🖨️ 打印这些字的字卡</button><button class="ghost" id="clearA">清空</button></div>`:'<p class="muted">还没布置。孩子打开游戏时首页会出现「老师留的字」。</p>'}
+  ${A.length?`<div class="chips">${A.map(ch=>`<span class="chip small">${esc(ch)}</span>`).join('')}</div>${note?`<p>给孩子的话：${esc(note)}</p>`:''}<div class="row">${PRINT_ON?'<button id="printA">🖨️ 打印这些字的字卡</button>':''}<button class="ghost" id="clearA">清空</button></div>`:'<p class="muted">还没布置。孩子打开游戏时首页会出现「老师留的字」。</p>'}
   <details ${A.length?'':'open'}><summary>${A.length?'换一批':'布置生字'}</summary>
    <p class="muted">直接把课本上这课的生字打进来（其他符号会自动忽略），或者从下面按年级点选。一次最多 60 个。</p>
    <textarea id="aText" placeholder="例如：山 水 火 土 木">${esc(A.join(' '))}</textarea>
