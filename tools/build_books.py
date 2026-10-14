@@ -31,7 +31,10 @@ for r in DATA:
     LINE.setdefault(norm_line(line), []).append(c)
 PYKEY = {k.replace('ü', 'v'): k for k in PY}      # ve -> üe
 def libidx(theme):
-    key = re.sub(r'[_\W]', '', theme).replace('诗词版', '')
+    exact = re.sub(r'[_\W]', '', theme)   # 先找完全同名的（咏鹅_诗词版 → 咏鹅诗词版，不能被儿歌版《咏鹅》抢走）
+    for i in LIB:
+        if re.sub(r'[_\W]', '', i['theme']) == exact: return i['n']
+    key = exact.replace('诗词版', '')
     for i in LIB:
         if re.sub(r'[_\W]', '', i['theme']).replace('诗词版', '') == key: return i['n']
     return None

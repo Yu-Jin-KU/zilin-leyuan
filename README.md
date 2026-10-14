@@ -61,5 +61,6 @@ python tools/qa_audio.py                  # 用 Whisper 听一遍，列出可疑
 - 英文释义：[CC-CEDICT](https://cc-cedict.org)（CC BY-SA 4.0）
 - 字体：站酷快乐体（界面）、霞鹜文楷 LXGW WenKai（字卡、字块上的汉字，楷体字形）、Andika（拼音），都是 SIL Open Font License，见 `fonts/`
 - 语音：由 [Fish Audio](https://fish.audio) 生成
+- 拼音操动作图（`img/pinyin/`）：[Twemoji](https://github.com/twitter/twemoji)（CC BY 4.0），动作词和做法见 `data/pinyin_gym.json`
 - 背景音乐：Kevin MacLeod（[incompetech.com](https://incompetech.com)），CC BY 4.0，曲目见 `music/CREDITS.txt`
-- 许可：代码为 PolyForm Noncommercial 1.0.0，字义文字、字灵形象、语音等内容为 CC BY-NC-SA 4.0（详见 `LICENSE`）。老师和家长可以自由分享、打印、改编用于教学；商业使用请先联系作者。网站本身对孩子、家长和老师永久免费
+- 许可：代码为 PolyForm Noncommercial 1.0.0，字义文字、字灵形象、语音等内容为 CC BY-NC-SA 4.0（详见 `LICENSE`）。老师和家长可以自由分享、改编用于教学；商业使用请先联系作者。网站现在对孩子、家长和老师免费开放

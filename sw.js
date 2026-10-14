@@ -2,7 +2,7 @@
    - 核心文件（页面、字库、字体）首次访问时整体缓存；
    - 笔顺数据 data/ 和语音 audio/ 用到哪个缓存哪个（内容不变，缓存优先）；
    - index.html 走“网络优先”，这样更新后刷新就能拿到新版本。 */
-const VERSION = 'zilin-v22';
+const VERSION = 'zilin-v23';
 const CORE = ['./', 'index.html', 'lib/hanzi-writer.min.js', 'lib/qrcode.min.js',
   'fonts/ZCOOLKuaiLe-sub.woff2', 'fonts/LXGWWenKai-sub.woff2', 'fonts/Andika-Regular-sub.woff2', 'fonts/Andika-Bold-sub.woff2',
   'manifest.webmanifest', 'icon.svg', 'icon-192.png', 'icon-512.png'];
@@ -15,7 +15,7 @@ self.addEventListener('activate', e => {
 });
 self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
-  const media = url.host === 'media.danpicbook.com' || url.host === 'media2.danpicbook.com' || url.host === 'zilin-media.zilingleyuan.workers.dev' || url.host === 'zilin-media2.zilingleyuan.workers.dev';   // 语音 / 绘本图片和旁白的托管域（后两个是 2026-10-14 之前的旧地址）
+  const media = url.host === 'media.danpicbook.com' || url.host === 'media2.danpicbook.com';   // 语音 / 绘本图片和旁白的托管域
   if (e.request.method !== 'GET' || (url.origin !== location.origin && !media)) return;
   const isPage = url.pathname.endsWith('/') || url.pathname.endsWith('index.html');
   if (isPage) {

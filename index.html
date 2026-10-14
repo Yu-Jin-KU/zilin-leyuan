@@ -33,6 +33,43 @@ h2 small{font-size:15px;margin-left:8px}
 .pc{cursor:pointer}.pc:hover{filter:brightness(1.08)}
 .legend button{font-family:inherit;font-size:inherit;color:inherit}
 .logo svg{width:40px;height:40px}
+@media print{body:not(.printing) #main .album,body:not(.printing) .cardwrap{visibility:hidden}}/* 卡册暂时不能打印（以后可能收费）；?print= 导出走 body.printing 不受影响 */
+/* 首页头图（2026-10-14）：新访客看到大图（写字 → 蛋 → 孵化 → 大王 + 大王游行），已经有名字的设备只留一条大王游行，不挡选人 */
+/* 首页「看动画」：每个系列一张卡，三张封面扇形叠着，点了进视频库对应的标签（成语视频还没有时自动不出现） */
+/* 拼音操动作卡（和教室墙上的海报、投影是同一套：动作字 + 图 + 做法 + 英丹）；卡册里的配图 */
+.gym{display:flex;gap:16px;align-items:center;background:var(--paper);border:3px solid var(--line);border-radius:22px;padding:14px 16px;margin-top:16px;text-align:left}
+.gym img{width:96px;height:96px;flex:none}.gym .gh{font-size:15px;color:var(--soft)}.gym .gw{font-size:30px;margin:2px 0}.gym .gw b{color:var(--berry)}
+.gym .gt{font-size:17px}.gym .gl{font-family:var(--lat);font-size:15px;color:var(--soft);margin-top:4px}
+.mpic{display:flex;gap:12px;align-items:center;justify-content:center;margin-top:10px;font-size:17px}.mpic img{width:110px;height:110px;object-fit:contain;border-radius:14px;background:#fff}
+.mpic img.bk{width:150px;height:110px;object-fit:cover;cursor:pointer}
+.vshow{margin:22px 0 6px}.vshow h2{margin:0 0 4px;font-size:24px}
+.vgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-top:10px}
+.vcard{display:flex;gap:14px;align-items:center;text-align:left;background:var(--paper);border:3px solid var(--line);border-radius:22px;padding:12px 14px;color:var(--ink);transition:transform .15s}
+.vcard:hover{transform:translateY(-3px)}
+.vfan{position:relative;width:98px;height:104px;flex:none}
+.vfan img{position:absolute;width:62px;height:83px;object-fit:cover;border-radius:10px;border:3px solid #fff;box-shadow:0 3px 8px rgba(0,0,0,.18);top:12px}
+.vfan img:nth-child(1){left:0;transform:rotate(-10deg)}.vfan img:nth-child(2){left:21px;top:4px;z-index:2}.vfan img:nth-child(3){left:42px;transform:rotate(10deg)}
+.vcard b{display:block;font-size:20px;white-space:nowrap}.vcard small{display:block;color:var(--soft);font-size:15px;margin-top:2px}.vcard i{font-style:normal;display:inline-block;margin-top:6px;background:var(--berry);color:#fff;border-radius:999px;padding:3px 12px;font-size:15px}
+.hero{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:18px;align-items:center;background:linear-gradient(135deg,#FFF6D6 0%,#FFE1EC 55%,#DDEFFF 100%);border-radius:28px;padding:26px 26px 18px;margin:6px 0 18px;color:#1F2340;overflow:hidden;position:relative}
+.hero>div{min-width:0}.hero h1{font-size:clamp(30px,5vw,48px);line-height:1.15;margin:0 0 10px}.hero h1 em{font-style:normal;color:var(--berry)}
+.hero p{font-size:18px;line-height:1.6;margin:0 0 12px;color:#3d4166}
+.htags{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 16px}.htags span{background:#fff;border-radius:999px;padding:4px 11px;font-size:15px;box-shadow:0 2px 0 rgba(31,35,64,.08)}
+.hsteps{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;align-items:end;text-align:center}
+.hstep{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:15px;color:#3d4166;position:relative}
+.hstep img,.hstep .hw{width:100%;max-width:150px;aspect-ratio:1;object-fit:contain}
+.hstep .hw{background:#fff;border-radius:20px;box-shadow:0 4px 0 rgba(31,35,64,.1);display:flex;align-items:center;justify-content:center}
+.hstep:not(:last-child)::after{content:'➜';position:absolute;right:-12px;top:38%;font-size:20px;color:var(--berry)}
+.hstep b{font-size:16px;color:#1F2340}
+.hstep:last-child img{max-width:180px;animation:hbob 2.4s ease-in-out infinite}
+.parade{overflow:hidden;margin:4px -26px 0;mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)}
+.parade div{display:flex;gap:6px;width:max-content;animation:hmarch 60s linear infinite}
+.parade img{width:86px;height:86px;object-fit:contain}
+.hero.mini{display:block;padding:8px 0 4px;background:none;margin:0 0 6px}.hero.mini .parade{margin:0}.hero.mini .parade img{width:64px;height:64px}
+@keyframes hmarch{to{transform:translateX(-50%)}}
+@keyframes hbob{50%{transform:translateY(-8px) rotate(-2deg)}}
+@media (prefers-reduced-motion:reduce){.parade div,.hstep:last-child img{animation:none}}
+@media (max-width:760px){.hero{grid-template-columns:1fr;padding:18px 16px 14px;gap:10px}.hero>div:last-child{order:-1}.hero p{font-size:16px}.parade{margin:4px -16px 0}.hstep:not(:last-child)::after{right:-8px;font-size:16px}}
+
 .nav{display:flex;gap:6px}
 .nav button{background:var(--paper);border:3px solid var(--line);border-radius:999px;padding:8px 14px;font-size:18px}
 .nav button[aria-current="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
@@ -489,14 +526,37 @@ let writer=null,autoT=null;
 function go(v,arg){if(writer){try{writer.cancelQuiz()}catch(_){}writer=null}closeModal();setNav(v);window.scrollTo(0,0);if(BA&&v!=='book'){BA.pause();BA.onended=null}curView=v;curItem=v==='write'&&arg?'w:'+arg:'';stat('f','v:'+v);({players,grades,write,album,poster,draw,library,book})[v](arg);playMusic(v==='write'?'write':(v==='album'||v==='poster')?'album':'menu')}
 function gradeTabs(cur,attr){return `<div class="tabs" role="tablist">${GRADES.map(g=>`<button role="tab" aria-selected="${g.id===cur}" ${attr}="${g.id}">${g.name}</button>`).join('')}</div>`}
 /* ---------- players ---------- */
+const HERO_KINGS=['fire','sea','bird','plant','food','heart','beast','sun','metal','home','grain','mouth','wind','people','jade','cloth'];
+function heroHTML(full){
+ const parade=`<div class="parade" aria-hidden="true"><div>${[...HERO_KINGS,...HERO_KINGS].map(t=>`<img src="art/tribe_${t}_3.webp" alt="" loading="lazy">`).join('')}</div></div>`;
+ if(!full)return `<div class="hero mini">${parade}</div>`;
+ return `<section class="hero"><div><h1>写一个字，<br>召唤一只<em>字灵</em>！</h1>
+  <p>跟着笔顺动画写汉字，写对就得一张字卡，喂给 24 个部落的字灵。喂得越多，字灵从蛋里孵出来，一路长成大王。</p>
+  <p style="font-size:16px">美人鱼中华文化学校（MCCS）的一位中文老师为课堂而做：课上一起写，回家接着练。适合海外华人家庭和学中文的孩子。</p>
+  <div class="htags"><span>✍️ 6700 字笔顺</span><span>🔊 真人发音</span><span>📖 古诗绘本</span><span>🎮 闯关小游戏</span><span>🌍 中文 · English · Dansk</span><span>👩‍🏫 老师可建班布置生字</span><span>💚 免费 · 无广告 · 不用注册</span></div>
+  <div class="row" style="gap:10px;flex-wrap:wrap"><button class="big green" id="heroGo">写上名字，开始玩 ↓</button><button class="big ghost" id="heroVid">🎬 先看动画</button></div></div>
+  <div><div class="hsteps"><div class="hstep"><div class="hw" id="heroHw"></div><b>写一个字</b></div><div class="hstep"><img src="art/egg_fire.webp" alt=""><b>得卡喂蛋</b></div><div class="hstep"><img src="art/tribe_fire_1.webp" alt=""><b>孵出字灵</b></div><div class="hstep"><img src="art/tribe_fire_3.webp" alt=""><b>变成大王</b></div></div>${parade}</div></section>`}
+function heroDemo(){const el=$('#heroHw');if(!el||typeof HanziWriter==='undefined')return;const sz=Math.round(el.getBoundingClientRect().width)||120;
+ try{HanziWriter.create('heroHw','火',{width:sz,height:sz,padding:12,showOutline:true,strokeColor:'#FF5C3A',outlineColor:'#F1E4DA',strokeAnimationSpeed:.8,delayBetweenStrokes:250,delayBetweenLoops:1600,charDataLoader:loadChar}).loopCharacterAnimation()}catch(_){}}
+const VSHOW=[['book','🎵 识字儿歌','跟着唱就记住了',['一只猫两条鱼','十二生肖','你好你好']],['poem','📜 古诗动画','一首诗一个故事',['静夜思','咏鹅','春晓']],['idiom','📖 成语故事','从故事里懂成语',[],['img/lib/idiom_1.webp','img/lib/idiom_2.webp','img/lib/idiom_3.webp']],['pinyin','🔤 拼音儿歌','声母韵母唱出来',[]]];
+function vshowFill(){libData().then(L=>{const el=$('#vshow');if(!el||!L||!L.items)return;
+ const cards=VSHOW.map(([k,t,sub,want,soon])=>{const its=L.items.filter(i=>i.series===k&&i.img);
+  const imgs=its.length?[...want.map(w=>its.find(i=>i.zh===w)).filter(Boolean),...its].filter((x,i,a)=>a.indexOf(x)===i).slice(0,3).map(i=>i.img):(soon||[]);
+  if(!imgs.length)return '';/* 还没有视频的系列（成语故事）用绘本封面，标「更新中」 */
+  return `<button class="vcard" data-vs="${k}"><span class="vfan">${imgs.map(u=>`<img src="${u}" alt="" loading="lazy" crossorigin="anonymous">`).join('')}</span><span><b>${t}</b><small>${sub}${its.length?` · 已更新 ${its.length} 个`:''}</small><i${its.length?'':' style="background:var(--soft)"'}>${its.length?'去看 ▶':'更新中…'}</i></span></button>`}).join('');
+ el.innerHTML=cards?`<div class="vshow"><h2>🎬 看动画</h2><p class="muted" style="margin:0">每个都有中文、English、Dansk 三个版本，还能一页一页翻书听故事。</p><div class="vgrid">${cards}</div></div>`:'';
+ el.querySelectorAll('[data-vs]').forEach(b=>b.onclick=()=>go('library',b.dataset.vs))})}
 function players(){
  const list=Object.entries(S.players);
- $('#main').innerHTML=`<h1>谁来写字？</h1><p class="muted">点自己的名字。每个人的星星和卡片分开保存在这台设备上${S.fam?'，并自动备份到云端':''}。</p>
+ $('#main').innerHTML=`${heroHTML(!list.length)}<h1>谁来写字？</h1><p class="muted">点自己的名字。每个人的星星和卡片分开保存在这台设备上${S.fam?'，并自动备份到云端':''}。</p>
  <div class="players">${list.map(([id,p])=>`<div class="plw"><button class="pl" data-p="${id}">${esc(p.name)}<small>⭐ ${totalStars(p)}　🃏 ${Object.keys(p.prog).length}</small></button><button class="pldel" data-del="${id}" aria-label="删除 ${esc(p.name)}" title="删除这个名字">✕</button></div>`).join('')}</div>
  <div class="addp"><input id="pname" maxlength="16" placeholder="写上名字，比如 Emil 或 小明" aria-label="新名字"><button class="big green" id="padd">加一个人</button></div>
  <div id="fambox"></div>
+ <div id="vshow"></div>
  <button class="parentbtn" id="pguide">👨‍👩‍👧 家长看这里<small>加到主屏幕 · 没网也能玩 · 保存进度 · 每次玩多久</small>${clsStatus()}</button>`;
- famRefresh();$('#pguide').onclick=parentGuide;
+ famRefresh();vshowFill();$('#pguide').onclick=parentGuide;
+ if($('#heroVid'))$('#heroVid').onclick=()=>go('library','poem');
+ if($('#heroGo')){heroDemo();$('#heroGo').onclick=()=>{const i=$('#pname');i.scrollIntoView({block:'center',behavior:'smooth'});setTimeout(()=>i.focus(),400)}}
  document.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{S.cur=b.dataset.p;save();go('grades')});
  document.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>confirmDel(b.dataset.del));
  const add=()=>{const n=$('#pname').value.trim();if(!n)return $('#pname').focus();const id='p'+Date.now();S.players[id]={name:n,prog:{}};S.cur=id;save();if(S.clsPending){players();parentGuide({cls:S.clsPending})}else go('grades')};
@@ -601,12 +661,12 @@ function pgMailRender(){const el=$('#pgMail');if(!el)return;
 /* 意见箱：家长、老师写修改建议，联系方式可不填；发到云端 fb 表，作者在 admin.html 看 */
 function pgFbRender(){const el=$('#pgFb');if(!el)return;
  const fs='font:inherit;font-size:16px;padding:8px 12px;border-radius:12px;border:3px solid var(--line);background:var(--paper);color:var(--ink)';
- el.innerHTML=`哪里不好用、哪个字读错了、想要什么新功能，都可以写在这里，作者每条都会看。Suggestions welcome · Forslag er velkomne.
+ el.innerHTML=`哪里不好用、哪个字读错了、想要什么新功能，都可以写在这里，作者每条都会看（一般不单独回复）。Suggestions welcome · Forslag er velkomne.
   <textarea id="pgFbText" maxlength="2000" rows="4" placeholder="比如：「乐」字的读音不对；希望能……" aria-label="意见" style="width:100%;margin-top:8px;resize:vertical;${fs}"></textarea>
-  <div class="row"><input id="pgFbWho" maxlength="120" placeholder="想让作者回复的话，留个邮箱或微信（可不填）" aria-label="联系方式（可不填）" style="flex:1;min-width:200px;${fs}"><button class="green" id="pgFbGo">发送</button></div><p class="muted" id="pgFbMsg"></p>`;
+  <div class="row"><button class="green" id="pgFbGo">发送</button></div><p class="muted" id="pgFbMsg"></p>`;
  $('#pgFbGo').onclick=async()=>{const t=$('#pgFbText').value.trim(),msg=$('#pgFbMsg'),btn=$('#pgFbGo');if(t.length<2)return msg.textContent='先写几句话';
   btn.disabled=true;msg.textContent='正在发送…';let src='';try{src=localStorage.getItem('zilin_src')||''}catch(_){}
-  try{const r=await fetch(SYNC_API+'/fb',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({text:t,contact:$('#pgFbWho').value.trim(),lang:(navigator.language||'').slice(0,2).toLowerCase(),src,where:curView})});
+  try{const r=await fetch(SYNC_API+'/fb',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({text:t,fam:S.fam||'',lang:(navigator.language||'').slice(0,2).toLowerCase(),src,where:curView})});
    if(r.ok){$('#pgFbText').value='';msg.textContent='✅ 收到了，谢谢！'}else msg.textContent=r.status===429?'发得太快了，过一分钟再试':'没发出去，过一会儿再试'}catch(_){msg.textContent='现在连不上网，连上网再试'}
   btn.disabled=false}}
 function parentGuide(opt){
@@ -619,7 +679,7 @@ function parentGuide(opt){
  <li><b class="t">${joined?'🏫 班级 · <span class="ok">✅ 已加入</span>':'🏫 加入班级'}</b>${joined}${(names.length||pre)?`${joined?'<details><summary class="muted" style="cursor:pointer">再加一个孩子，或换一个班级</summary>':''}${pre?`<span class="ok">老师发的班级码已经填好了，${names.length?'勾上孩子的名字（或写上新名字）':'写上孩子的中文名字'}，点「加入班级」就行。</span>`:'老师发了班级码的话填在这里，勾上孩子的名字。老师就能看到孩子写了哪些字，还能布置本周生字。'}<div class="row"><input id="pgCls" maxlength="9" placeholder="班级码，比如 AB2C-D3EF" autocapitalize="characters" autocomplete="off" value="${esc(pre)}" style="font:inherit;font-size:18px;padding:8px 12px;border-radius:12px;border:3px solid var(--line);background:var(--paper);color:var(--ink)"></div><div class="row" id="pgClsWho">${names.map(([id,p])=>`<label><input type="checkbox" value="${id}" ${(names.length===1||pre)?'checked':''}> ${esc(p.name)}</label>`).join('')}</div><div class="row"><input id="pgNew" maxlength="16" placeholder="${names.length?'或者写一个新名字':'孩子的中文名字，和老师名单上一样'}" aria-label="孩子的名字" autocomplete="off" style="flex:1;min-width:220px;font:inherit;font-size:18px;padding:8px 12px;border-radius:12px;border:3px solid var(--line);background:var(--paper);color:var(--ink)"></div><div class="row"><button class="green" id="pgJoin">加入班级</button></div>${joined?'</details>':''}`:'先在上面加一个名字，再加入班级。'}<p class="muted" id="pgClsMsg"></p></li>
  <li><b class="t">⏰ 每次玩多久</b>到时间会出现休息画面，休息 10 分钟才能继续；家长答一道乘法题可以提前解锁。<div class="row seg" id="pgLimit">${[[0,'不限'],[15,'15 分钟'],[20,'20 分钟'],[30,'30 分钟']].map(([v,t])=>`<button data-lim="${v}" aria-pressed="${v===lim}">${t}</button>`).join('')}</div></li>
  ${SYNC_API?'<li><b class="t">📮 收更新（可选）</b><div id="pgMail"></div></li><li><b class="t">💬 意见箱</b><div id="pgFb"></div></li>':''}
- </ol><p class="muted" style="text-align:center"><a href="privacy.html" target="_blank" rel="noopener" style="color:inherit">🔒 隐私说明 · Privacy · Privatliv</a>：不注册、无广告；云端只备份名字、星数和使用情况。</p>${TESTV()?`<details style="margin-top:12px"><summary class="muted" style="cursor:pointer">老师 / 作者选项</summary><div class="row"><input id="pgInv" maxlength="30" placeholder="邀请码" autocomplete="off" style="font:inherit;font-size:16px;padding:6px 10px;border-radius:12px;border:3px solid var(--line);background:var(--paper);color:var(--ink);flex:0 1 140px"><button id="pgPush">🔔 用量快超额时推送提醒到这台设备</button></div><p class="muted" id="pgPushMsg">云端备份的免费额度每天 10 万次请求，到 60%、90% 时提醒。iPad 要从主屏幕图标打开乐园再点这里。</p><div class="row"><a class="ghost" href="admin.html" target="_blank" rel="noopener" style="color:inherit">📈 打开作者后台（谁在用、常用内容、意见箱）</a></div><div class="row"><button id="pgSrc">📊 推广链接带来的新设备</button><button id="pgSubs">📮 导出邮箱 CSV</button></div><div class="muted" id="pgSrcMsg">推广链接后面加 ?from=名字（小写字母、数字、- 和 _），比如 ziling.danpicbook.com/?from=mama1。每台新设备只算第一次打开；(none) = 没带 from。两个按钮都要先填邀请码。</div></details>`:''}<div class="row" style="justify-content:center;margin-top:16px"><button class="big" id="mClose">好了</button></div></div>`;
+ </ol><p class="muted" style="text-align:center"><a href="privacy.html" target="_blank" rel="noopener" style="color:inherit">🔒 隐私说明 · Privacy · Privatliv</a>：不注册、无广告；云端只备份账号名、星数和使用情况。</p>${TESTV()?`<details style="margin-top:12px"><summary class="muted" style="cursor:pointer">老师 / 作者选项</summary><div class="row"><input id="pgInv" maxlength="30" placeholder="邀请码" autocomplete="off" style="font:inherit;font-size:16px;padding:6px 10px;border-radius:12px;border:3px solid var(--line);background:var(--paper);color:var(--ink);flex:0 1 140px"><button id="pgPush">🔔 用量快超额时推送提醒到这台设备</button></div><p class="muted" id="pgPushMsg">云端备份的免费额度每天 10 万次请求，到 60%、90% 时提醒。iPad 要从主屏幕图标打开乐园再点这里。</p><div class="row"><a class="ghost" href="admin.html" target="_blank" rel="noopener" style="color:inherit">📈 打开作者后台（谁在用、常用内容、意见箱）</a></div><div class="row"><button id="pgSrc">📊 推广链接带来的新设备</button><button id="pgSubs">📮 导出邮箱 CSV</button></div><div class="muted" id="pgSrcMsg">推广链接后面加 ?from=名字（小写字母、数字、- 和 _），比如 ziling.danpicbook.com/?from=mama1。每台新设备只算第一次打开；(none) = 没带 from。两个按钮都要先填邀请码。</div></details>`:''}<div class="row" style="justify-content:center;margin-top:16px"><button class="big" id="mClose">好了</button></div></div>`;
  $('#modal').classList.add('open');pgInstallRow();$('#mClose').addEventListener('click',()=>{if(curView==='players')players()});
  if($('#pgPush'))$('#pgPush').onclick=()=>subscribeUsage($('#pgInv').value.trim(),$('#pgPushMsg'));
  if($('#pgSrc')){$('#pgSrc').onclick=()=>srcStats($('#pgInv').value.trim(),$('#pgSrcMsg'));$('#pgSubs').onclick=()=>subsExport($('#pgInv').value.trim(),$('#pgSrcMsg'))}
@@ -738,8 +798,8 @@ function write(c){
   ${MEAN[e.c]?`<div class="mean" id="mean" hidden>${EMOJI[e.c]?`<div class="em">${EMOJI[e.c]}</div>`:''}<div><p>${esc(MEAN[e.c][0])}</p><div class="w">${MEAN[e.c][1].map(w=>`<b>${esc(w)}</b>`).join('')}</div></div></div>`:''}
   <div class="ctrls"><button class="big ghost" id="bSay">🔊 听一听</button>${MEAN[e.c]?`<button class="big ghost" id="bMean">🔍 什么意思</button>`:''}<button class="big" id="bAnim">👀 看笔顺</button><button class="big green" id="bQuiz">✏️ 开始写</button><button class="big purple" id="bQuest">🎯 闯关</button><button class="big ghost" id="bDraw">🎨 画一画</button></div>
   ${(prev||next)?`<div class="ctrls">${prev?`<button class="big ghost" id="bPrev" style="font-size:18px">上一个：${kc(prev)}</button>`:''}${next?`<button class="big ghost" id="bNext" style="font-size:18px">下一个：${kc(next)}</button>`:''}</div>`:''}
-  <div id="bookbox"></div>
- </div></div>`;renderBookBox(e);
+  <div id="gymbox"></div><div id="bookbox"></div>
+ </div></div>`;renderGym(e);renderBookBox(e);
  writer=HanziWriter.create('hw',c,{width:size,height:size,padding:pad,showOutline:true,showCharacter:false,strokeColor:TYPES[e.t].d,outlineColor:'#D9E1EE',drawingColor:'#2F6BFF',drawingWidth:e.letter?44:40,drawingFadeDuration:220,highlightColor:'#FF3B7A',strokeHighlightSpeed:1.3,radicalColor:null,strokeAnimationSpeed:.9,delayBetweenStrokes:350,
   charDataLoader:loadChar,onLoadCharDataError:()=>{$('#msg').textContent='这个字的笔顺没有加载出来，请检查网络后再试'}});
  const sayText=e.letter?LETTER_SAY[e.c]+'，'+e.l.replace(/[a-zü ]+/g,''):e.c+'。'+e.l;
@@ -918,11 +978,11 @@ function openCard(e,f,o={}){
  const nx=GRADES[e.g].items[GRADES[e.g].items.indexOf(e)+1];
  $('#mbox').innerHTML=`<div class="title">${o.title||cname(e,f)}</div>${o.stars!==undefined?`<div style="font-size:34px;color:#FFC72C">${'★'.repeat(o.stars)}${'☆'.repeat(3-o.stars)}</div>`:''}
  <div class="cardwrap pop">${charCardSVG(e,f,{uid:'m'})}</div>
- <div style="font-size:20px;margin-top:10px">${o.sub||''}</div>
+ <div style="font-size:20px;margin-top:10px">${o.sub||''}</div>${o.after?'':'<div class="mpic" id="mpic"></div>'}
  ${(me().art||{})[e.c]?`<div style="margin-top:10px"><img src="${(me().art||{})[e.c]}" alt="我画的 ${esc(e.c)}" style="width:160px;height:160px;border-radius:16px;border:3px solid var(--line);object-fit:cover;background:#fff"><div class="src" style="color:#cfd6f0">我画的 ${kc(e)}</div></div>`:''}
  ${(()=>{const t=e.tribe,st=o.st||tribeStats(me(),t);return `<div class="tribebox ${o.hatched?'pop':''}"><div class="mascot">${tribeArt(t,st.stage,st)}</div><div style="text-align:left;flex:1;min-width:0"><b>${t.emoji} ${esc(t.name)}</b> · ${esc(tname(t,st.stage))}<div class="prog" style="margin:6px 0"><i style="width:${Math.min(100,st.fed/st.goal*100)}%"></i></div><div class="src" style="color:#cfd6f0">已喂 ${st.fed} / ${st.total} 个字${st.next?`，再喂 ${st.next} 个${st.stage?'进化':'孵化'}`:'，已经是大王'}　徽章 ${st.badges.size} / ${t.radList.length}</div></div></div>`})()}
- <div class="mbtns">${o.after?`<button class="big ghost" id="mAgain">再写一次</button>${nx?`<button class="big green" id="mNext">下一个 ${kc(nx)}</button>`:''}`:`<button class="big" id="mWrite">去写 ${kc(e)}</button><button class="big ghost" id="mTribe">看部落</button><button class="big ghost" id="mDraw">🎨 画一画</button><button class="big ghost" id="mPrint">🖨 打印这张</button>`}<button class="big pink" id="mClose">关闭</button></div>`;
- $('#modal').classList.add('open');say(o.title||cname(e,f),o.voice||[e.c]);
+ <div class="mbtns">${o.after?`<button class="big ghost" id="mAgain">再写一次</button>${nx?`<button class="big green" id="mNext">下一个 ${kc(nx)}</button>`:''}`:`<button class="big" id="mWrite">去写 ${kc(e)}</button><button class="big ghost" id="mTribe">看部落</button><button class="big ghost" id="mDraw">🎨 画一画</button>`}<button class="big pink" id="mClose">关闭</button></div>`;
+ $('#modal').classList.add('open');cardPic(e);say(o.title||cname(e,f),o.voice||[e.c]);
  $('#mClose').onclick=closeModal;
  if($('#mAgain'))$('#mAgain').onclick=()=>{closeModal();startQuiz(e)};
  if($('#mNext'))$('#mNext').onclick=()=>go('write',nx.c);
@@ -944,6 +1004,16 @@ async function booksData(){if(!BOOKS){try{BOOKS=await fetch('data/books.json').t
 const bookImg=(b,n)=>MEDIA+'book/'+encodeURIComponent(b.t)+'/'+n+'.webp',bookAu=(b,n,l)=>MEDIA+'book/'+encodeURIComponent(b.t)+'/'+n+'.'+l+'.mp3';
 function bookAudio(){if(!BA){BA=new Audio();BA.crossOrigin='anonymous';BA.setAttribute('playsinline','')}return BA}
 function playBookClip(b,n,l,onend){stopVoice();stopMusic();const a=bookAudio();a.onended=onend||null;a.onerror=()=>{if(onend)setTimeout(onend,1500)};a.src=bookAu(b,n,l);a.play().catch(()=>{})}
+/* 拼音操：data/pinyin_gym.json（从美人鱼课 绘本工具/pinyin_data.py 导出），图 img/pinyin/<码点>.webp 是 Twemoji（CC BY 4.0） */
+let GYM=null;const gymData=()=>GYM?Promise.resolve(GYM):fetch('data/pinyin_gym.json').then(r=>r.json()).then(j=>GYM=j).catch(()=>GYM={});
+const gymHTML=(e,g)=>`<div class="gym"><img src="img/pinyin/${g.img}.webp" alt=""><div><div class="gh">🤸 拼音操 · ${esc(g.g)}</div><div class="gw"><span class="lat">${esc(e.c)}</span> → <b>${esc(g.hz)}</b> <span class="lat" style="font-size:22px">${esc(g.py)}</span>　${esc(g.act)}</div><div class="gt">${esc(g.how)}</div><div class="gl">${esc(g.en)}<br>${esc(g.da)}</div></div></div>`;
+function renderGym(e){if(!e.letter)return;gymData().then(G=>{const g=G[e.c],box=$('#gymbox');if(g&&box&&curView==='write')box.innerHTML=gymHTML(e,g)})}
+/* 卡册里打开一张卡：拼音配拼音操的图，汉字配一张绘本里的画（只用做好了的书） */
+function cardPic(e){const el=$('#mpic');if(!el)return;
+ if(e.letter)return gymData().then(G=>{const g=G[e.c];if(g&&$('#mpic')===el)el.innerHTML=`<img src="img/pinyin/${g.img}.webp" alt=""><div style="text-align:left"><b style="font-size:24px">${esc(g.hz)}</b> ${esc(g.py)}<br>${esc(g.act)}</div>`});
+ booksData().then(B=>{const hit=[...(B.idx[e.c]||[]),...((B.occ||{})[e.c]||[])].find(([bi,n])=>{const b=B.books[bi];const p=b&&b.ready&&b.pages.find(x=>x.n===n);return p&&p.img});if(!hit||$('#mpic')!==el)return;const [bi,n]=hit;
+  el.innerHTML=`<img class="bk" src="${bookImg(B.books[bi],n)}" alt="" crossorigin="anonymous" data-book="${bi}" data-n="${n}"><div style="text-align:left">📖 ${esc(B.books[bi].title)}<br><span class="muted">点图翻书</span></div>`;
+  el.querySelector('img').onclick=()=>go('book',{b:bi,n})})}
 function renderBookBox(e){let box=$('#bookbox');if(!box)return;booksData().then(B=>{box=$('#bookbox');if(!box||curView!=='write')return;const ok=([bi])=>B.books[bi]&&B.books[bi].ready;/* 中文旁白还没做好的书（ready=0，比如还没配音的成语故事、新诗词）先不在字页出现，做好重新生成 books.json 就自动出来 */const main=(B.idx[e.c]||[]).filter(ok).slice(0,4),more=((B.occ||{})[e.c]||[]).filter(ok).slice(0,3);const hits=main.concat(more);if(!hits.length){box.innerHTML='';return}
  const mark=(t,about)=>about||e.letter?pyz(t):esc(t).split(e.c).join(`<b style="color:var(--berry)">${esc(e.c)}</b>`);
  const card=([bi,n],about)=>{const b=B.books[bi],p=b.pages.find(x=>x.n===n);if(!p)return'';return `<div class="bbc">${p.img?`<img src="${bookImg(b,n)}" alt="" loading="lazy" crossorigin="anonymous" data-book="${bi}" data-n="${n}">`:''}${p.k==='idiom'?`<div class="bbl" style="color:var(--berry);font-weight:600">📖 成语故事里的这一页</div>`:''}<div class="bbt">${mark(p.zh,about).replace(/\n/g,'<br>')}</div>${['en','da'].filter(l=>p[l]).map(l=>`<div class="bbl">${p.au.includes(l)?`<button data-bau="${bi}:${n}:${l}" title="${LANGN[l]}">🔊</button>`:''}<span>${esc(p[l]).replace(/\n/g,' ')}</span></div>`).join('')}<div class="bbb"><b>${esc(b.title)}</b>${p.au.includes('zh')?`<button data-bau="${bi}:${n}:zh">🔊 听这一页</button>`:''}<button data-book="${bi}" data-n="${n}">📖 读这本书</button>${b.lib!=null?`<button data-vid="${b.lib}">▶ 看视频</button>`:''}</div></div>`};
@@ -982,8 +1052,8 @@ function library(series){
  series=series==='poem'?'poem':series==='pinyin'?'pinyin':series==='idiom'?'idiom':'book';S.lib=series;rawSave();
  $('#main').innerHTML=`<div class="libtabs">${[['book','🎵 识字儿歌'],['poem','📜 诗词'],['idiom','📖 成语故事'],['pinyin','🔤 拼音儿歌']].map(([k,t])=>`<button data-lib="${k}" aria-pressed="${k===series}">${t}</button>`).join('')}</div><p class="muted">每个视频都有中文、English、Dansk 三个版本，点开就能看；标着「即将上线」的正在陆续上传。更多在 YouTube 频道 <a href="https://www.youtube.com/@DanPicBookKids" target="_blank" rel="noopener">DanPicBook Kids</a>。</p><div class="lib" id="libgrid"><p class="muted">正在读取…</p></div>`;
  document.querySelectorAll('[data-lib]').forEach(b=>b.onclick=()=>library(b.dataset.lib));
- libData().then(L=>{if(curView!=='library'||S.lib!==series)return;if(!L.items.some(i=>i.series==='idiom')){const t=document.querySelector('[data-lib="idiom"]');if(t)t.remove();if(series==='idiom')return library('book')}/* 成语故事还没有视频时先不显示这个标签 */const items=L.items.filter(i=>i.series===series);
-  if(!items.length){$('#libgrid').innerHTML=`<p class="muted">${series==='idiom'?'成语故事视频正在制作中，先去写字页看看：成语里的每个字都能翻到它的故事页。':'暂时还没有视频。'}</p>`;return}
+ libData().then(L=>{if(curView!=='library'||S.lib!==series)return;if(!L.items.some(i=>i.series==='idiom')){const t=document.querySelector('[data-lib="idiom"]');if(t)t.textContent='📖 成语故事（更新中）'}/* 成语故事还没有视频时标签上写「更新中」 */const items=L.items.filter(i=>i.series===series);
+  if(!items.length){$('#libgrid').innerHTML=`<p class="muted">${series==='idiom'?'成语故事正在制作中，很快就来。先去看看古诗动画和识字儿歌吧！':'暂时还没有视频。'}</p>`;return}
   $('#libgrid').innerHTML=items.map(i=>`<div class="libc" data-n="${i.n}">${i.img?`<img src="${i.img}" alt="" loading="lazy">`:''}<div class="t">${esc(i.zh)}<small>${esc(i.en)} · ${esc(i.da)}</small></div>${BOOK_BY_LIB[i.n]!=null?`<div class="libv" style="padding:0 14px 6px"><button data-read="${BOOK_BY_LIB[i.n]}" class="green" style="background:var(--grass);color:#fff;border-color:transparent">📖 翻书听故事</button><span class="soon">不用 YouTube，一页一页听</span></div>`:''}<details ${focus===i.n?'open':''}><summary>中文 · English · Dansk</summary>${['zh','en','da','mv'].filter(k=>i.versions[k]).map(k=>{const v=i.versions[k];const id=libLink(v);return `<div class="libv"><b>${LANGN[k]}</b>${id?`<button data-play="${id}" data-n="${i.n}">▶ 播放</button><a href="https://www.youtube.com/watch?v=${id}" target="_blank" rel="noopener">YouTube ↗</a>`:`<span class="soon">即将上线</span>`}</div>`}).join('')}</details></div>`).join('')||'<p class="muted">还没有内容。</p>';
   document.querySelectorAll('[data-read]').forEach(b=>b.onclick=()=>go('book',{b:+b.dataset.read,n:1}));
   if(focus!=null){const card=document.querySelector(`.libc[data-n="${focus}"]`);if(card){card.scrollIntoView({block:'center'});card.style.outline='4px solid var(--sun)'}}
@@ -1013,7 +1083,7 @@ function album(gid){
  $('#main').innerHTML+=`
  ${Object.keys(p.art||{}).length?`<h2>🎨 我的画 <small class="muted">${Object.keys(p.art).length} 幅，点一幅可以再画或删除</small></h2><div class="arts">${Object.entries(p.art).map(([c,src])=>`<button data-art="${esc(c)}"><img src="${src}" alt="${esc(c)}"><small>${esc(c)}　${esc((BY[c]||{}).l||'')}</small></button>`).join('')}</div>`:''}
  ${gradeTabs(S.agrade,'data-ag')}
- <div class="ctrls" style="margin:4px 0 14px"><span class="muted" style="align-self:center">${G.name}已收集 ${ggot.length} / ${G.items.length} 张</span>${ggot.length?`<button class="big ghost" id="aPrint" style="font-size:18px;padding:8px 14px">🖨 打印${G.name}的 ${ggot.length} 张卡</button>`:''}</div>
+ <div class="ctrls" style="margin:4px 0 14px"><span class="muted" style="align-self:center">${G.name}已收集 ${ggot.length} / ${G.items.length} 张</span>${false?`<button class="big ghost" id="aPrint" style="font-size:18px;padding:8px 14px">🖨 打印${G.name}的 ${ggot.length} 张卡</button>`:''}</div>
  <div class="album">${G.items.map(e=>{const f=p.prog[e.c];return f?`<button class="slot" data-c="${esc(e.c)}" aria-label="${cname(e,f)}">${charCardSVG(e,f,{uid:'a'})}</button>`
   :`<button class="slot" data-c="${esc(e.c)}" aria-label="还没收集 ${esc(e.c)}"><div class="lockcard"><div class="${e.letter?'lat':''}" style="font-size:54px;opacity:.3;line-height:1.1">${esc(e.c)}</div>No.${String(e.num).padStart(4,'0')}</div></button>`}).join('')}</div>`;
  document.querySelectorAll('[data-atab]').forEach(b=>b.onclick=()=>{S.atab=b.dataset.atab;save();album()});
@@ -1078,7 +1148,7 @@ else if(/[?&]print=(\d+)/.test(location.search)){/* 导出打印版 PDF：index.
 else{const P=new URLSearchParams(location.search);const famParam=P.get('fam'),clsParam=P.get('cls'),cardsParam=P.get('cards');
  if(SYNC_API&&famParam&&/^[A-Z2-9]{8}$/i.test(famParam)){history.replaceState(null,'',location.pathname);joinFamily(famParam.toUpperCase()).then(r=>{go('players');if(r!==true&&$('#fammsg'))$('#fammsg').textContent=r})}
  else if(SYNC_API&&clsParam&&/^[A-Z2-9]{8}$/i.test(clsParam)){history.replaceState(null,'',location.pathname);S.clsPending=clsParam.toUpperCase();rawSave();go('players');parentGuide({cls:S.clsPending});scheduleSync()}/* 老师发的加入链接 */
- else if(cardsParam){history.replaceState(null,'',location.pathname);go(me()?'grades':'players');const list=[...new Set([...cardsParam.replace(/[a-zü]+/g,'')].concat(cardsParam.match(/[a-zü]+/g)||[]))].map(c=>BY[c]).filter(Boolean);if(list.length)setTimeout(()=>printCards(list.map(e=>[e,3])),600)}/* 老师版：打印这些字的字卡 */
+ else if(cardsParam){history.replaceState(null,'',location.pathname);go(me()?'grades':'players');const list=[...new Set([...cardsParam.replace(/[a-zü]+/g,'')].concat(cardsParam.match(/[a-zü]+/g)||[]))].map(c=>BY[c]).filter(Boolean);if(list.length&&TESTV())setTimeout(()=>printCards(list.map(e=>[e,3])),600)}/* 打印暂时只给老师 / 作者模式（以后可能收费） *//* 老师版：打印这些字的字卡 */
  else{go(me()?'grades':'players');scheduleSync()}
  tickPlay()}
 </script>

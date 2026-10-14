@@ -56,7 +56,7 @@ async function load(){const k=$('#key').value.trim();if(!k)return;try{localStora
    <div class="card"><h2>看了多久</h2>${list(ad.tot.t,mins)}</div>
    <div class="card"><h2>写得最多的字</h2>${list(Object.fromEntries(allW.map(([c,v])=>['w:'+c,v])),v=>v+' 次')}</div>
   </div>
-  <div class="card"><h2>💬 意见箱 <span class="muted">（${fb.fb.length} 条）</span></h2>${fb.fb.length?fb.fb.map(f=>`<div class="fb"><span class="muted">${day(f.created)} · ${esc(f.lang)} · 来源 ${esc(f.src||'-')} · 在 ${esc(VIEW[f.at]||f.at||'-')}${f.contact?' · 联系：'+esc(f.contact):''}</span><br>${esc(f.text)}</div>`).join(''):'<p class="muted">还没有</p>'}</div>
+  <div class="card"><h2>💬 意见箱 <span class="muted">（${fb.fb.length} 条）</span></h2>${fb.fb.length?fb.fb.map(f=>`<div class="fb"><span class="muted">${day(f.created)} · ${esc(f.lang)} · 来源 ${esc(f.src||'-')} · 在 ${esc(VIEW[f.at]||f.at||'-')}${f.names&&f.names.length?' · 来自：<b>'+esc(f.names.join('、'))+'</b>（'+esc(f.fam)+'）':f.fam?' · 家庭码 '+esc(f.fam):' · 没有家庭码（还没加名字）'}${f.contact?' · 联系：'+esc(f.contact):''}</span><br>${esc(f.text)}</div>`).join(''):'<p class="muted">还没有</p>'}</div>
   <div class="card"><h2>家庭 <span class="muted">（共 ${ad.n} 个家庭码，这里列最近活跃、有名字的 ${ad.fams.length} 个）</span></h2>
    <table><tr><th>家庭码</th><th>来源</th><th>开始 / 最近</th><th>孩子：写过的字 · 星 · 写了几次 · 用了多久</th><th>常看 / 常用</th></tr>
    ${ad.fams.map(f=>`<tr><td><code>${esc(f.code.slice(0,4))}…</code></td><td>${esc(f.src||'-')}</td><td>${day(f.created)}<br>${day(f.updated)}</td>
