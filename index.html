@@ -669,7 +669,7 @@ function pgMailRender(){const el=$('#pgMail');if(!el)return;
 /* 意见箱：家长、老师写修改建议，联系方式可不填；发到云端 fb 表，作者在 admin.html 看 */
 function pgFbRender(){const el=$('#pgFb');if(!el)return;
  const fs='font:inherit;font-size:16px;padding:8px 12px;border-radius:12px;border:3px solid var(--line);background:var(--paper);color:var(--ink)';
- el.innerHTML=`哪里不好用、哪个字读错了、想要什么新功能，都可以写在这里，作者每条都会看（一般不单独回复）。Suggestions welcome · Forslag er velkomne.
+ el.innerHTML=`哪里不好用、哪个字读错了、想要什么新功能，都可以写在这里。Suggestions welcome · Forslag er velkomne.
   <textarea id="pgFbText" maxlength="2000" rows="4" placeholder="比如：「乐」字的读音不对；希望能……" aria-label="意见" style="width:100%;margin-top:8px;resize:vertical;${fs}"></textarea>
   <div class="row"><button class="green" id="pgFbGo">发送</button></div><p class="muted" id="pgFbMsg"></p>`;
  $('#pgFbGo').onclick=async()=>{const t=$('#pgFbText').value.trim(),msg=$('#pgFbMsg'),btn=$('#pgFbGo');if(t.length<2)return msg.textContent='先写几句话';
