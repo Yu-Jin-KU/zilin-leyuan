@@ -8,7 +8,7 @@ r"""把要托管到 Cloudflare 的语音和图片整理到 _media/（不进 git�
  线上地址（2026-10-14 起，管 danpicbook.com 域名的账户）：zilin-media → https://media.danpicbook.com/ ，zilin-media2 → https://media2.danpicbook.com/ ；
  媒体文件快到 2 万个时再开 media3（新 Worker + 新域名），别往满的里面塞。
 用法：python -X utf8 tools/build_media.py [--skip-audio] [--skip-books]
-已有的文件会跳过（可以断点续跑）。"""
+已有的文件会跳过（可以断点续跑）；源文件比已转好的新时会重转。"""
 import os, sys, re, glob, subprocess, shutil
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor
@@ -46,14 +46,16 @@ def page_image(book, pg):
             if f.suffix.lower() in ('.jpg', '.jpeg', '.png', '.webp') and not f.name.startswith('_'): return f
     return None
 
+def fresh(src, dst): return dst.exists() and dst.stat().st_mtime >= src.stat().st_mtime   # 源文件重做过（比如重新配音）就重转
+
 def do_image(src, dst):
-    if dst.exists(): return
+    if fresh(src, dst): return
     from PIL import Image
     im = Image.open(src).convert('RGB'); im.thumbnail((1024, 1024)); dst.parent.mkdir(parents=True, exist_ok=True)
     im.save(dst, 'WEBP', quality=80, method=4)
 
 def do_clip(src, dst):
-    if dst.exists(): return
+    if fresh(src, dst): return
     dst.parent.mkdir(parents=True, exist_ok=True)
     subprocess.run(['ffmpeg', '-v', 'quiet', '-y', '-i', str(src), '-af', 'loudnorm=I=-18:TP=-1.5:LRA=11', '-ac', '1', '-ar', '32000', '-b:a', '40k', str(dst)], check=True)
 

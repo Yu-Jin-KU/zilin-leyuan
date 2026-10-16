@@ -92,9 +92,11 @@ for book in sorted(BOOKS.glob('绘本_*')):
             cands = [c for c in dict.fromkeys(title_chars + list(pg['zh'])) if c in BY and any(strip_tone(r[1]) == tok for r in BY[c])]
             if cands: add(cands[0], bi, n)
             elif tok not in ('cover', 'opening', 'ending', 'secret', 'full', 'goodnight', 'review', 'game', 'song', 'use', 'today', 'idiom'): unmatched.append((theme, slug))
+HOLD = {'刻舟求剑', '画蛇添足', '掩耳盗铃', '自相矛盾', '南辕北辙', '铁杵成针', '精卫填海'}   # 做好了但先不上架（2026-10-16 用户：成语先上 5 本），上架时从这里删掉
 for b in books:   # ready：中文旁白齐（≥80% 页）且配图过半，动画页才给「翻书听故事」；没做完的书页面上不出现
     n = len(b['pages']) or 1
     b['ready'] = 1 if sum(1 for p in b['pages'] if 'zh' in p['au']) >= 0.8 * n and sum(1 for p in b['pages'] if p['img']) >= 0.5 * n else 0
+    if b['t'] in HOLD: b['ready'] = 0
 # 第二档 occ：没有专门讲它的页，就找做完的书里「句子里出现这个字」的页（最多 3 页：词语页 > 诗句页 > 句子短的），页面上标成「绘本里有「X」的句子」
 occ = {}
 rank = {'word': 0, 'poem': 1, 'poem_full': 1}
