@@ -20,6 +20,10 @@
    POST /fb {text, fam, lang, src, where} -> {ok}   意见箱：自动带这台设备的家庭码，后台按家庭码显示是哪家的名字（2026-10-14 起不再收联系方式）
    GET  /admin?key=邀请码        -> {fams:[...], tot:{w,t,f}, n}  作者后台：每个家庭的名字、来源、进度、时长，全站最常用的内容和功能
    GET  /fb/list?key=邀请码      -> {fb:[...]}
+   POST /sv {k, n, kind, a, lang, src} -> {ok}       家长问卷（2026-10-17，建表脚本 schema_sv.sql）：k = 家庭码或设备随机码，n 现在只有 1（只有一份问卷），
+                                                      kind = seen（弹出过）/ done（填完，a 是答案）/ no（不参加）；同一家同一份同一种只记一次
+   GET  /sv/list?key=邀请码      -> {rows:[{id,n,kind,a,lang,src,created}]}  id 只给 k 的前 6 位
+   GET  /sv/votes               -> {n, next:{选项:票数}}  公开的投票结果（缓存 10 分钟）
    POST /c/:code/leave {fam, pid}                    家长在「家长看这里」点「退出」：凭家庭码删掉班里这个孩子的记录（老师那边也看不到了）
    GET  /c/:code                同时返回 roster（老师预先录的名单 [{id,name,en}]），家长加入时从名单里选孩子
    PUT  /c/:code/roster?key=K {roster:[{id,name,en}]}  老师录名单；学生端上传时每个名字带 rid（名单里的 id），报告按名单合并多台设备
@@ -100,7 +104,7 @@ function limiterFor(req, env, url) {
   const p = url.pathname, m = req.method;
   if (m === 'GET' && (/^\/f\/[A-Z2-9]{8}$/.test(p) || /^\/c\/[A-Z2-9]{8}$/.test(p))) return env.LOOKUP_RL;
   if (url.searchParams.has('key') || p === '/c/new' || p === '/fb') return env.LOOKUP_RL;
-  if (p === '/new' || p.startsWith('/f/') || p.startsWith('/c/') || p === '/sub' || p === '/unsub' || p === '/src') return env.WRITE_RL;
+  if (p === '/new' || p.startsWith('/f/') || p.startsWith('/c/') || p === '/sub' || p === '/unsub' || p === '/src' || p === '/sv') return env.WRITE_RL;
   return null;
 }
 async function readJson(req, max = 300000) {
@@ -188,6 +192,50 @@ async function feedback(req, env, url) {
     if (!ownerKey(env, url)) return json({ error: 'key' }, 403);
     const rows = (await env.DB.prepare('SELECT fb.id,fb.text,fb.contact,fb.lang,fb.src,fb.at,fb.created,fb.fam,fam.data FROM fb LEFT JOIN fam ON fam.code=fb.fam ORDER BY fb.id DESC LIMIT 500').all()).results || [];
     return json({ fb: rows.map(r => { let names = []; try { names = Object.entries(JSON.parse(r.data || '{}')).filter(([k]) => k !== '_del').map(([, p]) => p && p.name).filter(Boolean); } catch (_) {} delete r.data; return { ...r, fam: r.fam ? r.fam.slice(0, 4) + '…' : '', names }; }) });
+  }
+  return json({ error: 'not found' }, 404);
+}
+
+/* 家长问卷：答案只收下面列出的题目和选项，别的字段丢掉；最多存 50000 行 */
+const SV_SPEC = {   // 只有一份问卷（2026-10-17 改）；和 index.html 的 SV 对应
+  1: { age: ['m', ['u5', '6', '8', '10', '13']], home: ['s', ['zh', 'mix', 'no']], learn: ['m', ['wk', 'sch', 'tut', 'home', 'none']],
+       hard: ['m', ['how', 'time', 'keep', 'bored', 'env', 'pron', 'what', 'other']], used: ['m', ['write', 'py', 'listen', 'vid', 'books', 'cards']],
+       like: ['r', 5], more: ['s', ['lot', 'bit', 'same', 'early']], next: ['m', ['say', 'story', 'song', 'py', 'tips', 'ai', 'print', 'lang', 'other']],
+       nps: ['r', 10, 0], quote: ['x'], ok: ['c'] },
+};
+function svClean(n, a) {
+  const out = {};
+  for (const [k, [t, o, lo]] of Object.entries(SV_SPEC[n])) {
+    const v = a && a[k];
+    if (t === 's' && o.includes(v)) out[k] = v;
+    else if (t === 'm' && Array.isArray(v)) { const m = [...new Set(v.filter(x => o.includes(x)))].slice(0, k === 'next' ? 3 : 20); if (m.length) out[k] = m; }
+    else if (t === 'r' && Number.isInteger(v) && v >= (lo === undefined ? 1 : lo) && v <= o) out[k] = v;
+    else if (t === 'x' && typeof v === 'string' && v.trim()) out[k] = v.trim().slice(0, 300);
+    else if (t === 'c' && v === true) out[k] = true;
+  }
+  return out;
+}
+async function survey(req, env, url) {
+  if (url.pathname === '/sv' && req.method === 'POST') {
+    let b; try { b = await readJson(req, 4000); } catch (_) { return json({ error: 'bad json' }, 400); }
+    const k = String((b && b.k) || ''), n = b && b.n, kind = b && b.kind;
+    if (!/^[A-Z2-9]{8}$/.test(k) && !/^d[a-z0-9]{10,16}$/.test(k)) return json({ error: 'k' }, 400);
+    if (!SV_SPEC[n] || !['seen', 'done', 'no'].includes(kind)) return json({ error: 'bad' }, 400);
+    const c = await env.DB.prepare('SELECT COUNT(*) n FROM sv').first(); if (c.n >= 50000) return json({ error: 'full' }, 503);
+    const a = kind === 'done' ? JSON.stringify(svClean(n, b.a)) : null;
+    await env.DB.prepare(`INSERT OR ${kind === 'done' ? 'REPLACE' : 'IGNORE'} INTO sv(k,n,kind,a,lang,src,created) VALUES(?1,?2,?3,?4,?5,?6,?7)`)
+      .bind(k, n, kind, a, /^[a-z]{2}$/.test(String(b.lang || '')) ? b.lang : '', cleanSrc(b.src), Date.now()).run();
+    return json({ ok: true });
+  }
+  if (url.pathname === '/sv/votes' && req.method === 'GET') {   // 公开：只给「下一步先做什么」的票数和投票家庭数，家长在「家长看这里」看得到
+    const rows = (await env.DB.prepare("SELECT a FROM sv WHERE kind='done'").all()).results || [];
+    const next = {}; for (const r of rows) { try { for (const x of JSON.parse(r.a || '{}').next || []) next[x] = (next[x] || 0) + 1; } catch (_) {} }
+    return new Response(JSON.stringify({ n: rows.length, next }), { headers: { ...CORS, 'content-type': 'application/json; charset=utf-8', 'cache-control': 'public, max-age=600' } });
+  }
+  if (url.pathname === '/sv/list' && req.method === 'GET') {
+    if (!ownerKey(env, url)) return json({ error: 'key' }, 403);
+    const rows = (await env.DB.prepare('SELECT k,n,kind,a,lang,src,created FROM sv ORDER BY created DESC LIMIT 20000').all()).results || [];
+    return json({ rows: rows.map(r => { let a = null; try { a = r.a ? JSON.parse(r.a) : null; } catch (_) {} return { id: r.k.slice(0, 6), n: r.n, kind: r.kind, a, lang: r.lang, src: r.src, created: r.created }; }) });
   }
   return json({ error: 'not found' }, 404);
 }
@@ -465,6 +513,7 @@ export default {
       if (url.pathname === '/src' || url.pathname === '/src/stats') return await channels(req, env, url);
       if (url.pathname === '/sub' || url.pathname === '/unsub' || url.pathname === '/sub/list') return await subscribers(req, env, url);
       if (url.pathname === '/fb' || url.pathname === '/fb/list') return await feedback(req, env, url);
+      if (url.pathname === '/sv' || url.pathname === '/sv/list' || url.pathname === '/sv/votes') return await survey(req, env, url);
       if (url.pathname === '/admin' && req.method === 'GET') return await admin(req, env, url);
       if (url.pathname.startsWith('/c/')) return await classes(req, env, url);
       return await family(req, env, url);
