@@ -40,10 +40,27 @@ const label=k=>{const [a,...r]=k.split(':');const b=r.join(':');
  return a==='v'?'页面 · '+(VIEW[b]||b):a==='g'?'小游戏 · '+b:a==='w'?'写字 · '+b:a==='b'?'绘本 · '+b:a==='vid'?'视频 · '+b:k==='quest'?'闯关（整轮）':k};
 const list=(o,fmt,n=30)=>{const e=Object.entries(o||{}).slice(0,n);if(!e.length)return '<p class="muted">还没有数据</p>';const max=e[0][1]||1;
  return '<table>'+e.map(([k,v])=>`<tr><td>${esc(label(k))}</td><td style="white-space:nowrap"><span class="bar" style="width:${Math.max(2,80*v/max)}px"></span>${fmt(v)}</td></tr>`).join('')+'</table>'};
+/* 家长问卷（2026-10-17，只有一份）：选项的中文名，和 index.html 的 SV、Worker 的 SV_SPEC 对应 */
+const SVQ=[['age','孩子几岁',[['u5','5 岁以下'],['6','6–7'],['8','8–9'],['10','10–12'],['13','12 岁以上']]],['home','家里语言',[['zh','只说中文'],['mix','中文 + 其他'],['no','基本不说中文']]],
+ ['learn','怎么学中文',[['wk','周末学校'],['sch','学校母语课'],['tut','网课 / 家教'],['home','家长自己教'],['none','没上课']]],
+ ['hard','在家最难的',[['how','不知道怎么教'],['time','没时间没耐心'],['keep','坚持不下来'],['bored','觉得难没兴趣'],['env','没有中文环境'],['pron','发音不准'],['what','不知道学什么'],['other','其他']]],
+ ['used','用过的部分',[['write','写汉字'],['py','拼音'],['listen','听发音解释'],['vid','动画儿歌'],['books','绘本故事'],['cards','字卡字灵']]],
+ ['like','喜欢程度（1–5）',null],['more','主动接触中文',[['lot','多了很多'],['bit','多了一点'],['same','差不多'],['early','还看不出']]],
+ ['next','下一步先做（投票）',[['say','跟读打分'],['story','更多故事'],['song','更多儿歌动画'],['py','拼音练习'],['tips','家长小贴士'],['ai','AI 小老师'],['print','练习纸'],['lang','丹英讲解'],['other','其他']]],
+ ['nps','推荐意愿（0–10）',null]];
+function svHTML(rows){if(!rows.length)return '<p class="muted">还没有人填。问卷在用过 3 天、并且写对 30 个字或用满 40 分钟后才会弹出。</p>';
+ const avg=a=>a.length?(a.reduce((x,y)=>x+y,0)/a.length).toFixed(1):'-';
+ const r=rows.filter(x=>x.n===1),done=r.filter(x=>x.kind==='done'&&x.a),fams=new Set(r.map(x=>x.id)).size;/* 弹出过、自己点开填、或点了不参加的家庭都算发放 */
+ const head=`<div class="nums"><div><b>${fams}</b>发放（家庭）</div><div><b>${done.length}</b>填完</div><div><b>${fams?Math.round(100*done.length/fams)+'%':'-'}</b>回收率</div><div><b>${r.filter(x=>x.kind==='no').length}</b>不参加</div></div>`;
+ const qs=SVQ.map(([k,t,map])=>{const vals=done.flatMap(x=>[].concat(x.a[k]===undefined?[]:x.a[k]));
+  if(!map)return `<tr><td>${esc(t)}</td><td>平均 <b>${avg(vals)}</b>（${vals.length} 份）${k==='nps'&&vals.length?` · 净推荐值 ${Math.round(100*(vals.filter(v=>v>=9).length-vals.filter(v=>v<=6).length)/vals.length)}`:''}</td></tr>`;
+  const c={};vals.forEach(v=>c[v]=(c[v]||0)+1);return `<tr><td>${esc(t)}</td><td>${map.slice().sort((a,b)=>(c[b[0]]||0)-(c[a[0]]||0)).map(([v,l])=>`${esc(l)} <b>${c[v]||0}</b>`).join(' · ')}</td></tr>`}).join('');
+ const texts=done.filter(x=>x.a.quote).map(x=>`<div class="fb"><span class="muted">${day(x.created)} · ${x.a.ok?'✅ 可以引用':'不可引用'}</span><br>${esc(x.a.quote)}</div>`).join('');
+ return head+`<table>${qs}</table>`+texts}
 const get=async u=>{const r=await fetch(API+u);if(!r.ok)throw new Error(r.status===403?'邀请码不对':r.status===429?'试得太多，过一分钟再试':'出错 '+r.status);return r.json()};
 async function load(){const k=$('#key').value.trim();if(!k)return;try{localStorage.setItem('zilin_admin_key',k)}catch(_){}
  $('#msg').textContent='读取中…';const q='?key='+encodeURIComponent(k);
- try{const [st,src,ad,fb]=await Promise.all([get('/stats'),get('/src/stats'+q),get('/admin'+q),get('/fb/list'+q).catch(()=>({fb:[]}))]);
+ try{const [st,src,ad,fb,sv]=await Promise.all([get('/stats'),get('/src/stats'+q),get('/admin'+q),get('/fb/list'+q).catch(()=>({fb:[]})),get('/sv/list'+q).catch(()=>({rows:[]}))]);
   const allW=Object.entries(ad.tot.w);const tSecs=Object.values(ad.tot.t).reduce((a,b)=>a+b,0);
   $('#main').innerHTML=`
   <div class="card"><h2>概况</h2><div class="nums">
@@ -56,6 +73,7 @@ async function load(){const k=$('#key').value.trim();if(!k)return;try{localStora
    <div class="card"><h2>看了多久</h2>${list(ad.tot.t,mins)}</div>
    <div class="card"><h2>写得最多的字</h2>${list(Object.fromEntries(allW.map(([c,v])=>['w:'+c,v])),v=>v+' 次')}</div>
   </div>
+  <div class="card"><h2>📋 家长问卷</h2>${svHTML(sv.rows||[])}<p class="muted">每行按票数从多到少排。原话只有家长勾了「可以引用」才能写进申请书。</p></div>
   <div class="card"><h2>💬 意见箱 <span class="muted">（${fb.fb.length} 条）</span></h2>${fb.fb.length?fb.fb.map(f=>`<div class="fb"><span class="muted">${day(f.created)} · ${esc(f.lang)} · 来源 ${esc(f.src||'-')} · 在 ${esc(VIEW[f.at]||f.at||'-')}${f.names&&f.names.length?' · 来自：<b>'+esc(f.names.join('、'))+'</b>（'+esc(f.fam)+'）':f.fam?' · 家庭码 '+esc(f.fam):' · 没有家庭码（还没加名字）'}${f.contact?' · 联系：'+esc(f.contact):''}</span><br>${esc(f.text)}</div>`).join(''):'<p class="muted">还没有</p>'}</div>
   <div class="card"><h2>家庭 <span class="muted">（共 ${ad.n} 个家庭码，这里列最近活跃、有名字的 ${ad.fams.length} 个）</span></h2>
    <table><tr><th>家庭码</th><th>来源</th><th>开始 / 最近</th><th>孩子：写过的字 · 星 · 写了几次 · 用了多久</th><th>常看 / 常用</th></tr>
