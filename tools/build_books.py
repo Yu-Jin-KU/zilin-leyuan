@@ -92,7 +92,9 @@ for book in sorted(BOOKS.glob('绘本_*')):
             cands = [c for c in dict.fromkeys(title_chars + list(pg['zh'])) if c in BY and any(strip_tone(r[1]) == tok for r in BY[c])]
             if cands: add(cands[0], bi, n)
             elif tok not in ('cover', 'opening', 'ending', 'secret', 'full', 'goodnight', 'review', 'game', 'song', 'use', 'today', 'idiom'): unmatched.append((theme, slug))
-HOLD = {'刻舟求剑', '画蛇添足', '掩耳盗铃', '自相矛盾', '南辕北辙', '铁杵成针', '精卫填海'}   # 做好了但先不上架（2026-10-16 用户：成语先上 5 本），上架时从这里删掉
+HOLD = {'刻舟求剑', '画蛇添足', '掩耳盗铃', '自相矛盾', '南辕北辙', '铁杵成针', '精卫填海',
+        # 2026-10-17 claude-88 新出的 13 本成语，等用户定上架哪几本
+        '纪昌学射', '田忌赛马', '高山流水', '专心致志', '见仁见智'}   # 10-17 先上 8 本（曹冲称象 急中生智 道旁苦李 扁鹊治病 囊萤夜读 完璧归赵 负荆请罪 杨氏之子）   # 做好了但先不上架（2026-10-16 用户：成语先上 5 本），上架时从这里删掉
 for b in books:   # ready：中文旁白齐（≥80% 页）且配图过半，动画页才给「翻书听故事」；没做完的书页面上不出现
     n = len(b['pages']) or 1
     b['ready'] = 1 if sum(1 for p in b['pages'] if 'zh' in p['au']) >= 0.8 * n and sum(1 for p in b['pages'] if p['img']) >= 0.5 * n else 0
