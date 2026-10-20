@@ -28,3 +28,6 @@ sync/.vapid.json
 
 # 语音原文件（成人声 / 童声 / 老师声）只留在本机做备份，页面从 Cloudflare Worker 托管地址加载，不再进 git
 audio/
+
+# 制作工具（2026-10-20 起放在私有仓库 zilin-tools，本地仍在 tools/ 里用）
+tools/
