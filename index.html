@@ -117,6 +117,9 @@ h1{font-size:34px;margin:8px 0 4px;font-weight:400}h2{font-size:26px;margin:22px
 .board{position:relative;background:var(--paper);border-radius:26px;border:4px solid var(--line);touch-action:none;margin:0 auto}
 .board svg.grid{position:absolute;inset:0;pointer-events:none}
 .board #hw{position:relative}
+.board .side{position:absolute;top:50%;transform:translateY(-50%);width:44px;padding:8px 0;border-radius:22px;border:3px solid var(--line);background:#fff;box-shadow:0 3px 8px rgba(30,40,90,.18);font-size:20px;line-height:1.15;color:var(--ink);cursor:pointer;z-index:2;display:flex;flex-direction:column;align-items:center;gap:2px;overflow:hidden}
+.board .side i{font-style:normal;font-size:32px;font-weight:700;line-height:.9;color:#2F6BFF}
+.board .side.l{left:-20px}.board .side.r{right:-20px}/* 上一个 / 下一个挂在田字格左右两边，一半在格子外（格子边框加内边距 26px，不挡笔画） */
 .info{background:var(--paper);border-radius:26px;border:3px solid var(--line);padding:18px}
 .info .big-ch{font-size:72px;line-height:1;font-family:var(--kai)}.info .big-ch.lat{font-family:var(--lat);font-weight:700}
 .info .py{font-family:var(--lat);font-size:30px}.pyl{font-family:var(--lat)}.info .da{font-family:var(--lat);font-size:20px;color:var(--soft)}
@@ -542,7 +545,7 @@ function heroHTML(full){
  if(!full)return `<div class="hero mini">${parade}</div>`;
  return `<section class="hero"><div><h1>写一个字，<br>召唤一只<em>字灵</em>！</h1>
   <p>跟着笔顺动画写汉字，写对就得一张字卡，喂给 24 个部落的字灵。喂得越多，字灵从蛋里孵出来，一路长成大王。</p>
-  <p style="font-size:16px">哥本哈根美人鱼中华文化学校（MCCS）的一位中文老师为课堂而做：课上一起写，回家接着练。适合海外华人家庭和学中文的孩子。</p>
+  <p style="font-size:16px">丹麦的一位中文老师为课堂而做：课上一起写，回家接着练。初心很简单：让在海外长大的孩子也爱上汉字，读得懂中国的诗和故事。适合海外华人家庭和学中文的孩子。</p>
   <div class="htags"><span>✍️ 6700 字笔顺</span><span>🔊 真人发音</span><span>📖 古诗绘本</span><span>🎮 闯关小游戏</span><span>🌍 中文 · English · Dansk</span><span>👩‍🏫 老师可建班布置生字</span><span>💚 免费 · 无广告 · 不用注册</span></div>
   <div class="row" style="gap:10px;flex-wrap:wrap"><button class="big green" id="heroGo">写上名字，开始玩 ↓</button><button class="big ghost" id="heroVid">🎬 先看动画</button></div></div>
   <div><div class="hsteps"><div class="hstep"><div class="hw" id="heroHw"></div><b>写一个字</b></div><div class="hstep"><img src="art/egg_fire.webp" alt=""><b>得卡喂蛋</b></div><div class="hstep"><img src="art/tribe_fire_1.webp" alt=""><b>孵出字灵</b></div><div class="hstep"><img src="art/tribe_fire_3.webp" alt=""><b>变成大王</b></div></div>${parade}</div></section>`}
@@ -873,10 +876,10 @@ function seqFor(e){if(S.view==='hsk'&&!e.letter){const lv=S.hsk||'1';const seq=[
  return {seq:GRADES[e.g].items,label:GRADES[e.g].name}}
 function write(c){
  const e=BY[c],G=GRADES[e.g],{seq,label}=seqFor(e),idx=seq.indexOf(e),next=seq[idx+1],prev=idx>0?seq[idx-1]:null;
- const size=Math.max(260,Math.min(window.innerWidth-48,window.innerHeight-200,460)),pad=e.letter?10:22;
+ const size=Math.max(260,Math.min(document.documentElement.clientWidth-64,window.innerHeight-200,460)),pad=e.letter?10:22;
  const hl=e.letter?pyz(e.l):esc(e.l).split(e.c).join(`<b>${e.c}</b>`);
  $('#main').innerHTML=`<button class="big ghost" data-go="grades" style="font-size:18px;padding:8px 14px;margin-bottom:12px">← ${label}</button>
- <div class="wwrap"><div><div class="board" style="width:${size+8}px;height:${size+8}px">${gridSVG(e,size,pad)}<div id="hw"></div></div>
+ <div class="wwrap"><div><div class="board" style="width:${size+8}px;height:${size+8}px">${gridSVG(e,size,pad)}<div id="hw"></div>${prev?`<button class="side l" id="bPrev" title="上一个：${esc(prev.c)}" aria-label="上一个：${esc(prev.c)}"><i>‹</i>${kc(prev)}</button>`:''}${next?`<button class="side r" id="bNext" title="下一个：${esc(next.c)}" aria-label="下一个：${esc(next.c)}"><i>›</i>${kc(next)}</button>`:''}</div>
   <div class="combo" id="combo">${Array.from({length:e.strokes},()=>'<span></span>').join('')}</div>
   <div class="msg" id="msg">先看一遍笔顺，再自己写！</div></div>
  <div class="info"><div style="display:flex;gap:16px;align-items:center"><div class="big-ch ${e.letter?'lat':''}" style="${e.c.length>2?'font-size:54px':''}">${esc(e.c)}</div>
@@ -887,7 +890,6 @@ function write(c){
   <p class="poem">${hl}</p>${e.s?`<div class="src">${esc(e.s)}</div>`:''}${e.letter&&(PINYIN.items[e.c]||{}).sent?`<p class="poem" style="font-size:20px;margin-top:4px">👂 ${(()=>{const it=PINYIN.items[e.c];return esc(it.sent).split(it.word).join(`<b>${esc(it.word)}</b>`)})()}</p>`:''}
   ${MEAN[e.c]?`<div class="mean" id="mean" hidden>${EMOJI[e.c]?`<div class="em">${EMOJI[e.c]}</div>`:''}<div><p>${esc(MEAN[e.c][0])}</p><div class="w">${MEAN[e.c][1].map(w=>`<b>${esc(w)}</b>`).join('')}</div></div></div>`:''}
   <div class="ctrls"><button class="big ghost" id="bSay">🔊 听一听</button>${MEAN[e.c]?`<button class="big ghost" id="bMean">🔍 什么意思</button>`:''}<button class="big" id="bAnim">👀 看笔顺</button><button class="big green" id="bQuiz">✏️ 开始写</button><button class="big purple" id="bQuest">🎯 闯关</button><button class="big ghost" id="bDraw">🎨 画一画</button></div>
-  ${(prev||next)?`<div class="ctrls">${prev?`<button class="big ghost" id="bPrev" style="font-size:18px">上一个：${kc(prev)}</button>`:''}${next?`<button class="big ghost" id="bNext" style="font-size:18px">下一个：${kc(next)}</button>`:''}</div>`:''}
   <div id="gymbox"></div><div id="bookbox"></div>
  </div></div>`;renderGym(e);renderBookBox(e);
  writer=HanziWriter.create('hw',c,{width:size,height:size,padding:pad,showOutline:true,showCharacter:false,strokeColor:TYPES[e.t].d,outlineColor:'#D9E1EE',drawingColor:'#2F6BFF',drawingWidth:e.letter?44:40,drawingFadeDuration:220,highlightColor:'#FF3B7A',strokeHighlightSpeed:1.3,radicalColor:null,strokeAnimationSpeed:.9,delayBetweenStrokes:350,
