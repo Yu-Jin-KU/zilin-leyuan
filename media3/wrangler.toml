@@ -1,0 +1,12 @@
+# 字灵乐园的第三个媒体托管（2026-10-20 开）：字义朗读 kid/m_<字>.mp3（童声）。media、media2 都快到 2 万个文件的上限。
+# 目录 ../_media/zilin-media3 由 tools/build_media.py 生成（不进 git）。部署：cd media3 && npx wrangler deploy
+name = "zilin-media3"
+compatibility_date = "2026-10-01"
+account_id = "e4cb58249df01fb0932d3bc1b56b5b0f"   # 管 danpicbook.com 域名的账户，和 media / media2 一样
+workers_dev = false
+routes = [{ pattern = "media3.danpicbook.com", custom_domain = true }]
+
+[assets]
+directory = "../_media/zilin-media3"
+html_handling = "none"
+not_found_handling = "none"
