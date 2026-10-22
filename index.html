@@ -1113,7 +1113,7 @@ const ytSubCard=what=>`<div class="ytsub"><span class="yti">▶</span><div><b>�
    配图 MEDIA/book/<主题>/<页>.webp，旁白 MEDIA/book/<主题>/<页>.<zh|en|da>.mp3（不带配乐） ---------- */
 let BOOKS=null,BOOK_BY_LIB={},BA=null;
 async function booksData(){if(!BOOKS){try{BOOKS=await fetch('data/books.json').then(r=>r.json());await LOCP}catch(_){BOOKS={books:[],idx:{}}}BOOKS.books.forEach((b,i)=>{if(b.ready&&b.lib!=null&&BOOK_BY_LIB[b.lib]==null)BOOK_BY_LIB[b.lib]=i;if(LOC!=='da'){const t=NB.b&&NB.b[b.t],z=NB.zh&&NB.zh[b.t];const A=NB.a&&NB.a[b.t]||[],ZA=NB.za&&NB.za[b.t]||[];b.pages.forEach(p=>{if(t&&t[p.n]){p[LOC]=t[p.n];if(A.includes(p.n))p.au+=LOC}if(z&&z[p.n]){p.zh=z[p.n];p.au=(ZA.includes(p.n)?'zh':'')+(A.includes(p.n)?LOC:'')}})}})/* 挪威语样板：页上加 nb 文字；讲丹麦的那页换成讲挪威的中文，旁白用 <页>.zhnb.mp3（旧的说的是丹麦） */}return BOOKS}
-const bookImg=(b,n)=>MEDIA+'book/'+encodeURIComponent(b.t)+'/'+n+'.webp',bookAu=(b,n,l)=>MEDIA+'book/'+encodeURIComponent(b.t)+'/'+n+'.'+(l==='zh'&&LOC!=='da'&&NB.zh&&NB.zh[b.t]&&NB.zh[b.t][n]?'zh'+LOC:l)+'.mp3';
+const bookImg=(b,n)=>MEDIA+'book/'+encodeURIComponent(b.t)+'/'+n+'.webp',bookAu=(b,n,l)=>MEDIA+'book/'+encodeURIComponent(b.t)+'/'+n+'.'+(l==='zh'&&LOC!=='da'&&NB.zh&&NB.zh[b.t]&&NB.zh[b.t][n]?'zh'+LOC:l)+'.mp3'+(l==='de'?'?v=2':'');/* 2026-10-22 德语旁白换成 fish「Fröhliches Kind」童声：加 ?v=2 绕过一年的浏览器缓存 */
 function bookAudio(){if(!BA){BA=new Audio();BA.crossOrigin='anonymous';BA.setAttribute('playsinline','')}return BA}
 function playBookClip(b,n,l,onend){stopVoice();stopMusic();const a=bookAudio();a.onended=onend||null;a.onerror=()=>{if(onend)setTimeout(onend,1500)};a.src=bookAu(b,n,l);a.play().catch(()=>{})}
 /* 拼音操：data/pinyin_gym.json（从美人鱼课 绘本工具/pinyin_data.py 导出），图 img/pinyin/<码点>.webp 是 Twemoji（CC BY 4.0） */
