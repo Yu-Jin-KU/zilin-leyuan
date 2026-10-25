@@ -1,0 +1,892 @@
+{
+ "updated": "2026-10-25",
+ "note": "只放官方上传的 YouTube / B 站链接；来源核对记录见私有仓库 tools/songs/README.md",
+ "groups": [
+  {
+   "artist": "谢欣芷",
+   "sub": "台湾儿童音乐制作人 · 风潮音乐 Wind Music",
+   "url": "https://www.youtube.com/@happychildrenhappysinging",
+   "urlName": "谢欣芷的爱唱歌官方频道",
+   "songs": [
+    {
+     "t": "幸福的孩子爱唱歌",
+     "chars": [
+      "唱",
+      "歌"
+     ],
+     "yt": "https://www.youtube.com/watch?v=N5FMRXsgt1o"
+    },
+    {
+     "t": "手指运动",
+     "chars": [
+      "手",
+      "指"
+     ],
+     "yt": "https://www.youtube.com/watch?v=iYMOh-RKuJw"
+    },
+    {
+     "t": "五官",
+     "chars": [
+      "五",
+      "官"
+     ],
+     "yt": "https://www.youtube.com/watch?v=B2SPDR6orCg"
+    },
+    {
+     "t": "数星星",
+     "chars": [
+      "星",
+      "数"
+     ],
+     "yt": "https://www.youtube.com/watch?v=MzrTF11J-Jk"
+    },
+    {
+     "t": "走吧！走吧！",
+     "chars": [
+      "走"
+     ],
+     "yt": "https://www.youtube.com/watch?v=HG8vIhvn1sE"
+    },
+    {
+     "t": "交通歌",
+     "chars": [
+      "车"
+     ],
+     "yt": "https://www.youtube.com/watch?v=nb0UGMiWYmI"
+    },
+    {
+     "t": "动物体操",
+     "chars": [
+      "动",
+      "物"
+     ],
+     "yt": "https://www.youtube.com/watch?v=4L4OnsaeZF4"
+    },
+    {
+     "t": "刷刷刷（刷牙歌）",
+     "chars": [
+      "刷",
+      "牙"
+     ],
+     "yt": "https://www.youtube.com/watch?v=Zk0uPk2sqTI"
+    },
+    {
+     "t": "吃饭了",
+     "chars": [
+      "吃",
+      "饭"
+     ],
+     "yt": "https://www.youtube.com/watch?v=Zwh5YhITPFI"
+    },
+    {
+     "t": "洗手摇滚",
+     "chars": [
+      "洗",
+      "手"
+     ],
+     "yt": "https://www.youtube.com/watch?v=92r_cB5QFQ8"
+    },
+    {
+     "t": "好笑歌",
+     "chars": [
+      "笑"
+     ],
+     "yt": "https://www.youtube.com/watch?v=-Jb8i64IyVw"
+    },
+    {
+     "t": "再见",
+     "chars": [
+      "再",
+      "见"
+     ],
+     "yt": "https://www.youtube.com/watch?v=M2PWekzeIpg"
+    },
+    {
+     "t": "朋友歌",
+     "chars": [
+      "朋",
+      "友"
+     ],
+     "yt": "https://www.youtube.com/watch?v=r3DZkJQgtKc"
+    },
+    {
+     "t": "月亮歌",
+     "chars": [
+      "月",
+      "亮"
+     ],
+     "yt": "https://www.youtube.com/watch?v=-8EPGnDy2yQ"
+    },
+    {
+     "t": "起床歌",
+     "chars": [
+      "起",
+      "床"
+     ],
+     "yt": "https://www.youtube.com/watch?v=tiBuHaWB4PM"
+    },
+    {
+     "t": "水果歌",
+     "chars": [
+      "果"
+     ],
+     "yt": "https://www.youtube.com/watch?v=6QkFk-7XrGU"
+    }
+   ]
+  },
+  {
+   "artist": "蘑菇浓汤 · 小啼大作 Play BIG Music",
+   "sub": "台湾 · 2023 年起最火的新儿歌",
+   "url": "https://www.youtube.com/@PlayBIGMusic",
+   "urlName": "小啼大作官方频道",
+   "songs": [
+    {
+     "t": "蘑菇浓汤",
+     "chars": [
+      "蘑",
+      "菇",
+      "汤"
+     ],
+     "yt": "https://www.youtube.com/watch?v=OnThkOMc658"
+    },
+    {
+     "t": "蘑菇浓汤晚安曲",
+     "chars": [
+      "晚",
+      "安"
+     ],
+     "yt": "https://www.youtube.com/watch?v=cfQwG1pQrnE"
+    },
+    {
+     "t": "黑白咕咕鸡",
+     "chars": [
+      "鸡"
+     ],
+     "yt": "https://www.youtube.com/watch?v=HvFB6bGCElU"
+    },
+    {
+     "t": "我要去买水彩",
+     "chars": [
+      "买",
+      "彩"
+     ],
+     "yt": "https://www.youtube.com/watch?v=TMSMhPE6Ipw"
+    },
+    {
+     "t": "一百只斑马",
+     "chars": [
+      "百",
+      "马"
+     ],
+     "yt": "https://www.youtube.com/watch?v=e0ximGMM9PI"
+    },
+    {
+     "t": "麻糬打滚",
+     "chars": [
+      "滚"
+     ],
+     "yt": "https://www.youtube.com/watch?v=ldebpBQ54qg"
+    },
+    {
+     "t": "贪吃花栗鼠",
+     "chars": [
+      "鼠"
+     ],
+     "yt": "https://www.youtube.com/watch?v=y6krLUp-cDk"
+    }
+   ]
+  },
+  {
+   "artist": "上海复兴方案 The Shanghai Restoration Project",
+   "sub": "专辑《Little Dragon Tales》· 经典儿歌的电子乐新编，加拿大叶氏儿童合唱团童声",
+   "url": "https://www.youtube.com/watch?v=LVy4Vya0O_M",
+   "urlName": "整张专辑（官方频道）",
+   "songs": [
+    {
+     "t": "找朋友",
+     "chars": [
+      "找",
+      "朋",
+      "友"
+     ]
+    },
+    {
+     "t": "春天在哪里",
+     "chars": [
+      "春"
+     ]
+    },
+    {
+     "t": "泥娃娃",
+     "chars": [
+      "泥",
+      "娃"
+     ],
+     "yt": "https://www.youtube.com/watch?v=Q4X3i9bkcv4"
+    },
+    {
+     "t": "两只老虎",
+     "chars": [
+      "虎",
+      "两"
+     ]
+    },
+    {
+     "t": "恭喜恭喜",
+     "chars": [
+      "恭",
+      "喜"
+     ],
+     "yt": "https://www.youtube.com/watch?v=RA3q1oyf_hk"
+    },
+    {
+     "t": "卖报歌",
+     "chars": [
+      "卖",
+      "报"
+     ]
+    },
+    {
+     "t": "踏雪寻梅",
+     "chars": [
+      "雪",
+      "梅"
+     ]
+    },
+    {
+     "t": "读书郎",
+     "chars": [
+      "读",
+      "书"
+     ],
+     "yt": "https://www.youtube.com/watch?v=lwJ7YqoArZw"
+    },
+    {
+     "t": "小燕子",
+     "chars": [
+      "燕"
+     ]
+    },
+    {
+     "t": "小白船",
+     "chars": [
+      "船"
+     ],
+     "yt": "https://www.youtube.com/watch?v=BZReRt0M7ho"
+    },
+    {
+     "t": "卖汤圆",
+     "chars": [
+      "汤",
+      "圆"
+     ]
+    },
+    {
+     "t": "凤阳花鼓",
+     "chars": [
+      "鼓"
+     ]
+    }
+   ],
+   "bili": "https://space.bilibili.com/1708337506",
+   "biliName": "SRP上海复兴方案 B 站账号"
+  },
+  {
+   "artist": "斯斯与帆",
+   "sub": "湖南民谣二人组 · 方言童谣风（央视、华策官方视频）",
+   "songs": [
+    {
+     "t": "马马嘟嘟骑",
+     "chars": [
+      "马",
+      "骑"
+     ],
+     "yt": "https://www.youtube.com/watch?v=QJeRyIO1Cf8",
+     "by": "央视"
+    },
+    {
+     "t": "摇篮谣",
+     "chars": [
+      "摇",
+      "篮"
+     ],
+     "yt": "https://www.youtube.com/watch?v=c9ko1RwVB9I",
+     "by": "华策影视"
+    }
+   ]
+  },
+  {
+   "artist": "经典老儿歌",
+   "sub": "贝瓦儿歌 · 宝宝巴士 · Little Fox 等官方频道",
+   "songs": [
+    {
+     "t": "小星星",
+     "chars": [
+      "星"
+     ],
+     "yt": "https://www.youtube.com/watch?v=7dSKp1HzocY",
+     "by": "贝瓦",
+     "bili": "https://www.bilibili.com/video/BV1Ei4y137pJ",
+     "bby": "贝瓦"
+    },
+    {
+     "t": "两只老虎",
+     "chars": [
+      "虎",
+      "两"
+     ],
+     "yt": "https://www.youtube.com/watch?v=OI9rxLiZWGo",
+     "by": "贝瓦",
+     "bili": "https://www.bilibili.com/video/BV1df4y1R7uw",
+     "bby": "贝瓦"
+    },
+    {
+     "t": "数鸭子",
+     "chars": [
+      "鸭",
+      "数"
+     ],
+     "yt": "https://www.youtube.com/watch?v=syFJssU9Q1Y",
+     "by": "宝宝巴士",
+     "bili": "https://www.bilibili.com/video/BV1VF411B7ws",
+     "bby": "宝宝巴士"
+    },
+    {
+     "t": "小燕子",
+     "chars": [
+      "燕"
+     ],
+     "yt": "https://www.youtube.com/watch?v=I4MDV792SEE",
+     "by": "贝瓦",
+     "bili": "https://www.bilibili.com/video/BV1Mi4y187hk",
+     "bby": "儿歌多多"
+    },
+    {
+     "t": "虫儿飞",
+     "chars": [
+      "虫",
+      "飞"
+     ],
+     "yt": "https://www.youtube.com/watch?v=Z1z3emjTQSc",
+     "by": "宝宝巴士",
+     "bili": "https://www.bilibili.com/video/BV12f4y1R7ya",
+     "bby": "贝瓦"
+    },
+    {
+     "t": "蜗牛与黄鹂鸟",
+     "chars": [
+      "牛",
+      "鸟"
+     ],
+     "yt": "https://www.youtube.com/watch?v=n2oRDOY3w6A",
+     "by": "贝瓦",
+     "bili": "https://www.bilibili.com/video/BV1JaEj6cEQH",
+     "bby": "贝乐虎"
+    },
+    {
+     "t": "捉泥鳅",
+     "chars": [
+      "泥"
+     ],
+     "yt": "https://www.youtube.com/watch?v=Xnu_UTMUoR8",
+     "by": "贝瓦",
+     "bili": "https://www.bilibili.com/video/BV1mz4y1o7ge",
+     "bby": "儿歌多多"
+    },
+    {
+     "t": "春天在哪里",
+     "chars": [
+      "春"
+     ],
+     "yt": "https://www.youtube.com/watch?v=0kwqMR_unkU",
+     "by": "宝宝巴士",
+     "bili": "https://www.bilibili.com/video/BV1o1oaBcEid",
+     "bby": "宝宝巴士"
+    },
+    {
+     "t": "小兔子乖乖",
+     "chars": [
+      "兔",
+      "乖"
+     ],
+     "yt": "https://www.youtube.com/watch?v=rFrQMUx_OJs",
+     "by": "贝瓦",
+     "bili": "https://www.bilibili.com/video/BV1eMGm6xEhe",
+     "bby": "贝乐虎"
+    },
+    {
+     "t": "找朋友",
+     "chars": [
+      "找",
+      "友"
+     ],
+     "yt": "https://www.youtube.com/watch?v=7_9eZubA7X8",
+     "by": "贝瓦",
+     "bili": "https://www.bilibili.com/video/BV1WWEj6iE5v",
+     "bby": "贝乐虎"
+    },
+    {
+     "t": "拔萝卜",
+     "chars": [
+      "拔",
+      "萝",
+      "卜"
+     ],
+     "yt": "https://www.youtube.com/watch?v=gnD1zHblo0Q",
+     "by": "贝瓦",
+     "bili": "https://www.bilibili.com/video/BV14L411s7sV",
+     "bby": "儿歌多多"
+    },
+    {
+     "t": "上学歌",
+     "chars": [
+      "学"
+     ],
+     "yt": "https://www.youtube.com/watch?v=4VZyb3uQZDM",
+     "by": "贝瓦",
+     "bili": "https://www.bilibili.com/video/BV1rAjG62Ejx",
+     "bby": "贝乐虎"
+    },
+    {
+     "t": "小毛驴",
+     "chars": [
+      "驴"
+     ],
+     "yt": "https://www.youtube.com/watch?v=-8XaEwm0P1c",
+     "by": "贝瓦",
+     "bili": "https://www.bilibili.com/video/BV1H3DfYMEBY",
+     "bby": "宝宝巴士"
+    },
+    {
+     "t": "一分钱",
+     "chars": [
+      "钱",
+      "分"
+     ],
+     "yt": "https://www.youtube.com/watch?v=9FWmjPEPMt4",
+     "by": "贝瓦",
+     "bili": "https://www.bilibili.com/video/BV1H4Ej6eEUH",
+     "bby": "贝乐虎"
+    },
+    {
+     "t": "卖报歌",
+     "chars": [
+      "报"
+     ],
+     "yt": "https://www.youtube.com/watch?v=rXRI2zxXDsE",
+     "by": "宝宝巴士",
+     "bili": "https://www.bilibili.com/video/BV16t4y1C7oc",
+     "bby": "儿歌多多"
+    },
+    {
+     "t": "鲁冰花",
+     "chars": [
+      "花"
+     ],
+     "yt": "https://www.youtube.com/watch?v=IvXuuybpni8",
+     "by": "贝瓦",
+     "bili": "https://www.bilibili.com/video/BV1Skju6pEEb",
+     "bby": "贝乐虎"
+    },
+    {
+     "t": "让我们荡起双桨",
+     "chars": [
+      "双",
+      "桨"
+     ],
+     "yt": "https://www.youtube.com/watch?v=jpnKjDO9_70",
+     "by": "宝宝巴士",
+     "bili": "https://www.bilibili.com/video/BV18gEj6LE8t",
+     "bby": "贝乐虎"
+    },
+    {
+     "t": "新年好",
+     "chars": [
+      "新",
+      "年"
+     ],
+     "yt": "https://www.youtube.com/watch?v=gM_QSDCjHKY",
+     "by": "Little Fox",
+     "bili": "https://www.bilibili.com/video/BV14jEj63EWh",
+     "bby": "贝乐虎"
+    },
+    {
+     "t": "外婆的澎湖湾",
+     "chars": [
+      "婆",
+      "湾"
+     ],
+     "yt": "https://www.youtube.com/watch?v=Bye6JQm2y0g",
+     "by": "卓依婷"
+    }
+   ]
+  },
+  {
+   "artist": "波波星球泡泡哥哥",
+   "sub": "台湾幼儿律动 · 跟着一起跳",
+   "url": "https://www.youtube.com/@bobopopo",
+   "urlName": "官方频道",
+   "songs": [
+    {
+     "t": "小星星（律动版）",
+     "chars": [
+      "星"
+     ],
+     "yt": "https://www.youtube.com/watch?v=a-H1FbV9lHg"
+    },
+    {
+     "t": "两只老虎（律动版）",
+     "chars": [
+      "虎"
+     ],
+     "yt": "https://www.youtube.com/watch?v=1t9h-1E41u8"
+    }
+   ],
+   "bili": "https://space.bilibili.com/483810421",
+   "biliName": "波波星球泡泡哥哥 B 站账号"
+  },
+  {
+   "artist": "贝乐虎儿歌",
+   "sub": "上海乐擎 · 大陆最热的早教儿歌动画之一（YouTube 版是繁体字幕）",
+   "url": "https://www.youtube.com/@barrytiger_zh",
+   "urlName": "贝乐虎官方频道",
+   "bili": "https://space.bilibili.com/53249623",
+   "biliName": "贝乐虎官方账号",
+   "songs": [
+    {
+     "t": "白龙马",
+     "chars": [
+      "龙",
+      "马"
+     ],
+     "yt": "https://www.youtube.com/watch?v=9S2WljmA9qw",
+     "bili": "https://www.bilibili.com/video/BV1E5E76aEYF",
+     "bby": "贝乐虎"
+    },
+    {
+     "t": "我的朋友在哪里",
+     "chars": [
+      "朋",
+      "友"
+     ],
+     "yt": "https://www.youtube.com/watch?v=M6zhXla6iC8",
+     "bili": "https://www.bilibili.com/video/BV1yoj36DEJo",
+     "bby": "贝乐虎"
+    },
+    {
+     "t": "大风车",
+     "chars": [
+      "风",
+      "车"
+     ],
+     "yt": "https://www.youtube.com/watch?v=INSKExgF7WQ",
+     "bili": "https://www.bilibili.com/video/BV1eMGm6xEMn",
+     "bby": "贝乐虎"
+    },
+    {
+     "t": "时间歌",
+     "chars": [
+      "时",
+      "间"
+     ],
+     "yt": "https://www.youtube.com/watch?v=St_8viuWWy0"
+    },
+    {
+     "t": "刷牙歌",
+     "chars": [
+      "刷",
+      "牙"
+     ],
+     "yt": "https://www.youtube.com/watch?v=68x69l3Hb64",
+     "bili": "https://www.bilibili.com/video/BV1aTEj67EAg",
+     "bby": "贝乐虎"
+    },
+    {
+     "t": "幸福拍手歌",
+     "chars": [
+      "拍",
+      "手"
+     ],
+     "yt": "https://www.youtube.com/watch?v=LIxD79tU4Sw",
+     "bili": "https://www.bilibili.com/video/BV1EjE76cEv1",
+     "bby": "贝乐虎"
+    },
+    {
+     "t": "采蘑菇的小姑娘",
+     "chars": [
+      "采",
+      "蘑",
+      "菇"
+     ],
+     "yt": "https://www.youtube.com/watch?v=EHpvzerAT_8",
+     "bili": "https://www.bilibili.com/video/BV1WWEj6iEnb",
+     "bby": "贝乐虎"
+    },
+    {
+     "t": "世上只有妈妈好",
+     "chars": [
+      "妈",
+      "好"
+     ],
+     "yt": "https://www.youtube.com/watch?v=wW26S2kNCEs",
+     "bili": "https://www.bilibili.com/video/BV1fjE76FEcr",
+     "bby": "贝乐虎"
+    },
+    {
+     "t": "洗手歌",
+     "chars": [
+      "洗",
+      "手"
+     ],
+     "yt": "https://www.youtube.com/watch?v=b16XSw5KJrY",
+     "bili": "https://www.bilibili.com/video/BV16NjG6LEZ9",
+     "bby": "贝乐虎"
+    },
+    {
+     "t": "一双小小手",
+     "chars": [
+      "双",
+      "手"
+     ],
+     "yt": "https://www.youtube.com/watch?v=JXIkAsK24qE",
+     "bili": "https://www.bilibili.com/video/BV16NjG6LE1m",
+     "bby": "贝乐虎"
+    },
+    {
+     "t": "我是一个粉刷匠",
+     "chars": [
+      "粉",
+      "刷"
+     ],
+     "yt": "https://www.youtube.com/watch?v=kjoQbqWMfxI",
+     "bili": "https://www.bilibili.com/video/BV1ZjE76FEiu",
+     "bby": "贝乐虎"
+    },
+    {
+     "t": "鲨鱼一家",
+     "chars": [
+      "鲨",
+      "鱼"
+     ],
+     "yt": "https://www.youtube.com/watch?v=M--CRXGnF5U",
+     "bili": "https://www.bilibili.com/video/BV1E5Gy6RENy",
+     "bby": "贝乐虎"
+    }
+   ]
+  },
+  {
+   "artist": "儿歌多多",
+   "sub": "铃铛科技 · 儿歌多多 APP 的官方动画儿歌",
+   "url": "https://www.youtube.com/channel/UCkSi-KaAqBeoztV5BELgHyA",
+   "urlName": "儿歌多多官方频道",
+   "bili": "https://space.bilibili.com/408210393",
+   "biliName": "儿歌多多官方账号",
+   "songs": [
+    {
+     "t": "拼音歌",
+     "chars": [
+      "拼",
+      "音"
+     ],
+     "yt": "https://www.youtube.com/watch?v=QrZiFmNr-Pk",
+     "bili": "https://www.bilibili.com/video/BV1Xe4y1d7av",
+     "bby": "儿歌多多"
+    },
+    {
+     "t": "咏鹅（儿歌版古诗）",
+     "chars": [
+      "鹅"
+     ],
+     "yt": "https://www.youtube.com/watch?v=Eqi1IkLXqhs",
+     "bili": "https://www.bilibili.com/video/BV1Zz4y1a7mp",
+     "bby": "儿歌多多"
+    },
+    {
+     "t": "春晓（儿歌版古诗）",
+     "chars": [
+      "春",
+      "晓"
+     ],
+     "yt": "https://www.youtube.com/watch?v=aFuqkWFEmSQ",
+     "bili": "https://www.bilibili.com/video/BV1vp4y1n7n4",
+     "bby": "儿歌多多"
+    },
+    {
+     "t": "小螺号（合集开头）",
+     "chars": [
+      "螺",
+      "号"
+     ],
+     "yt": "https://www.youtube.com/watch?v=ditX8Q4as18",
+     "bili": "https://www.bilibili.com/video/BV14t421t7wh",
+     "bby": "儿歌多多"
+    },
+    {
+     "t": "小老鼠上灯台",
+     "chars": [
+      "鼠",
+      "灯"
+     ],
+     "yt": "https://www.youtube.com/watch?v=JNYFOPfS9s4"
+    },
+    {
+     "t": "白色小飞机",
+     "chars": [
+      "飞",
+      "机"
+     ],
+     "yt": "https://www.youtube.com/watch?v=vjmWB147JbE",
+     "bili": "https://www.bilibili.com/video/BV19M4y1U71s",
+     "bby": "儿歌多多"
+    },
+    {
+     "t": "请帮忙和谢谢你",
+     "chars": [
+      "谢",
+      "帮"
+     ],
+     "yt": "https://www.youtube.com/watch?v=w-XidyC27mk",
+     "bili": "https://www.bilibili.com/video/BV1ug411D7Zz",
+     "bby": "儿歌多多"
+    },
+    {
+     "t": "妈妈的吻（合集开头）",
+     "chars": [
+      "吻",
+      "妈"
+     ],
+     "yt": "https://www.youtube.com/watch?v=K-SY4f0RFtk",
+     "bili": "https://www.bilibili.com/video/BV1Zu41177sC",
+     "bby": "儿歌多多"
+    },
+    {
+     "t": "一根小手指",
+     "chars": [
+      "指",
+      "根"
+     ],
+     "yt": "https://www.youtube.com/watch?v=usCputd1Wu0",
+     "bili": "https://www.bilibili.com/video/BV1LN41117Km",
+     "bby": "儿歌多多"
+    },
+    {
+     "t": "我是挖掘机",
+     "chars": [
+      "挖",
+      "机"
+     ],
+     "yt": "https://www.youtube.com/watch?v=Zh-GX05sJhk",
+     "bili": "https://www.bilibili.com/video/BV1qe4y1479R",
+     "bby": "儿歌多多"
+    }
+   ]
+  },
+  {
+   "artist": "圈圈儿童 Hoop Kids",
+   "sub": "台湾 · 圈圈宝贝亲子音乐，MV 和律动（繁体）",
+   "url": "https://www.youtube.com/@HoopKids",
+   "urlName": "圈圈儿童官方频道",
+   "songs": [
+    {
+     "t": "鸡蛋摇滚乐",
+     "chars": [
+      "鸡",
+      "蛋"
+     ],
+     "yt": "https://www.youtube.com/watch?v=J_uNxrydNEw"
+    },
+    {
+     "t": "洗澡歌",
+     "chars": [
+      "洗",
+      "澡"
+     ],
+     "yt": "https://www.youtube.com/watch?v=rbdKsmALAx0"
+    },
+    {
+     "t": "妈咪",
+     "chars": [
+      "妈"
+     ],
+     "yt": "https://www.youtube.com/watch?v=66hDn0Be6x4"
+    },
+    {
+     "t": "蒲公英",
+     "chars": [
+      "英"
+     ],
+     "yt": "https://www.youtube.com/watch?v=jvKvU5TXMM4"
+    },
+    {
+     "t": "中秋节",
+     "chars": [
+      "中",
+      "秋"
+     ],
+     "yt": "https://www.youtube.com/watch?v=lisX2I60aeA"
+    },
+    {
+     "t": "庆端午",
+     "chars": [
+      "端",
+      "午"
+     ],
+     "yt": "https://www.youtube.com/watch?v=lNHJRUvdjx8"
+    },
+    {
+     "t": "新年快乐",
+     "chars": [
+      "新",
+      "年"
+     ],
+     "yt": "https://www.youtube.com/watch?v=iy31D0jCuI8"
+    },
+    {
+     "t": "亮晶晶",
+     "chars": [
+      "亮",
+      "晶"
+     ],
+     "yt": "https://www.youtube.com/watch?v=X9hCkpIm-Co"
+    },
+    {
+     "t": "小步舞曲",
+     "chars": [
+      "舞"
+     ],
+     "yt": "https://www.youtube.com/watch?v=P4apsyUgiMs"
+    },
+    {
+     "t": "哇哈哈",
+     "chars": [
+      "哈"
+     ],
+     "yt": "https://www.youtube.com/watch?v=4hkA5NylX70"
+    },
+    {
+     "t": "九九乘法表",
+     "chars": [
+      "九"
+     ],
+     "yt": "https://www.youtube.com/watch?v=CJoR_COF0OM"
+    },
+    {
+     "t": "元宵",
+     "chars": [
+      "元",
+      "宵"
+     ],
+     "yt": "https://www.youtube.com/watch?v=tFg_ymgeGDA"
+    },
+    {
+     "t": "晚安晚安",
+     "chars": [
+      "晚",
+      "安"
+     ],
+     "yt": "https://www.youtube.com/watch?v=XCTy2T8f3N4"
+    }
+   ]
+  }
+ ]
+}

@@ -198,6 +198,18 @@ h1{font-size:34px;margin:8px 0 4px;font-weight:400}h2{font-size:26px;margin:22px
 .legend span{border-radius:999px;padding:4px 12px;color:#fff;font-size:16px}
 @media (max-width:520px){.logo{font-size:20px}.logo svg{width:30px;height:30px}.nav button,.who{font-size:15px;padding:6px 10px}.bar{gap:6px;padding:8px 10px}h1{font-size:28px}}
 @media (prefers-reduced-motion:reduce){.pop,.burst,.holo .holo-sheen{animation:none}}
+.hvid{margin:0 0 12px;background:#000;border-radius:18px;overflow:hidden;box-shadow:0 6px 18px rgba(31,35,64,.18)}.hvid video{display:block;width:100%;aspect-ratio:16/9;background:#000}.hvid figcaption{font-size:13px;color:#3d4166;background:#fff;padding:5px 10px;text-align:center}
+.introbtn{display:block;margin:6px auto 0;font:inherit;font-size:14px;padding:4px 12px;border-radius:999px;border:2px solid var(--line);background:var(--paper);color:var(--ink);cursor:pointer}
+.sfoot{margin:30px 0 8px;text-align:center;font-size:14px;line-height:1.6;color:var(--soft)}.sfoot b{color:var(--ink)}.sfoot small{font-size:12px}
+.mbox.wide{max-width:760px}
+.libtabs{flex-wrap:wrap}.lib .wide{grid-column:1/-1}.lib p.wide{margin:0}
+.songs{display:flex;flex-wrap:wrap;gap:8px;padding:6px 14px 12px}
+.songl{display:inline-block;background:#fff;border:2px solid var(--line);border-radius:999px;padding:5px 12px;font-size:16px;text-decoration:none;color:inherit}.songl:hover{border-color:var(--berry)}
+.songl small{color:var(--soft);margin-left:4px;font-size:12px}
+.songbox{margin-top:10px;font-size:16px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.songl.nob{opacity:.5}.songtop{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}.songtop p{flex:1;min-width:220px}#songsrc{display:flex;gap:6px}#songsrc button{font:inherit;font-size:16px;padding:6px 14px;border:2px solid var(--line);border-radius:999px;background:#fff;cursor:pointer}#songsrc button[aria-pressed="true"]{background:#1f2340;color:#fff;border-color:#1f2340}
+.ytbtn.sm{display:inline-block;padding:3px 12px;font-size:15px;vertical-align:middle;margin-left:4px}.ytsub.wx{border-color:#cdeedb;margin-top:10px}
+.ytsub .x{flex:none;background:none;border:0;font-size:18px;color:var(--soft);padding:4px 6px;cursor:pointer;box-shadow:none}
 @media print{@page{size:A4;margin:0}body.printing{background:#fff}body.printing>*{display:none!important}body.printing #print{display:grid!important}#print{display:none;grid-template-columns:repeat(3,63mm);gap:3mm;padding:7.5mm;background:#fff}.pcard{width:63mm;height:88mm;break-inside:avoid}.pcard svg{width:63mm;height:88mm;display:block}}
 @media print{body.printing.ws #print{display:block!important;padding:0}.wsdoc{page:ws}}
 @page ws{size:A4;margin:12mm 12mm 14mm}
@@ -221,7 +233,8 @@ h1{font-size:34px;margin:8px 0 4px;font-weight:400}h2{font-size:26px;margin:22px
   <div class="sndmenu" id="sndmenu" hidden><div class="sndh">朗读</div><button data-vk="kid">🧒 童声</button><button data-vk="adult" class="testv" hidden>👩 成人声</button><button data-vk="teacher" class="testv" hidden>👩‍🏫 老师声</button><button data-vk="off">🔇 静音</button>
    <div class="sndh">背景音乐</div><button data-music="lib">🎵 轻快曲库</button><button data-music="gen">🎼 自动小调</button><button data-music="off">🔕 关音乐</button>
    <div class="sndh">字下面的释义</div><button data-glm="both">两种都显示</button><button data-glm="loc" id="glmLoc">只显示当地语言</button><button data-glm="en">只显示 English</button><button data-glm="none">都不显示</button>
-   <div class="sndh">当地语言</div><button data-loc="da">🇩🇰 Dansk</button><button data-loc="nb">🇳🇴 Norsk（试用）</button><button data-loc="de">🇩🇪 Deutsch（试用）</button></div></div>
+   <div class="sndh">汉字</div><button data-tw="0">简体字</button><button data-tw="1" data-notw>繁體字（台灣）</button>
+   <div class="sndh testv" hidden>当地语言</div><button data-loc="da" class="testv" hidden>🇩🇰 Dansk</button><button data-loc="nb" class="testv" hidden>🇳🇴 Norsk（试用）</button><button data-loc="de" class="testv" hidden>🇩🇪 Deutsch（试用）</button><!-- 挪威语 / 德语试用版暂时只在作者模式里出现 --></div></div>
 </header>
 <main id="main"></main>
 <div id="print" aria-hidden="true"></div>
@@ -234,8 +247,31 @@ const pyz=t=>esc(t).replace(/[a-zü]+/g,m=>'<span class="pyl">'+m+'</span>');/* 
 let NB={g:{},b:{},zh:{},a:{},za:{}};/* 当地语言包（挪威语、德语…）：data/loc/<语言>.json，tools/build_loc.py 生成；丹麦语在 DATA 和 books.json 里，不用另外下载 */
 /* 当地语言：平时丹麦语；/no、/de（跳到 /?no、/?de）或 ?lang=nb / ?lang=de 换成别的（记在这台设备上，?lang=da 换回来）。右上角 🔊 菜单里也能换 */
 const LOCS={da:{n:'Dansk',f:'🇩🇰'},nb:{n:'Norsk',f:'🇳🇴',back:'Tilbake til dansk',demo:'Norsk prøveversjon',books:'Norske bildebøker',read:'Les på norsk ▶',sub:'Abonner på kanalen'},de:{n:'Deutsch',f:'🇩🇪',back:'Zurück zu Dänisch',demo:'Deutsche Testversion',books:'Deutsche Bilderbücher',read:'Auf Deutsch lesen ▶',sub:'Kanal abonnieren'}};
-const LOC=(()=>{try{const u=new URLSearchParams(location.search);let q=u.has('no')?'nb':u.has('de')?'de':u.get('lang');if(q==='no')q='nb';if(q==='da'){localStorage.removeItem('zl_loc');return 'da'}if(q&&LOCS[q]){localStorage.setItem('zl_loc',q);return q}const s=localStorage.getItem('zl_loc');return LOCS[s]?s:'da'}catch(_){return 'da'}})();
+const LOC=(()=>{try{const u=new URLSearchParams(location.search);if(localStorage.getItem('zilin_testvoice')!=='1'&&u.get('teacher')!=='1')return 'da';/* 挪威语、德语试用版暂时只给作者看（作者模式：?teacher=1 或家长页标题连点 5 下），其他人一律丹麦语 */let q=u.has('no')?'nb':u.has('de')?'de':u.get('lang');if(q==='no')q='nb';if(q==='da'){localStorage.removeItem('zl_loc');return 'da'}if(q&&LOCS[q]){localStorage.setItem('zl_loc',q);return q}const s=localStorage.getItem('zl_loc');return LOCS[s]?s:'da'}catch(_){return 'da'}})();
 const LOCP=LOC==='da'?Promise.resolve():fetch('data/loc/'+LOC+'.json').then(r=>r.ok?r.json():{}).then(j=>Object.assign(NB,j)).catch(()=>{});
+/* 简体 / 繁体（台湾）切换（2026-10-25，台湾小朋友要求）：?tw=1 开、?tw=0 关，记在这台设备上；🔊 菜单「汉字」里也能切。
+   做法：data/tw.json 是本站文字专用的简→繁字表 c + 词表 p + 繁体笔画数 s（tools/tw/build_tw.py 用 OpenCC s2tw 生成，逐段核对过）。
+   页面照常用简体渲染，twInit() 起一个 MutationObserver，把新出现的文字节点和 title / placeholder / aria-label / alt 换成繁体；
+   写字页按字表换成繁体字、用繁体笔顺（data/<繁体字>.json，1927 个字有数据；没有数据的 404 个生僻字先练简体，会提示）；
+   整站字体换成霞鹜文楷 TC（台湾教育部字形，fonts/LXGWWenKaiTC-sub.woff2）。进度、语音、班级作业都仍按简体字记，两种模式通用。
+   有 data-notw 属性的元素不转换。 */
+const TW=(()=>{try{const u=new URLSearchParams(location.search);if(u.has('tw')){if(u.get('tw')==='0'){localStorage.removeItem('zl_tw');return false}localStorage.setItem('zl_tw','1');return true}return localStorage.getItem('zl_tw')==='1'}catch(_){return false}})();
+let TWD=null,TWR=null,TWMAX=1;
+const TWP=TW?fetch('data/tw.json?v=1').then(r=>r.json()).then(j=>{TWD=j;TWR={};for(const k in j.c)TWR[j.c[k]]=k;TWMAX=Math.max(1,...Object.keys(j.p).map(k=>k.length));twInit()}).catch(()=>{}):Promise.resolve();
+function twText(s){if(!TWD||!s)return s;const P=TWD.p,C=TWD.c,n=s.length;let out='',i=0;while(i<n){const ch=s[i];if(ch<'\u3000'){out+=ch;i++;continue}let hit=null;for(let L=Math.min(TWMAX,n-i);L>1;L--){const w=s.substr(i,L);if(P[w]!==undefined){hit=w;break}}if(hit){out+=P[hit];i+=hit.length}else{out+=C[ch]||ch;i++}}return out}
+const twc=e=>{const t=TW&&TWD&&!e.letter&&TWD.c[e.c];return t&&TWD.s[t]?{ch:t,n:TWD.s[t],tw:1}:{ch:e.c,n:e.strokes,tw:0,miss:!!t}};/* 写字页用哪个字形、几笔 */
+const twd=e=>TW&&TWD&&!e.letter&&TWD.c[e.c]||e.c;/* 只是显示用的字形 */
+const TW_SKIP={SCRIPT:1,STYLE:1,TEXTAREA:1,INPUT:1,NOSCRIPT:1},TW_ATTRS=['title','placeholder','aria-label','alt'],twSet=new WeakMap();
+function twAttr(el){for(const a of TW_ATTRS){const v=el.getAttribute(a);if(v){const t=twText(v);if(t!==v)el.setAttribute(a,t)}}}
+function twTextNode(x){const p=x.parentNode;if(!p||TW_SKIP[p.nodeName]||(p.closest&&p.closest('[data-notw]')))return;if(twSet.get(x)===x.data)return;const t=twText(x.data);if(t!==x.data){twSet.set(x,t);x.data=t}}
+function twFix(node){if(node.nodeType===3)return twTextNode(node);if(node.nodeType!==1||node.nodeName==='SCRIPT'||node.nodeName==='STYLE'||node.closest('[data-notw]'))return;twAttr(node);/* 输入框的 placeholder 也要转，value 不动 */
+ const w=document.createTreeWalker(node,NodeFilter.SHOW_TEXT|NodeFilter.SHOW_ELEMENT);let x;while(x=w.nextNode()){if(x.nodeType===1){if(!x.hasAttribute('data-notw'))twAttr(x)}else twTextNode(x)}}
+function twInit(){document.documentElement.lang='zh-TW';
+ const st=document.createElement('style');st.textContent=`@font-face{font-family:'LXGW WenKai TC';src:url(fonts/LXGWWenKaiTC-sub.woff2) format('woff2');font-display:swap}
+:root{--han:'LXGW WenKai TC','Noto Sans CJK TC','PingFang TC','Microsoft JhengHei',sans-serif;--kai:'LXGW WenKai TC','Kaiti TC','BiauKai','DFKai-SB','Noto Serif CJK TC',serif}`;document.head.appendChild(st);
+ HAN_FONT="'LXGW WenKai TC','Kaiti TC','BiauKai','DFKai-SB','Noto Serif CJK TC',serif";
+ document.title=twText(document.title);twFix(document.body);
+ new MutationObserver(ms=>{for(const m of ms){if(m.type==='childList')m.addedNodes.forEach(twFix);else if(m.type==='characterData')twTextNode(m.target);else twAttr(m.target)}}).observe(document.body,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:TW_ATTRS});}
 if(LOC!=='da'){const L=LOCS[LOC];document.querySelector('header.bar').insertAdjacentHTML('afterend',`<div class="nbbar">${L.f} <b>${L.demo}</b> · ${LOC==='de'?'德语':'挪威语'}试用版 <button onclick="go(&quot;library&quot;)">📖 ${L.books} · 绘本</button> <a href="?lang=da">${L.back}</a></div>`)}/* 试用语言每页顶上都有一条，家长一眼看得出 */
 /* 字旁边的小字释义：家长可以选只显示当地语言、只显示英语、两个都显示或都不显示（🔊 菜单「释义」），记在这台设备上 */
 const GLM=()=>{try{return localStorage.getItem('zl_glm')||'both'}catch(_){return 'both'}};
@@ -272,23 +308,40 @@ function eggInner(t,progress){const col=TYPES[t.type].m;const cr=progress>=.66?'
  return `<ellipse cx="100" cy="112" rx="62" ry="78" fill="#FFF6E5" stroke="${col}" stroke-width="8"/><ellipse cx="78" cy="80" rx="14" ry="22" fill="#fff" opacity=".7"/><circle cx="118" cy="122" r="10" fill="${col}" opacity=".45"/><circle cx="86" cy="142" r="7" fill="${col}" opacity=".45"/>${cr}<text x="100" y="128" text-anchor="middle" font-size="40">${t.emoji}</text>`}
 function tribeInner(t,s,st){if(s===0){if(ART.has(`egg_${t.id}`))return `<image href="art/egg_${t.id}.webp" width="200" height="200"/>${st&&st.fed>=2?'<path d="M92 60 l10 16 -9 12 12 14" stroke="#8a6d3b" stroke-width="4" fill="none" stroke-linecap="round"/>':''}`;return eggInner(t,st?st.fed/STAGES[0]:0)}const key=`tribe_${t.id}_${s}`;if(ART.has(key))return `<image href="art/${key}.webp" width="200" height="200"/>`;return creatureSVG(t.members[0],s)}
 function tribeArt(t,s,st){return `<svg viewBox="0 0 200 200" aria-label="${esc(tname(t,s))}">${tribeInner(t,s,st)}</svg>`}
-function charCardSVG(e,f,opts={}){const uid='k'+hashStr(e.c)+(opts.uid||'');const t=e.tribe,T=TYPES[e.t],n=e.strokes,lat=!!e.letter;
+function charCardSVG(e,f,opts={}){const uid='k'+hashStr(e.c)+(opts.uid||'');const t=e.tribe,T=TYPES[e.t],n=twc(e).n,lat=!!e.letter;/* 繁体模式卡上写繁体的笔画数 */
  const rar=lat?0:n<=4?0:n<=8?1:n<=12?2:3;const frames=[['#EEF3FA','#C9D8EA'],['#E9EEF5','#8FA6C4'],['#FFF0BF','#E0A800'],[`url(#rb${uid})`,'#8A5CF6']];const [ff,fs]=frames[rar];
  const line=e.l||'';const parts=line.length>10?line.split(/(?<=[，。！？、])/).filter(Boolean):[line];
  const sub=lat?((PINYIN.items[e.c]||{}).lesson?'一年级上册 第 '+(PINYIN.items[e.c]||{}).lesson+' 课':''):glx(e);
- return `<svg viewBox="0 0 630 880" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="rb${uid}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFB3C7"/><stop offset=".5" stop-color="#FFE27A"/><stop offset="1" stop-color="#9AD8FF"/></linearGradient></defs>
+ const pic=opts.nopic?null:picOf(e);/* 2026-10-25 卡上配图：汉字配绘本 / 古诗里有这个字的那一页，拼音配拼音操的图（没有就是老版式）；卡册里 lazy=1 先放 data-href，滚到了再加载 */
+ const txt=s=>lat?esc(s).replace(/[a-zü]+/g,m=>`<tspan font-family="${LAT_FONT}">${m}</tspan>`):esc(s);
+ const info=lat?'拼音':n+' 笔 · 部首 '+esc(e.rad);const rarn=['普通','稀有','史诗','传说'][rar];
+ const head=`<svg viewBox="0 0 630 880" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="rb${uid}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFB3C7"/><stop offset=".5" stop-color="#FFE27A"/><stop offset="1" stop-color="#9AD8FF"/></linearGradient>${pic&&!pic.sq?`<clipPath id="cp${uid}"><rect x="60" y="136" width="510" height="287" rx="18"/></clipPath>`:''}</defs>
  <rect x="10" y="10" width="610" height="860" rx="36" fill="${ff}" stroke="${fs}" stroke-width="8"/><rect x="40" y="40" width="550" height="800" rx="26" fill="#fff"/>
  <path d="M40 66 a26 26 0 0 1 26 -26 h498 a26 26 0 0 1 26 26 v60 h-550z" fill="${T.m}"/>
- <text x="64" y="98" font-size="34" fill="#fff" font-family="${HAN_FONT}">${t.emoji} ${esc(t.name)}</text><text x="566" y="98" font-size="28" fill="#fff" text-anchor="end" font-family="${LAT_FONT}">No.${String(e.num).padStart(4,'0')}</text>
+ <text x="64" y="98" font-size="34" fill="#fff" font-family="${HAN_FONT}">${t.emoji} ${esc(t.name)}</text><text x="566" y="98" font-size="28" fill="#fff" text-anchor="end" font-family="${LAT_FONT}">No.${String(e.num).padStart(4,'0')}</text>`;
+ if(!pic)return head+`
  <text x="315" y="${lat?420:445}" text-anchor="middle" font-size="${lat?(e.c.length>2?160:e.c.length>1?220:290):330}" font-family="${lat?LAT_FONT:HAN_FONT}" font-weight="${lat?700:400}" fill="#1F2340">${esc(e.c)}</text>
  <text x="315" y="520" text-anchor="middle" font-size="44" font-family="${LAT_FONT}" fill="#2F6BFF">${esc(lat?(e.pg||'拼音'):e.p)}</text>
  <text x="315" y="566" text-anchor="middle" font-size="26" font-family="${LAT_FONT}" fill="#5E6488">${esc(sub)}</text>
- ${parts.map((s,i)=>`<text x="315" y="${636+i*40}" text-anchor="middle" font-size="${parts.length>1?28:30}" font-family="${HAN_FONT}" fill="#1F2340">${lat?esc(s).replace(/[a-zü]+/g,m=>`<tspan font-family="${LAT_FONT}">${m}</tspan>`):esc(s)}</text>`).join('')}
+ ${parts.map((s,i)=>`<text x="315" y="${636+i*40}" text-anchor="middle" font-size="${parts.length>1?28:30}" font-family="${HAN_FONT}" fill="#1F2340">${txt(s)}</text>`).join('')}
  <g transform="translate(482 690) scale(.46)">${tribeInner(t,1)}</g>
  <text x="64" y="812" font-size="40" fill="#FFC72C">${'★'.repeat(f)}</text><text x="${64+f*44}" y="812" font-size="40" fill="#E3E9F4">${'★'.repeat(3-f)}</text>
- <text x="64" y="782" font-size="22" fill="#5E6488" font-family="${HAN_FONT}">${lat?'拼音':n+' 笔 · 部首 '+esc(e.rad)} · ${['普通','稀有','史诗','传说'][rar]}</text></svg>`}
+ <text x="64" y="782" font-size="22" fill="#5E6488" font-family="${HAN_FONT}">${info} · ${rarn}</text></svg>`;
+ const href=(opts.lazy?'data-href':'href')+`="${esc(pic.img)}"`;
+ const img=pic.sq?`<image x="215" y="160" width="200" height="200" ${href}/><text x="315" y="406" text-anchor="middle" font-size="26" font-family="${HAN_FONT}" fill="#5E6488">${esc(pic.g.hz)} <tspan font-family="${LAT_FONT}">${esc(pic.g.py)}</tspan></text>`
+  :`<image x="60" y="136" width="510" height="287" preserveAspectRatio="xMidYMid slice" clip-path="url(#cp${uid})" ${href}/><rect x="60" y="136" width="510" height="287" rx="18" fill="none" stroke="#E3E9F4" stroke-width="3"/>`;
+ let ps=parts;if(ps.length>2){/* 句子切成三段以上就并成两行，免得压到底下的星星 */const tot=line.length;let a=[],b=[],n=0;for(const x of ps){(n<tot/2?a:b).push(x);n+=x.length}ps=[a.join(''),b.join('')].filter(Boolean)}
+ const fz=ps.length>1?(Math.max(...ps.map(x=>x.length))>18?20:24):28;
+ return head+img+`
+ <text x="315" y="620" text-anchor="middle" font-size="${lat?(e.c.length>2?110:e.c.length>1?140:180):200}" font-family="${lat?LAT_FONT:HAN_FONT}" font-weight="${lat?700:400}" fill="#1F2340">${esc(e.c)}</text>
+ <text x="315" y="664" text-anchor="middle" font-size="38" font-family="${LAT_FONT}" fill="#2F6BFF">${esc(lat?(e.pg||'拼音'):e.p)}</text>
+ <text x="315" y="698" text-anchor="middle" font-size="22" font-family="${LAT_FONT}" fill="#5E6488">${esc(sub)}</text>
+ ${ps.map((s,i)=>`<text x="315" y="${ps.length>1?738+i*32:744}" text-anchor="middle" font-size="${fz}" font-family="${HAN_FONT}" fill="#1F2340">${txt(s)}</text>`).join('')}
+ <g transform="translate(486 440) scale(.42)">${tribeInner(t,1)}</g>
+ <text x="64" y="826" font-size="40" fill="#FFC72C">${'★'.repeat(f)}</text><text x="${64+f*44}" y="826" font-size="40" fill="#E3E9F4">${'★'.repeat(3-f)}</text>
+ <text x="212" y="822" font-size="20" fill="#5E6488" font-family="${HAN_FONT}">${info} · ${rarn}</text></svg>`}
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')}
-const HAN_FONT="'LXGW WenKai','Kaiti SC','STKaiti',KaiTi,'Noto Serif CJK SC',serif";/* 字卡和海报上的字用楷体（霞鹜文楷，OFL），不用卡通字体，免得孩子记错字形 */
+let HAN_FONT="'LXGW WenKai','Kaiti SC','STKaiti',KaiTi,'Noto Serif CJK SC',serif";/* 字卡和海报上的字用楷体（霞鹜文楷，OFL），不用卡通字体，免得孩子记错字形 */
 const LAT_FONT="'Andika','Noto Sans',Arial,sans-serif";
 // creature drawn in a 200x200 box
 function creatureSVG(e,f,opts={}){
@@ -465,7 +518,7 @@ const TONE_MAP={'ā':'a','á':'a','ǎ':'a','à':'a','ē':'e','é':'e','ě':'e','
 const nopy=p=>String(p||'').toLowerCase().replace(/[āáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜ]/g,ch=>TONE_MAP[ch]).replace(/v/g,'ü').split(/[\/,\s]/)[0];
 let PYIDX=null;function pyIndex(){if(PYIDX)return PYIDX;PYIDX={};for(const e of ALL){if(e.letter)continue;const k=nopy(e.p);(PYIDX[k]=PYIDX[k]||[]).push(e)}return PYIDX}
 function findChars(q){q=String(q||'').trim();if(!q)return [];const out=[],seen=new Set();const add=e=>{if(e&&!seen.has(e.c)){seen.add(e.c);out.push(e)}};
- const han=[...q].filter(ch=>/[\u4e00-\u9fff]/.test(ch));
+ const han=[...q].filter(ch=>/[\u4e00-\u9fff]/.test(ch)).map(ch=>BY[ch]?ch:(TWR&&TWR[ch])||ch);/* 繁体模式下打繁体字也能找到 */
  if(han.length){for(const ch of han)add(BY[ch]);for(const ch of han){const e=BY[ch];if(!e)continue;for(const x of (pyIndex()[nopy(e.p)]||[]).sort((a,b)=>a.g-b.g))add(x)}}
  else{const k=q.toLowerCase().replace(/v/g,'ü').replace(/[^a-zü]/g,'');if(!k)return [];if(BY[k]&&BY[k].letter)add(BY[k]);const idx=pyIndex();const keys=Object.keys(idx).filter(x=>x===k).concat(Object.keys(idx).filter(x=>x!==k&&x.startsWith(k)).sort());for(const key of keys)for(const x of idx[key].sort((a,b)=>a.g-b.g)){add(x);if(out.length>=24)break}}
  return out.slice(0,24)}
@@ -510,7 +563,7 @@ function say(t,keys){
 }
 function setVoice(vk){stopVoice();if(vk==='off'){S.voice=false}else{S.voice=true;S.vk=vk}save();
  const b=$('#snd');b.textContent=!voiceOn()?'🔇':voiceKind()==='kid'?'🧒':voiceKind()==='teacher'?'👩‍🏫':'🔊';b.setAttribute('aria-pressed',voiceOn());
- document.querySelectorAll('#sndmenu button').forEach(x=>x.setAttribute('aria-pressed',x.dataset.vk===(voiceOn()?voiceKind():'off')));$('#sndmenu').hidden=true}
+ document.querySelectorAll('#sndmenu [data-vk]').forEach(x=>x.setAttribute('aria-pressed',x.dataset.vk===(voiceOn()?voiceKind():'off')));$('#sndmenu').hidden=true}/* 只动朗读那一组，别把释义 / 汉字 / 语言的选中态抹掉 */
 function sayOnce(flag,t,key){if(said[flag])return;said[flag]=1;say(t,key)}
 /* ---------- 背景音乐：曲库（Kevin MacLeod，CC BY 4.0，见 music/CREDITS.txt）或自动生成的小调；人声出现时自动压低 ---------- */
 const MUSIC_LIB={menu:'music/menu_fluffing_a_duck.mp3',write:'music/write_carefree.mp3',album:'music/album_monkeys.mp3'};
@@ -556,15 +609,21 @@ function go(v,arg){if(writer){try{writer.cancelQuiz()}catch(_){}writer=null}clos
 function gradeTabs(cur,attr){return `<div class="tabs" role="tablist">${GRADES.map(g=>`<button role="tab" aria-selected="${g.id===cur}" ${attr}="${g.id}">${g.name}</button>`).join('')}</div>`}
 /* ---------- players ---------- */
 const HERO_KINGS=['fire','sea','bird','plant','food','heart','beast','sun','metal','home','grain','mouth','wind','people','jade','cloth'];
+/* 网站介绍视频（三语字幕，1 分钟）：mp4 放在媒体 Worker 的 intro/ 下（_media/zilin-media/intro/，cd media && npx wrangler deploy），封面图在仓库 img/ 里 */
+const INTRO={src:'https://media.danpicbook.com/intro/zilin_intro.mp4',poster:'img/intro_poster.webp'};
+function introVideoHTML(){return `<figure class="hvid"><video controls playsinline preload="none" poster="${INTRO.poster}" src="${INTRO.src}" onplay="stat('f','intro')"></video><figcaption>🎬 1 分钟了解字灵乐园 · 字幕 中文 · Dansk · English</figcaption></figure>`}
+function showIntro(){$('#mbox').classList.add('wide');$('#mbox').innerHTML=`<video controls autoplay playsinline poster="${INTRO.poster}" src="${INTRO.src}" style="width:100%;border-radius:16px;display:block;background:#000" onplay="stat('f','intro')"></video><div class="mbtns"><button class="big" id="mClose">关闭</button></div>`;$('#modal').classList.add('open');$('#mClose').onclick=closeModal}
+/* 页脚：特别致谢试点学校 */
+function siteFoot(){return `<footer class="sfoot">🙏 特别致谢 · 试点学校 <b>哥本哈根美人鱼中华文化学校</b><br><small>Særlig tak til vores pilotskole · Special thanks to our pilot school</small><br><small><a href="?tw=${TW?0:1}" data-notw onclick="stat('f','tw:${TW?0:1}')">${TW?'切换到简体字':'切換到繁體字（台灣）'}</a></small></footer>`}/* 简繁入口也放页脚，台湾的朋友一眼能看到 */
 function heroHTML(full){
  const parade=`<div class="parade" aria-hidden="true"><div>${[...HERO_KINGS,...HERO_KINGS].map(t=>`<img src="art/tribe_${t}_3.webp" alt="" loading="lazy">`).join('')}</div></div>`;
- if(!full)return `<div class="hero mini">${parade}</div>`;
+ if(!full)return `<div class="hero mini">${parade}<button class="introbtn" id="introBtn">🎬 1 分钟了解字灵乐园</button></div>`;
  return `<section class="hero"><div><h1>写一个字，<br>召唤一只<em>字灵</em>！</h1>
   <p>跟着笔顺动画写汉字，写对就得一张字卡，喂给 24 个部落的字灵。喂得越多，字灵从蛋里孵出来，一路长成大王。</p>
   <p style="font-size:16px">丹麦的一位中文老师为课堂而做：课上一起写，回家接着练。初心很简单：让在海外长大的孩子也爱上汉字，读得懂中国的诗和故事。适合海外华人家庭和学中文的孩子。</p>${LOC==='nb'?`<p style="font-size:15px;background:#fff;border-radius:12px;padding:8px 12px">🇳🇴 <b>Norsk prøveversjon:</b> norske forklaringer til alle tegnene og fem bildebøker (静夜思, 春晓, 咏鹅, 守株待兔, 你好你好). <a href="?lang=da">Tilbake til dansk</a></p>`:LOC==='de'?`<p style="font-size:15px;background:#fff;border-radius:12px;padding:8px 12px">🇩🇪 <b>Deutsche Testversion:</b> deutsche Erklärungen zu allen Schriftzeichen und fünf Bilderbücher (静夜思, 春晓, 咏鹅, 守株待兔, 你好你好). <a href="?lang=da">Zurück zu Dänisch</a></p>`:''}
   <div class="htags"><span>✍️ 6700 字笔顺</span><span>🔊 真人发音</span><span>📖 古诗绘本</span><span>🎮 闯关小游戏</span><span>🌍 中文 · English · ${LOCS[LOC].n}</span><span>👩‍🏫 老师可建班布置生字</span><span>💚 免费 · 无广告 · 不用注册</span></div>
   <div class="row" style="gap:10px;flex-wrap:wrap"><button class="big green" id="heroGo">写上名字，开始玩 ↓</button><button class="big ghost" id="heroVid">🎬 先看动画</button></div></div>
-  <div><div class="hsteps"><div class="hstep"><div class="hw" id="heroHw"></div><b>写一个字</b></div><div class="hstep"><img src="art/egg_fire.webp" alt=""><b>得卡喂蛋</b></div><div class="hstep"><img src="art/tribe_fire_1.webp" alt=""><b>孵出字灵</b></div><div class="hstep"><img src="art/tribe_fire_3.webp" alt=""><b>变成大王</b></div></div>${parade}</div></section>`}
+  <div>${introVideoHTML()}<div class="hsteps"><div class="hstep"><div class="hw" id="heroHw"></div><b>写一个字</b></div><div class="hstep"><img src="art/egg_fire.webp" alt=""><b>得卡喂蛋</b></div><div class="hstep"><img src="art/tribe_fire_1.webp" alt=""><b>孵出字灵</b></div><div class="hstep"><img src="art/tribe_fire_3.webp" alt=""><b>变成大王</b></div></div>${parade}</div></section>`}
 function heroDemo(){const el=$('#heroHw');if(!el||typeof HanziWriter==='undefined')return;const sz=Math.round(el.getBoundingClientRect().width)||120;
  try{HanziWriter.create('heroHw','火',{width:sz,height:sz,padding:12,showOutline:true,strokeColor:'#FF5C3A',outlineColor:'#F1E4DA',strokeAnimationSpeed:.8,delayBetweenStrokes:250,delayBetweenLoops:1600,charDataLoader:loadChar}).loopCharacterAnimation()}catch(_){}}
 const VSHOW=[['book','🎵 识字儿歌','跟着唱就记住了',['一只猫两条鱼','十二生肖','你好你好']],['poem','📜 古诗动画','一首诗一个故事',['静夜思','咏鹅','春晓']],['idiom','📖 成语故事','从故事里懂成语',[],['img/lib/idiom_1.webp','img/lib/idiom_2.webp','img/lib/idiom_3.webp']],['pinyin','🔤 拼音儿歌','声母韵母唱出来',[]]];
@@ -582,9 +641,11 @@ function players(){
  <div class="addp"><input id="pname" maxlength="16" placeholder="写上名字，比如 Emil 或 小明" aria-label="新名字"><button class="big green" id="padd">加一个人</button></div>
  <div id="fambox"></div>
  <div id="vshow"></div>
- <button class="parentbtn" id="pguide">👨‍👩‍👧 家长看这里<small>加到主屏幕 · 没网也能玩 · 保存进度 · 每次玩多久</small>${clsStatus()}</button>`;
- famRefresh();vshowFill();$('#pguide').onclick=parentGuide;
+ <div id="ytnudge"></div>
+ <button class="parentbtn" id="pguide">👨‍👩‍👧 家长看这里<small>加到主屏幕 · 没网也能玩 · 保存进度 · 每次玩多久</small>${clsStatus()}</button>${siteFoot()}`;
+ famRefresh();vshowFill();ytNudge();$('#pguide').onclick=parentGuide;
  if($('#heroVid'))$('#heroVid').onclick=()=>go('library','poem');
+ if($('#introBtn'))$('#introBtn').onclick=showIntro;
  if($('#heroGo')){heroDemo();$('#heroGo').onclick=()=>{const i=$('#pname');i.scrollIntoView({block:'center',behavior:'smooth'});setTimeout(()=>i.focus(),400)}}
  document.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{S.cur=b.dataset.p;save();go('grades')});
  document.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>confirmDel(b.dataset.del));
@@ -629,7 +690,7 @@ function pgInstallRow(){const el=$('#pgInstall');if(!el)return;
  const b=$('#pgDoInstall');if(b)b.onclick=async()=>{try{installPrompt.prompt();await installPrompt.userChoice}catch(_){}installPrompt=null;setTimeout(pgInstallRow,800)}}
 const UI_CLIPS=['ui_again3','ui_almost','ui_card','ui_chief','ui_crack','ui_evolve','ui_good1','ui_good2','ui_good3','ui_good4','ui_good5','ui_good6','ui_good7','ui_good8','ui_hatch','ui_hint','ui_intro','ui_keep','ui_retry','ui_star1','ui_star2','ui_star3','ui_start','ui_summon','ui_tryagain','ui_watch','ui_welcome','ui_who'];
 const MUSIC_FILES=['music/menu_fluffing_a_duck.mp3','music/write_carefree.mp3','music/write_wallpaper.mp3','music/album_monkeys.mp3'];
-function offlineUrls(g){const u=[],A=MEDIA+'kid/';for(const e of GRADES[g].items){const k=encodeURIComponent(e.c);if(!e.letter)u.push('data/'+k+'.json');u.push(A+k+'.mp3'+(AUREV.includes(e.c)?'?v=2':''));if(MEAN[e.c])u.push(MEDIA3+'kid/m_'+k+'.mp3')}
+function offlineUrls(g){const u=[],A=MEDIA+'kid/';for(const e of GRADES[g].items){const k=encodeURIComponent(e.c);if(!e.letter){u.push('data/'+k+'.json');const t=TW&&TWD&&TWD.c[e.c];if(t&&TWD.s[t])u.push('data/'+encodeURIComponent(t)+'.json')}u.push(A+k+'.mp3'+(AUREV.includes(e.c)?'?v=2':''));if(MEAN[e.c])u.push(MEDIA3+'kid/m_'+k+'.mp3')}
  u.push('data/meaning.json');
  for(const k of UI_CLIPS)u.push(A+k+'.mp3');u.push(...MUSIC_FILES);return u}
 const offlineMB=g=>Math.max(1,Math.round((GRADES[g].items.length*12+3500)/1024));
@@ -892,24 +953,24 @@ function seqFor(e){if(S.view==='hsk'&&!e.letter){const lv=S.hsk||'1';const seq=[
  if(S.tfb){const seq=GRADES[e.g].items.filter(x=>x.tribe.id===S.tfb);if(seq.includes(e))return {seq,label:GRADES[e.g].name+' · '+TRIBE_BY_ID[S.tfb].name}}
  return {seq:GRADES[e.g].items,label:GRADES[e.g].name}}
 function write(c){
- const e=BY[c],G=GRADES[e.g],{seq,label}=seqFor(e),idx=seq.indexOf(e),next=seq[idx+1],prev=idx>0?seq[idx-1]:null;
+ const e=BY[c],G=GRADES[e.g],{seq,label}=seqFor(e),idx=seq.indexOf(e),next=seq[idx+1],prev=idx>0?seq[idx-1]:null,W=twc(e);
  const size=Math.max(260,Math.min(document.documentElement.clientWidth-64,window.innerHeight-200,460)),pad=e.letter?10:22;
  const hl=e.letter?pyz(e.l):esc(e.l).split(e.c).join(`<b>${e.c}</b>`);
  $('#main').innerHTML=`<button class="big ghost" data-go="grades" style="font-size:18px;padding:8px 14px;margin-bottom:12px">← ${label}</button>
  <div class="wwrap"><div><div class="board" style="width:${size+8}px;height:${size+8}px">${gridSVG(e,size,pad)}<div id="hw"></div>${prev?`<button class="side l" id="bPrev" title="上一个：${esc(prev.c)}" aria-label="上一个：${esc(prev.c)}"><i>‹</i>${kc(prev)}</button>`:''}${next?`<button class="side r" id="bNext" title="下一个：${esc(next.c)}" aria-label="下一个：${esc(next.c)}"><i>›</i>${kc(next)}</button>`:''}</div>
-  <div class="combo" id="combo">${Array.from({length:e.strokes},()=>'<span></span>').join('')}</div>
-  <div class="msg" id="msg">先看一遍笔顺，再自己写！</div></div>
- <div class="info"><div style="display:flex;gap:16px;align-items:center"><div class="big-ch ${e.letter?'lat':''}" style="${e.c.length>2?'font-size:54px':''}">${esc(e.c)}</div>
-  <div>${e.letter?`<div class="py">${esc(e.pg||'拼音')}</div><div class="da">${(PINYIN.items[e.c]||{}).lesson?'一年级上册 第 '+esc(String((PINYIN.items[e.c]||{}).lesson))+' 课':''}</div>`:`<div class="py">${esc(e.p)}${MEAN[e.c]&&MEAN[e.c][2]?`<small class="alsopy">也读 ${MEAN[e.c][2].map(x=>esc(x[0])).join('、')}</small>`:''}</div><div class="da">${esc(glx(e))}</div>`}<div class="src">${e.strokes} 笔　${e.letter?'':'部首 '+esc(e.rad)+'　'}No.${String(e.num).padStart(4,'0')}</div></div>
+  <div class="combo" id="combo">${Array.from({length:W.n},()=>'<span></span>').join('')}</div>
+  <div class="msg" id="msg">${W.miss?'這個字還沒有繁體筆順資料，先練簡體寫法':'先看一遍笔顺，再自己写！'}</div></div>
+ <div class="info"><div style="display:flex;gap:16px;align-items:center"><div class="big-ch ${e.letter?'lat':''}"${W.miss?' data-notw':''} style="${e.c.length>2?'font-size:54px':''}">${esc(e.c)}</div>
+  <div>${e.letter?`<div class="py">${esc(e.pg||'拼音')}</div><div class="da">${(PINYIN.items[e.c]||{}).lesson?'一年级上册 第 '+esc(String((PINYIN.items[e.c]||{}).lesson))+' 课':''}</div>`:`<div class="py">${esc(e.p)}${MEAN[e.c]&&MEAN[e.c][2]?`<small class="alsopy">也读 ${MEAN[e.c][2].map(x=>esc(x[0])).join('、')}</small>`:''}</div><div class="da">${esc(glx(e))}</div>`}<div class="src">${W.n} 笔　${e.letter?'':'部首 '+esc(e.rad)+'　'}No.${String(e.num).padStart(4,'0')}</div></div>
   <div class="mascot" style="margin-left:auto">${mascotHTML(e)}</div></div>
   <div class="src tribeline">${(()=>{const st=tribeStats(me(),e.tribe);return `${e.tribe.emoji} ${esc(e.tribe.name)} · ${esc(tname(e.tribe,st.stage))}${st.next?`，再喂 ${st.next} 个字就${st.stage?'进化':'孵化'}`:' · 已经是大王'}`})()}</div>
   <span class="kind" style="background:${KIND_COLOR[e.k]||'#8a8fae'}">${e.k}</span>
   <p class="poem">${hl}</p>${e.s?`<div class="src">${esc(e.s)}</div>`:''}${e.letter&&(PINYIN.items[e.c]||{}).sent?`<p class="poem" style="font-size:20px;margin-top:4px">👂 ${(()=>{const it=PINYIN.items[e.c];return esc(it.sent).split(it.word).join(`<b>${esc(it.word)}</b>`)})()}</p>`:''}
   ${MEAN[e.c]?`<div class="mean" id="mean" hidden>${EMOJI[e.c]?`<div class="em">${EMOJI[e.c]}</div>`:''}<div>${MEAN[e.c][2]?`<span class="mpy">${esc(e.p)}</span>`:''}<p>${esc(MEAN[e.c][0])}</p><div class="w">${MEAN[e.c][1].map(w=>`<b>${esc(w)}</b>`).join('')}</div>${(MEAN[e.c][2]||[]).map(([py,m,ws])=>`<div class="mmore"><span class="mpy">${esc(py)}</span><p>${esc(m)}</p><div class="w">${ws.map(w=>`<b>${esc(w)}</b>`).join('')}</div></div>`).join('')}</div></div>`:''}
   <div class="ctrls"><button class="big ghost" id="bSay">🔊 听一听</button>${MEAN[e.c]?`<button class="big ghost" id="bMean">🔍 什么意思</button>`:''}<button class="big" id="bAnim">👀 看笔顺</button><button class="big green" id="bQuiz">✏️ 开始写</button><button class="big purple" id="bQuest">🎯 闯关</button><button class="big ghost" id="bDraw">🎨 画一画</button></div>
-  <div id="gymbox"></div><div id="bookbox"></div>
- </div></div>`;renderGym(e);renderBookBox(e);
- writer=HanziWriter.create('hw',c,{width:size,height:size,padding:pad,showOutline:true,showCharacter:false,strokeColor:TYPES[e.t].d,outlineColor:'#D9E1EE',drawingColor:'#2F6BFF',drawingWidth:e.letter?44:40,drawingFadeDuration:220,highlightColor:'#FF3B7A',strokeHighlightSpeed:1.3,radicalColor:null,strokeAnimationSpeed:.9,delayBetweenStrokes:350,
+  <div id="gymbox"></div><div id="bookbox"></div><div id="songbox"></div>
+ </div></div>`;renderGym(e);renderBookBox(e);renderSongBox(e);
+ writer=HanziWriter.create('hw',W.ch,{width:size,height:size,padding:pad,showOutline:true,showCharacter:false,strokeColor:TYPES[e.t].d,outlineColor:'#D9E1EE',drawingColor:'#2F6BFF',drawingWidth:e.letter?44:40,drawingFadeDuration:220,highlightColor:'#FF3B7A',strokeHighlightSpeed:1.3,radicalColor:null,strokeAnimationSpeed:.9,delayBetweenStrokes:350,
   charDataLoader:loadChar,onLoadCharDataError:()=>{$('#msg').textContent='这个字的笔顺没有加载出来，请检查网络后再试'}});
  const sayText=e.letter?LETTER_SAY[e.c]+'，'+e.l.replace(/[a-zü ]+/g,''):e.c+'。'+e.l;
  try{ctx()}catch(_){}preloadVoice([e.c,'ui_start','ui_hint','ui_retry','ui_summon','ui_evolve']);if(next)preloadVoice([next.c]);
@@ -934,11 +995,11 @@ function startQuiz(e){
   onMistake:d=>{sBad();const k=d.mistakesOnStroke;const m=k>=2?'看，闪光的地方就是下一笔':['再试一次，注意从哪里开始写','没关系，再来一次！','就差一点点，加油！'][d.strokeNum%3];$('#msg').textContent=m;
    if(k>=2){try{writer.highlightStroke(d.strokeNum)}catch(_){}}
    if(k===1)say(m,['ui_retry','ui_tryagain','ui_almost'][d.strokeNum%3]);else if(k===2)say(m,'ui_hint')},
-  onComplete:d=>finish(e,d.totalMistakes)});
+  onComplete:d=>finish(e,d.totalMistakes,twc(e).n)});
 }
-function finish(e,mist){
- const per=mist/Math.max(1,e.strokes);
- const stars=mist===0?3:(mist<=1||per<=.25)?(mist<=1&&e.strokes>=4?3:2):per<=.6?2:1;
+function finish(e,mist,ns){ns=ns||e.strokes;/* 繁体模式按繁体笔画数算星 */
+ const per=mist/Math.max(1,ns);
+ const stars=mist===0?3:(mist<=1||per<=.25)?(mist<=1&&ns>=4?3:2):per<=.6?2:1;
  const p=me(),old=p.prog[e.c]||0,best=Math.max(old,stars);stat('w',e.c);const t=e.tribe,before=tribeStats(p,t);p.prog[e.c]=best;save();svArm=true;setNav('grades');const after=tribeStats(p,t);
  sWin();const r=$('#hw').getBoundingClientRect();burst(r.left+r.width/2,r.top+r.height/2,18);
  let title,sub,voice;const feed=after.next?`再喂 ${after.next} 个字就${after.stage?'进化':'孵化'}`:'';
@@ -983,7 +1044,7 @@ function lookalikes(e){let out=[];
  out.push(...shuffle(sameStroke));if(out.length<3)out.push(...peers(e).map(x=>x.c));return uniqBy(out,x=>x).slice(0,6)}
 /* 把字渲染到小画布，算出哪些格子是“墨” */
 function inkMask(ch,N){const cv=document.createElement('canvas');const R=N*12;cv.width=cv.height=R;const g=cv.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,R,R);g.fillStyle='#000';g.textAlign='center';g.textBaseline='middle';
- const lat=/^[a-zü]+$/.test(ch);g.font=`${lat?'bold ':''}${Math.round(R*(lat?(ch.length>2?.55:ch.length>1?.75:.95):.92))}px ${lat?"'Andika',Arial,sans-serif":"'ZCOOL KuaiLe','Microsoft YaHei',sans-serif"}`;g.fillText(ch,R/2,R/2+(lat?R*.04:R*.03));
+ const lat=/^[a-zü]+$/.test(ch);g.font=`${lat?'bold ':''}${Math.round(R*(lat?(ch.length>2?.55:ch.length>1?.75:.95):.92))}px ${lat?"'Andika',Arial,sans-serif":(TW?"'LXGW WenKai TC','Microsoft JhengHei',sans-serif":"'ZCOOL KuaiLe','Microsoft YaHei',sans-serif")}`;g.fillText(ch,R/2,R/2+(lat?R*.04:R*.03));
  const d=g.getImageData(0,0,R,R).data;const mask=new Set();
  for(let r=0;r<N;r++)for(let c=0;c<N;c++){let ink=0;for(let y=0;y<12;y++)for(let x=0;x<12;x++){const i=((r*12+y)*R+(c*12+x))*4;if(d[i]<128)ink++}if(ink>=22)mask.add(r*N+c)}
  if(mask.size<N)for(let r=Math.floor(N*.4);r<Math.ceil(N*.6);r++)for(let c=1;c<N-1;c++)mask.add(r*N+c);   /* 字体没加载出来时兜底：画一横 */
@@ -1017,7 +1078,7 @@ const GAMES={
    bind(root,done){let miss=0;root.querySelectorAll('.qopt').forEach(b=>b.onclick=()=>{if(b.disabled)return;const want=chars[order[k]];if(b.dataset.c!==want){wrong(b);miss++;return}
     root.querySelector(`.blank[data-i="${order[k]}"]`).textContent=want;b.disabled=true;b.classList.add('used');k++;sGood(k);if(k===order.length){say(e.c+'。'+e.l,e.c);done(miss===0)}})}}}}
 ,
- color:{name:'涂色显字',ok:()=>true,build(e){const N=e.letter?8:10;const mask=inkMask(e.c,N);const others=pick(peers(e),2).map(x=>x.c);const labels=[e.c,...others];const cols=shuffle(['#FF5C8A','#3FBF6A','#2F6BFF']);
+ color:{name:'涂色显字',ok:()=>true,build(e){const N=e.letter?8:10;const mask=inkMask(twd(e),N);const others=pick(peers(e),2).map(x=>x.c);const labels=[e.c,...others];const cols=shuffle(['#FF5C8A','#3FBF6A','#2F6BFF']);
   const cells=[];for(let i=0;i<N*N;i++)cells.push(mask.has(i)?0:1+Math.floor(Math.random()*2));
   return {html:`<p class="qtip">按颜色把格子涂上：涂完「${kc(e)}」的格子，会有东西显出来</p><div class="legend2">${labels.map((l,i)=>`<button class="${e.letter?'lat':''}" data-k="${i}" aria-pressed="${i===0}"><i style="background:${cols[i]}"></i>${esc(l)}</button>`).join('')}</div>
    <div class="cgrid" style="grid-template-columns:repeat(${N},1fr)">${cells.map((k,i)=>`<button class="cc ${e.letter?'lat':''} ${k===0?'target':''}" data-i="${i}" data-k="${k}">${esc(labels[k])}</button>`).join('')}</div>`,
@@ -1084,6 +1145,7 @@ function draw(c){const e=BY[c],p=me();const size=Math.max(260,Math.min(window.in
 }
 /* ---------- modal ---------- */
 function openCard(e,f,o={}){
+ if(e.letter?!GYM:!BOOKS){(e.letter?gymData():booksData()).then(()=>openCard(e,f,o));return}
  const nx=GRADES[e.g].items[GRADES[e.g].items.indexOf(e)+1];
  $('#mbox').innerHTML=`<div class="title">${o.title||cname(e,f)}</div>${o.stars!==undefined?`<div style="font-size:34px;color:#FFC72C">${'★'.repeat(o.stars)}${'☆'.repeat(3-o.stars)}</div>`:''}
  <div class="cardwrap pop">${charCardSVG(e,f,{uid:'m'})}</div>
@@ -1100,7 +1162,7 @@ function openCard(e,f,o={}){
  if($('#mDraw'))$('#mDraw').onclick=()=>go('draw',e.c);
  if($('#mTribe'))$('#mTribe').onclick=()=>{S.atab='tribes';save();go('album')};
 }
-function closeModal(){$('#modal').classList.remove('open');stopVoice();if(svArm){svArm=false;setTimeout(()=>svMaybe(),500)}}/* 孩子写完字、关掉字卡以后，看看该不该弹家长问卷 */
+function closeModal(){$('#modal').classList.remove('open');$('#mbox').classList.remove('wide');document.querySelectorAll('#mbox video').forEach(v=>v.pause());stopVoice();if(svArm){svArm=false;setTimeout(()=>svMaybe(),500)}}/* 孩子写完字、关掉字卡以后，看看该不该弹家长问卷 */
 $('#modal').addEventListener('click',ev=>{if(ev.target.id==='modal')closeModal()});
 document.addEventListener('keydown',ev=>{if(ev.key==='Escape')closeModal()});
 /* ---------- 绘本 / 古诗 / 拼音视频（YouTube 频道 DanPicBook Kids）：data/library.json 由 tools/build_library.py 生成，
@@ -1108,6 +1170,8 @@ document.addEventListener('keydown',ev=>{if(ev.key==='Escape')closeModal()});
 let LIB=null,YTV=null;
 /* YouTube 订阅提示（2026-10-20）：读完一本书时、视频播放时（放在视频下面）出一张卡片，对象是家长；不送奖励（网站没法确认，YouTube 也不鼓励） */
 const YT_SUB='https://www.youtube.com/@DanPicBookKids?sub_confirmation=1';
+const WX_CHANNEL='丹麦绘本',WX_ID='sphOEuGPqLMvxrc';/* 微信视频号的名字和视频号 ID（中国大陆用户看不了 YouTube）：名字留空就不显示；视频号没有网页链接，只能让人在微信里搜 */
+const wxCard=()=>WX_CHANNEL?`<div class="ytsub wx"><span class="yti" style="background:#07C160">视</span><div><b>中国大陆的朋友：微信视频号「${esc(WX_CHANNEL)}」</b><small>打开微信 → 搜一搜 → 视频号，搜「${esc(WX_CHANNEL)}」（视频号 ID：${esc(WX_ID)}）。绘本、古诗、成语动画都在那里</small></div></div>`:'';
 const ytSubCard=what=>`<div class="ytsub"><span class="yti">▶</span><div><b>家长：喜欢这个${what}？订阅 YouTube 频道 DanPicBook Kids</b><small>每天一本新绘本，新的古诗、成语动画一上线就能看到 · ${LOCS[LOC].sub||'Abonnér på kanalen'}</small></div><a href="${YT_SUB}" target="_blank" rel="noopener" onclick="stat('f','ytsub')">订阅</a></div>`;const LANGN={zh:'中文',en:'English',da:'Dansk',nb:'Norsk',de:'Deutsch',mv:'儿歌 MV'};
 /* ---------- 绘本页：data/books.json（tools/build_books.py）= 每本书每一页的文字 + 哪些字 / 拼音对应哪一页；
    配图 MEDIA/book/<主题>/<页>.webp，旁白 MEDIA/book/<主题>/<页>.<zh|en|da>.mp3（不带配乐） ---------- */
@@ -1118,14 +1182,16 @@ function bookAudio(){if(!BA){BA=new Audio();BA.crossOrigin='anonymous';BA.setAtt
 function playBookClip(b,n,l,onend){stopVoice();stopMusic();const a=bookAudio();a.onended=onend||null;a.onerror=()=>{if(onend)setTimeout(onend,1500)};a.src=bookAu(b,n,l);a.play().catch(()=>{})}
 /* 拼音操：data/pinyin_gym.json（从美人鱼课 绘本工具/pinyin_data.py 导出），图 img/pinyin/<码点>.webp 是 Twemoji（CC BY 4.0） */
 let GYM=null;const gymData=()=>GYM?Promise.resolve(GYM):fetch('data/pinyin_gym.json').then(r=>r.json()).then(j=>GYM=j).catch(()=>GYM={});
+/* 一个字配哪张图（同步，数据没到就 null）：拼音 → 拼音操的 Twemoji；汉字 → 第一本做好了的书里有这个字的那一页（先看「字的那一页」idx，再看「句子里有这个字」occ） */
+function picOf(e){if(e.letter){const g=GYM&&GYM[e.c];return g?{img:'img/pinyin/'+g.img+'.webp',sq:1,g}:null}
+ const B=BOOKS;if(!B||!B.idx)return null;const hit=[...(B.idx[e.c]||[]),...((B.occ||{})[e.c]||[])].find(([bi,n])=>{const b=B.books[bi];const p=b&&b.ready&&b.pages.find(x=>x.n===n);return p&&p.img});if(!hit)return null;const [bi,n]=hit;return {img:bookImg(B.books[bi],n),bi,n,title:B.books[bi].title}}
 const gymHTML=(e,g)=>`<div class="gym"><img src="img/pinyin/${g.img}.webp" alt=""><div><div class="gh">🤸 拼音操 · ${esc(g.g)}</div><div class="gw"><span class="lat">${esc(e.c)}</span> → <b>${esc(g.hz)}</b> <span class="lat" style="font-size:22px">${esc(g.py)}</span>　${esc(g.act)}</div><div class="gt">${esc(g.how)}</div><div class="gl">${esc(g.en)}<br>${esc(g.da)}</div></div></div>`;
 function renderGym(e){if(!e.letter)return;gymData().then(G=>{const g=G[e.c],box=$('#gymbox');if(g&&box&&curView==='write')box.innerHTML=gymHTML(e,g)})}
 /* 卡册里打开一张卡：拼音配拼音操的图，汉字配一张绘本里的画（只用做好了的书） */
 function cardPic(e){const el=$('#mpic');if(!el)return;
- if(e.letter)return gymData().then(G=>{const g=G[e.c];if(g&&$('#mpic')===el)el.innerHTML=`<img src="img/pinyin/${g.img}.webp" alt=""><div style="text-align:left"><b style="font-size:24px">${esc(g.hz)}</b> ${esc(g.py)}<br>${esc(g.act)}</div>`});
- booksData().then(B=>{const hit=[...(B.idx[e.c]||[]),...((B.occ||{})[e.c]||[])].find(([bi,n])=>{const b=B.books[bi];const p=b&&b.ready&&b.pages.find(x=>x.n===n);return p&&p.img});if(!hit||$('#mpic')!==el)return;const [bi,n]=hit;
-  el.innerHTML=`<img class="bk" src="${bookImg(B.books[bi],n)}" alt="" crossorigin="anonymous" data-book="${bi}" data-n="${n}"><div style="text-align:left">📖 ${esc(B.books[bi].title)}<br><span class="muted">点图翻书</span></div>`;
-  el.querySelector('img').onclick=()=>go('book',{b:bi,n})})}
+ if(e.letter)return gymData().then(G=>{const g=G[e.c];if(g&&$('#mpic')===el)el.innerHTML=`<div style="text-align:left">🤸 拼音操 <b style="font-size:22px">${esc(g.hz)}</b> ${esc(g.py)} · ${esc(g.act)}</div>`});
+ booksData().then(()=>{if($('#mpic')!==el)return;const h=picOf(e);if(!h)return;
+  el.innerHTML=`<button class="big ghost" id="mpicGo" style="font-size:17px;padding:6px 14px">📖 ${esc(h.title)} · 翻开这一页</button>`;$('#mpicGo').onclick=()=>go('book',{b:h.bi,n:h.n})})}
 function renderBookBox(e){let box=$('#bookbox');if(!box)return;booksData().then(B=>{box=$('#bookbox');if(!box||curView!=='write')return;const ok=([bi])=>B.books[bi]&&B.books[bi].ready;/* 中文旁白还没做好的书（ready=0，比如还没配音的成语故事、新诗词）先不在字页出现，做好重新生成 books.json 就自动出来 */const main=(B.idx[e.c]||[]).filter(ok).slice(0,4),more=((B.occ||{})[e.c]||[]).filter(ok).slice(0,3);const hits=main.concat(more);if(!hits.length){box.innerHTML='';return}
  const mark=(t,about)=>about||e.letter?pyz(t):esc(t).split(e.c).join(`<b style="color:var(--berry)">${esc(e.c)}</b>`);
  const card=([bi,n],about)=>{const b=B.books[bi],p=b.pages.find(x=>x.n===n);if(!p)return'';return `<div class="bbc">${p.img?`<img src="${bookImg(b,n)}" alt="" loading="lazy" crossorigin="anonymous" data-book="${bi}" data-n="${n}">`:''}${p.k==='idiom'?`<div class="bbl" style="color:var(--berry);font-weight:600">📖 成语故事里的这一页</div>`:''}<div class="bbt">${mark(p.zh,about).replace(/\n/g,'<br>')}</div>${['en',LOC].filter(l=>p[l]).map(l=>`<div class="bbl">${p.au.includes(l)?`<button data-bau="${bi}:${n}:${l}" title="${LANGN[l]}">🔊</button>`:''}<span>${esc(p[l]).replace(/\n/g,' ')}</span></div>`).join('')}<div class="bbb"><b>${esc(b.title)}</b>${p.au.includes('zh')?`<button data-bau="${bi}:${n}:zh">🔊 听这一页</button>`:''}<button data-book="${bi}" data-n="${n}">📖 读这本书</button>${b.lib!=null?`<button data-vid="${b.lib}">▶ 看视频</button>`:''}</div></div>`};
@@ -1159,11 +1225,35 @@ async function libData(){if(!LIB){try{LIB=await fetch('data/library.json').then(
  if(!YTV&&SYNC_API){YTV=[];try{const j=await fetch(SYNC_API+'/yt').then(r=>r.ok?r.json():null);if(j&&j.videos)YTV=j.videos}catch(_){}}
  return LIB}
 function libLink(v){if(v.id)return v.id;const hit=(YTV||[]).find(x=>x.title===v.title)||(YTV||[]).find(x=>v.title&&x.title.startsWith(v.title.split(' | ')[0]));return hit?hit.id:null}
+/* ---------- 经典儿歌（2026-10-25）：大家公认的好儿歌，只放歌手 / 唱片公司官方 YouTube 的链接，不存视频、不嵌入。data/songs.json 由 tools/songs/ 维护；改了内容要把下面的 ?v= 加一 ---------- */
+let SONGS=null;const songsData=()=>SONGS||(SONGS=fetch('data/songs.json?v=2').then(r=>r.ok?r.json():{groups:[]}).catch(()=>({groups:[]})));
+/* 链接来源：YouTube（默认）或 B 站（中国大陆用）；存在 localStorage zl_songsrc。歌有自己的 bili 就用，没有就退回那一组的 B 站账号，再没有就灰显指回 YouTube */
+const SONG_SRC=()=>{try{return localStorage.getItem('zl_songsrc')||'yt'}catch(_){return 'yt'}};
+const songHref=(s,g)=>SONG_SRC()==='bili'?(s.bili||g.bili||''):(s.yt||g.url||'');
+const songA=(s,g,cls)=>{const bl=SONG_SRC()==='bili',h=songHref(s,g),miss=bl&&!h&&!!(g.bili||(g.songs||[]).some(x=>x.bili)),own=bl?s.bili:s.yt;/* 整组都没有 B 站账号就照常给 YouTube 链接，组底下说明一句；组里有而这首没有的才灰显 */return `<a class="songl ${cls||''}${miss?' nob':''}" data-t="${esc(s.t)}" href="${esc(miss?(s.yt||g.url||'#'):h)}" target="_blank" rel="noopener">${esc(s.t)}${(bl?(s.bby||s.by):s.by)?`<small>${esc(bl?(s.bby||s.by):s.by)}</small>`:''}${miss?'<small>只有 YouTube</small>':own?'':' ↗'}</a>`};
+const songStat=root=>root.querySelectorAll('.songl').forEach(a=>a.onclick=()=>stat('f','song:'+a.dataset.t));
+function songsPage(){const g=$('#libgrid');if(!g)return;const pm=g.previousElementSibling;if(pm&&pm.tagName==='P')pm.remove();/* 「每个视频都有三个版本」那句不适用于外链 */g.innerHTML='<p class="muted">正在读取…</p>';songsData().then(D=>{const g=$('#libgrid');if(!g||curView!=='library'||S.lib!=='songs')return;const gs=D.groups||[];
+ if(!gs.length){g.innerHTML='<p class="muted">还没有内容。</p>';return}
+ const bl=SONG_SRC()==='bili';
+ g.innerHTML=`<div class="wide songtop"><p class="muted">这些是大家公认的好儿歌，来自别的歌手和乐团。点一下会打开他们${bl?'在 B 站（哔哩哔哩）官方账号的视频':'在 YouTube 的官方视频或专辑'}；我们只放链接，不存视频。${LOC==='da'?'<br>Kendte kinesiske børnesange – links til kunstnernes officielle videoer.':''}</p><div class="seg" id="songsrc"><button data-src="yt" aria-pressed="${!bl}">▶ YouTube</button><button data-src="bili" aria-pressed="${bl}">📺 B 站 · 中国大陆</button></div></div>`+
+  gs.map(gr=>{const url=bl?gr.bili:gr.url,name=bl?(gr.biliName||'B 站官方账号'):(gr.urlName||'官方频道');return `<div class="libc songgrp"><div class="t">${esc(gr.artist)}<small>${esc(gr.sub||'')}</small></div><div class="songs">${(gr.songs||[]).map(x=>songA(x,gr)).join('')}</div>${url?`<div class="libv" style="padding:0 14px 12px"><a href="${esc(url)}" target="_blank" rel="noopener">${esc(name)} ↗</a></div>`:bl?`<div class="libv muted" style="padding:0 14px 12px;font-size:14px">这一组在 B 站没有官方账号，点开还是 YouTube</div>`:''}</div>`}).join('')+
+  `<div class="wide">${ytSubCard('儿歌').replace('喜欢这个儿歌？订阅','我们自己的识字儿歌、古诗和成语动画都在')}${wxCard()}</div>`;
+ songStat(g);g.querySelectorAll('#songsrc button').forEach(b=>b.onclick=()=>{try{localStorage.setItem('zl_songsrc',b.dataset.src)}catch(_){}stat('f','songsrc:'+b.dataset.src);songsPage()})})}
+function renderSongBox(e){const box=$('#songbox');if(!box||e.letter)return;songsData().then(D=>{const b=$('#songbox');if(!b||curView!=='write')return;const bl=SONG_SRC()==='bili';const hits=[];for(const g of D.groups||[])for(const x of g.songs||[])if((x.chars||[]).includes(e.c)&&(!bl||x.bili||g.bili))hits.push([x,g]);
+ if(!hits.length){b.innerHTML='';return}
+ b.innerHTML=`<div class="songbox">🎶 这个字在儿歌里：${hits.slice(0,3).map(([x,g])=>`<a class="songl" data-t="${esc(x.t)}" href="${esc(songHref(x,g))}" target="_blank" rel="noopener">《${esc(x.t)}》<small>${esc(g.artist||'')}</small></a>`).join('')}<small class="soon">打开 ${bl?'B 站':'YouTube'} ↗</small></div>`;songStat(b)})}
+/* 选人页的家长订阅提示：家里孩子一共写满 10 个字才出现（这时大人多半已经看到孩子在玩了），✕ 关掉 7 天不再出现，点过「订阅」就永远不出现。不弹窗、不挡孩子 */
+function ytNudge(){const el=$('#ytnudge');if(!el)return;let v='';try{v=localStorage.getItem('zl_ytn')||''}catch(_){return}if(v==='done'||(+v||0)>Date.now())return;
+ const n=Object.values(S.players).reduce((a,p)=>a+Object.keys(p.prog||{}).length,0);if(n<10)return;
+ el.innerHTML=`<div class="ytsub nudge"><span class="yti">▶</span><div><b>给爸爸妈妈：孩子在这里已经写对 ${n} 个字了 👏</b><small>字灵乐园一直免费。觉得有用的话，顺手订阅我们的 YouTube 频道 DanPicBook Kids，就是对我们最好的支持：每天一本新绘本，古诗、成语、识字儿歌动画一上线就看得到 · ${LOCS[LOC].sub||'Abonnér på kanalen'}</small></div><a href="${YT_SUB}" target="_blank" rel="noopener" id="ytnGo">订阅</a><button class="x" id="ytnX" aria-label="关闭">✕</button></div>`;
+ $('#ytnGo').onclick=()=>{stat('f','ytsub');try{localStorage.setItem('zl_ytn','done')}catch(_){}};
+ $('#ytnX').onclick=()=>{try{localStorage.setItem('zl_ytn',String(Date.now()+7*864e5))}catch(_){}el.innerHTML=''}}
 function library(series){
  let focus=null;if(series&&typeof series==='object'){focus=series.n;const it=LIB&&LIB.items.find(i=>i.n===focus);series=it?it.series:(S.lib||'book')}
- series=series==='poem'?'poem':series==='pinyin'?'pinyin':series==='idiom'?'idiom':'book';S.lib=series;rawSave();
- $('#main').innerHTML=`<div class="libtabs">${[['book','🎵 识字儿歌'],['poem','📜 诗词'],['idiom','📖 成语故事'],['pinyin','🔤 拼音儿歌']].map(([k,t])=>`<button data-lib="${k}" aria-pressed="${k===series}">${t}</button>`).join('')}</div>${LOC!=='da'?`<div id="nbrow" class="nbrow"></div><p class="muted">视频目前只有中文、English、Dansk 三个版本（${LOC==='de'?'Die Videos gibt es bisher auf Chinesisch, Englisch und Dänisch':'Videoene finnes foreløpig på kinesisk, engelsk og dansk'}）。${LOCS[LOC].n} 的在上面 5 本绘本里：一页一页翻，有文字和朗读。</p>`:`<p class="muted">每个视频都有中文、English、Dansk 三个版本，点开就能看；标着「即将上线」的正在陆续上传。更多在 YouTube 频道 <a href="https://www.youtube.com/@DanPicBookKids" target="_blank" rel="noopener">DanPicBook Kids</a>。</p>`}<div class="lib" id="libgrid"><p class="muted">正在读取…</p></div>`;
+ series=series==='poem'?'poem':series==='pinyin'?'pinyin':series==='idiom'?'idiom':series==='songs'?'songs':'book';S.lib=series;rawSave();
+ $('#main').innerHTML=`<div class="libtabs">${[['book','🎵 识字儿歌'],['poem','📜 诗词'],['idiom','📖 成语故事'],['pinyin','🔤 拼音儿歌'],['songs','🎶 经典儿歌']].map(([k,t])=>`<button data-lib="${k}" aria-pressed="${k===series}">${t}</button>`).join('')}</div>${LOC!=='da'?`<div id="nbrow" class="nbrow"></div><p class="muted">视频目前只有中文、English、Dansk 三个版本（${LOC==='de'?'Die Videos gibt es bisher auf Chinesisch, Englisch und Dänisch':'Videoene finnes foreløpig på kinesisk, engelsk og dansk'}）。${LOCS[LOC].n} 的在上面 5 本绘本里：一页一页翻，有文字和朗读。</p>`:`<p class="muted">每个视频都有中文、English、Dansk 三个版本，点开就能看；标着「即将上线」的正在陆续上传。更多在 YouTube 频道 <a href="https://www.youtube.com/@DanPicBookKids" target="_blank" rel="noopener">DanPicBook Kids</a> <a class="ytbtn sm" href="${YT_SUB}" target="_blank" rel="noopener" onclick="stat('f','ytsub')">▶ 订阅</a>${WX_CHANNEL?`<br>中国大陆的朋友：微信视频号「${esc(WX_CHANNEL)}」（视频号 ID：${esc(WX_ID)}），微信里搜一搜就有。`:''}</p>`}<div class="lib" id="libgrid"><p class="muted">正在读取…</p></div>`;
  document.querySelectorAll('[data-lib]').forEach(b=>b.onclick=()=>library(b.dataset.lib));
+ if(series==='songs'){songsPage();return}/* 经典儿歌：只放别人官方视频的链接，不走 library.json */
  if(LOC!=='da')booksData().then(B=>{const el=$('#nbrow');if(!el)return;const bs=Object.keys(NB.b||{}).map(t=>B.books.findIndex(b=>b.t===t)).filter(i=>i>=0);/* 挪威语样板：有挪威语的几本放最上面，点开直接是挪威语 */
   el.innerHTML=`<h2 style="margin:0 0 8px">${LOCS[LOC].f} ${LOCS[LOC].books} · 绘本</h2><div class="nbgrid">${bs.map(i=>{const b=B.books[i];return `<button class="nbc" data-nbr="${i}"><img src="${bookImg(b,1)}" alt="" loading="lazy" crossorigin="anonymous"><b>${esc(b.title)}</b><small>${esc(NB.b[b.t]['1'])}</small><i>${LOCS[LOC].read}</i></button>`}).join('')}</div>`;
   el.querySelectorAll('[data-nbr]').forEach(b=>b.onclick=()=>{S.bookLang=LOC;rawSave();go('book',{b:+b.dataset.nbr,n:1})})});
@@ -1174,7 +1264,7 @@ function library(series){
   if(focus!=null){const card=document.querySelector(`.libc[data-n="${focus}"]`);if(card){card.scrollIntoView({block:'center'});card.style.outline='4px solid var(--sun)'}}
   document.querySelectorAll('[data-play]').forEach(b=>b.onclick=()=>{const card=b.closest('.libc');let ph=card.querySelector('.libp');if(!ph){ph=document.createElement('div');ph.className='libp';card.insertBefore(ph,card.firstChild)}
    const vt=((card.querySelector('.t')||{}).firstChild||{}).textContent||b.dataset.play;curItem='vid:'+vt;stat('f','vid:'+vt);
-   const img=card.querySelector('img');if(img)img.remove();ph.innerHTML=`<iframe src="https://www.youtube-nocookie.com/embed/${b.dataset.play}?autoplay=1&rel=0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen title="视频"></iframe>`;if(!ph.nextElementSibling||!ph.nextElementSibling.classList.contains('ytsub'))ph.insertAdjacentHTML('afterend',ytSubCard('视频'));/* 视频下面放订阅卡片 */stopMusic()})})}
+   const img=card.querySelector('img');if(img)img.remove();ph.innerHTML=`<iframe src="https://www.youtube-nocookie.com/embed/${b.dataset.play}?autoplay=1&rel=0${TW?'&cc_lang_pref=zh-Hant&cc_load_policy=1&hl=zh-TW':''}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen title="视频"></iframe>`;if(!ph.nextElementSibling||!ph.nextElementSibling.classList.contains('ytsub'))ph.insertAdjacentHTML('afterend',ytSubCard('视频'));/* 视频下面放订阅卡片 */stopMusic()})})}
 /* ---------- print ---------- */
 /* 田字格 / 拼音描红练习纸（2026-10-14）：任意汉字或拼音，暂时只给作者模式（以后和学校商量是否收费）。
    汉字用笔顺数据画（不依赖字体，和写字页的字形一致）：第一格黑字示范，后面几格浅灰描红，再空格自己写；上面一排笔顺分解。
@@ -1213,6 +1303,7 @@ function printCards(list){
 /* ---------- album ---------- */
 function album(gid){
  if(gid!==undefined){S.agrade=gid;save()}
+ if(!BOOKS||!GYM){$('#main').innerHTML='<p class="muted">正在翻开卡册…</p>';Promise.all([booksData(),gymData()]).then(()=>{if(curView==='album')album()});return}
  const p=me(),G=GRADES[S.agrade];
  const got=ALL.filter(e=>p.prog[e.c]).length,gold=ALL.filter(e=>p.prog[e.c]===3).length;
  const ggot=G.items.filter(e=>p.prog[e.c]);
@@ -1225,13 +1316,15 @@ function album(gid){
  ${Object.keys(p.art||{}).length?`<h2>🎨 我的画 <small class="muted">${Object.keys(p.art).length} 幅，点一幅可以再画或删除</small></h2><div class="arts">${Object.entries(p.art).map(([c,src])=>`<button data-art="${esc(c)}"><img src="${src}" alt="${esc(c)}"><small>${esc(c)}　${esc((BY[c]||{}).l||'')}</small></button>`).join('')}</div>`:''}
  ${gradeTabs(S.agrade,'data-ag')}
  <div class="ctrls" style="margin:4px 0 14px"><span class="muted" style="align-self:center">${G.name}已收集 ${ggot.length} / ${G.items.length} 张</span>${false?`<button class="big ghost" id="aPrint" style="font-size:18px;padding:8px 14px">🖨 打印${G.name}的 ${ggot.length} 张卡</button>`:''}</div>
- <div class="album">${G.items.map(e=>{const f=p.prog[e.c];return f?`<button class="slot" data-c="${esc(e.c)}" aria-label="${cname(e,f)}">${charCardSVG(e,f,{uid:'a'})}</button>`
+ <div class="album">${G.items.map(e=>{const f=p.prog[e.c];return f?`<button class="slot" data-c="${esc(e.c)}" aria-label="${cname(e,f)}">${charCardSVG(e,f,{uid:'a',lazy:1})}</button>`
   :`<button class="slot" data-c="${esc(e.c)}" aria-label="还没收集 ${esc(e.c)}"><div class="lockcard"><div class="${e.letter?'lat':''}" style="font-size:54px;opacity:.3;line-height:1.1">${esc(e.c)}</div>No.${String(e.num).padStart(4,'0')}</div></button>`}).join('')}</div>`;
  document.querySelectorAll('[data-atab]').forEach(b=>b.onclick=()=>{S.atab=b.dataset.atab;save();album()});
  document.querySelectorAll('[data-ag]').forEach(b=>b.onclick=()=>album(+b.dataset.ag));
  document.querySelectorAll('[data-art]').forEach(b=>b.onclick=()=>go('draw',b.dataset.art));
  document.querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{const e=BY[b.dataset.c],f=p.prog[e.c];f?openCard(e,f):go('write',e.c)});
  if($('#aPrint'))$('#aPrint').onclick=()=>printCards(ggot.map(e=>[e,p.prog[e.c]]));
+ const io=new IntersectionObserver(es=>es.forEach(x=>{if(!x.isIntersecting)return;const im=x.target;im.setAttribute('href',im.getAttribute('data-href'));im.removeAttribute('data-href');io.unobserve(im)}),{rootMargin:'400px'});
+ document.querySelectorAll('.album image[data-href]').forEach(im=>io.observe(im));
 }
 /* ---------- poster ---------- */
 function poster(){
@@ -1284,6 +1377,7 @@ document.addEventListener('click',()=>{$('#sndmenu').hidden=true});
 document.querySelectorAll('#sndmenu [data-glm]').forEach(b=>{b.setAttribute('aria-pressed',b.dataset.glm===GLM());b.onclick=ev=>{ev.stopPropagation();try{localStorage.setItem('zl_glm',b.dataset.glm)}catch(_){}document.querySelectorAll('#sndmenu [data-glm]').forEach(x=>x.setAttribute('aria-pressed',x===b));stat('f','glm:'+b.dataset.glm);if(curView&&curView!=='book'&&curView!=='library')go(curView,curView==='write'&&curItem?curItem.slice(2):undefined)}});
 $('#glmLoc').textContent='只显示 '+LOCS[LOC].n;
 document.querySelectorAll('#sndmenu [data-loc]').forEach(b=>{b.setAttribute('aria-pressed',b.dataset.loc===LOC);b.onclick=ev=>{ev.stopPropagation();if(b.dataset.loc!==LOC)location.href=location.pathname+'?lang='+b.dataset.loc}});
+document.querySelectorAll('#sndmenu [data-tw]').forEach(b=>{b.setAttribute('aria-pressed',(b.dataset.tw==='1')===TW);b.onclick=ev=>{ev.stopPropagation();if((b.dataset.tw==='1')!==TW){stat('f','tw:'+b.dataset.tw);location.href=location.pathname+'?tw='+b.dataset.tw}}});/* 简繁切换要整页重画，直接带参数重开 */
 setVoice(voiceOn()?voiceKind():'off');
 if('serviceWorker'in navigator&&location.protocol.startsWith('http')){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))}
 if(typeof HanziWriter==='undefined'){$('#main').innerHTML='<h1>写字工具没有加载出来</h1><p>请检查网络后刷新页面。</p>'}
@@ -1296,7 +1390,7 @@ else{const P=new URLSearchParams(location.search);const famParam=P.get('fam'),cl
  else if(P.get('sv')&&TESTV()){history.replaceState(null,'',location.pathname);go('players');setTimeout(()=>svMaybe(true),800)}/* 作者模式试问卷 */
  else if(P.get('ws')&&TESTV()){const w=P.get('ws');history.replaceState(null,'',location.pathname);go(me()?'grades':'players');setTimeout(()=>worksheet(w),600)}
  else if(cardsParam){history.replaceState(null,'',location.pathname);go(me()?'grades':'players');const list=[...new Set([...cardsParam.replace(/[a-zü]+/g,'')].concat(cardsParam.match(/[a-zü]+/g)||[]))].map(c=>BY[c]).filter(Boolean);if(list.length&&TESTV())setTimeout(()=>printCards(list.map(e=>[e,3])),600)}/* 打印暂时只给老师 / 作者模式（以后可能收费） *//* 老师版：打印这些字的字卡 */
- else{LOCP.then(()=>{go(me()?'grades':'players');scheduleSync()})}/* 别的语言先等语言包到了再画第一页 */
+ else{Promise.all([LOCP,TWP]).then(()=>{go(me()?'grades':'players');scheduleSync()})}/* 别的语言先等语言包到了再画第一页 */
  tickPlay()}
 </script>
 </body></html>
