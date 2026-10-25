@@ -257,9 +257,9 @@ const LOCP=LOC==='da'?Promise.resolve():fetch('data/loc/'+LOC+'.json').then(r=>r
    有 data-notw 属性的元素不转换。 */
 const TW=(()=>{try{const u=new URLSearchParams(location.search);if(u.has('tw')){if(u.get('tw')==='0'){localStorage.removeItem('zl_tw');return false}localStorage.setItem('zl_tw','1');return true}return localStorage.getItem('zl_tw')==='1'}catch(_){return false}})();
 let TWD=null,TWR=null,TWMAX=1;
-const TWP=TW?fetch('data/tw.json?v=1').then(r=>r.json()).then(j=>{TWD=j;TWR={};for(const k in j.c)TWR[j.c[k]]=k;TWMAX=Math.max(1,...Object.keys(j.p).map(k=>k.length));twInit()}).catch(()=>{}):Promise.resolve();
+const TWP=TW?fetch('data/tw.json?v=2').then(r=>r.json()).then(j=>{TWD=j;TWR={};for(const k in j.c)TWR[j.c[k]]=k;TWMAX=Math.max(1,...Object.keys(j.p).map(k=>k.length));twInit()}).catch(()=>{}):Promise.resolve();
 function twText(s){if(!TWD||!s)return s;const P=TWD.p,C=TWD.c,n=s.length;let out='',i=0;while(i<n){const ch=s[i];if(ch<'\u3000'){out+=ch;i++;continue}let hit=null;for(let L=Math.min(TWMAX,n-i);L>1;L--){const w=s.substr(i,L);if(P[w]!==undefined){hit=w;break}}if(hit){out+=P[hit];i+=hit.length}else{out+=C[ch]||ch;i++}}return out}
-const twc=e=>{const t=TW&&TWD&&!e.letter&&TWD.c[e.c];return t&&TWD.s[t]?{ch:t,n:TWD.s[t],tw:1}:{ch:e.c,n:e.strokes,tw:0,miss:!!t}};/* 写字页用哪个字形、几笔 */
+const twc=e=>{const t=TW&&TWD&&!e.letter&&TWD.c[e.c];return t&&TWD.s[t]?{ch:t,n:TWD.s[t],tw:1}:{ch:e.c,n:e.strokes,tw:0,miss:!!t,moe:!!t&&(TWD.m||'').includes(t)}};/* 写字页用哪个字形、几笔；moe：没有繁体笔顺数据但教育部筆順學習網有动画，可以原样嵌 */
 const twd=e=>TW&&TWD&&!e.letter&&TWD.c[e.c]||e.c;/* 只是显示用的字形 */
 const TW_SKIP={SCRIPT:1,STYLE:1,TEXTAREA:1,INPUT:1,NOSCRIPT:1},TW_ATTRS=['title','placeholder','aria-label','alt'],twSet=new WeakMap();
 function twAttr(el){for(const a of TW_ATTRS){const v=el.getAttribute(a);if(v){const t=twText(v);if(t!==v)el.setAttribute(a,t)}}}
@@ -959,7 +959,7 @@ function write(c){
  $('#main').innerHTML=`<button class="big ghost" data-go="grades" style="font-size:18px;padding:8px 14px;margin-bottom:12px">← ${label}</button>
  <div class="wwrap"><div><div class="board" style="width:${size+8}px;height:${size+8}px">${gridSVG(e,size,pad)}<div id="hw"></div>${prev?`<button class="side l" id="bPrev" title="上一个：${esc(prev.c)}" aria-label="上一个：${esc(prev.c)}"><i>‹</i>${kc(prev)}</button>`:''}${next?`<button class="side r" id="bNext" title="下一个：${esc(next.c)}" aria-label="下一个：${esc(next.c)}"><i>›</i>${kc(next)}</button>`:''}</div>
   <div class="combo" id="combo">${Array.from({length:W.n},()=>'<span></span>').join('')}</div>
-  <div class="msg" id="msg">${W.miss?'這個字還沒有繁體筆順資料，先練簡體寫法':'先看一遍笔顺，再自己写！'}</div></div>
+  <div class="msg" id="msg">${W.miss?'這個字還沒有繁體筆順資料，先練簡體寫法':'先看一遍笔顺，再自己写！'}</div>${W.moe?`<div class="row" style="justify-content:center;margin-top:8px"><button class="ghost" id="bMoe" data-notw>📺 看教育部的繁體筆順動畫</button></div>`:''}</div>
  <div class="info"><div style="display:flex;gap:16px;align-items:center"><div class="big-ch ${e.letter?'lat':''}"${W.miss?' data-notw':''} style="${e.c.length>2?'font-size:54px':''}">${esc(e.c)}</div>
   <div>${e.letter?`<div class="py">${esc(e.pg||'拼音')}</div><div class="da">${(PINYIN.items[e.c]||{}).lesson?'一年级上册 第 '+esc(String((PINYIN.items[e.c]||{}).lesson))+' 课':''}</div>`:`<div class="py">${esc(e.p)}${MEAN[e.c]&&MEAN[e.c][2]?`<small class="alsopy">也读 ${MEAN[e.c][2].map(x=>esc(x[0])).join('、')}</small>`:''}</div><div class="da">${esc(glx(e))}</div>`}<div class="src">${W.n} 笔　${e.letter?'':'部首 '+esc(e.rad)+'　'}No.${String(e.num).padStart(4,'0')}</div></div>
   <div class="mascot" style="margin-left:auto">${mascotHTML(e)}</div></div>
@@ -980,6 +980,7 @@ function write(c){
  setTimeout(()=>say(sayText,e.c),250);
  $('#bQuiz').onclick=()=>startQuiz(e);
  $('#bQuest').onclick=()=>quest([e]);
+ if($('#bMoe'))$('#bMoe').onclick=()=>{stat('f','moe');$('#mbox').innerHTML=`<div style="text-align:center;background:var(--paper);border-radius:20px;padding:16px 16px 8px"><div class="big-ch" style="font-size:48px">${esc(TWD.c[e.c])}</div><iframe src="https://stroke-order.learningweb.moe.edu.tw/dictFrame.jsp?ID=${TWD.c[e.c].codePointAt(0)}" style="width:300px;max-width:100%;height:520px;border:0;border-radius:12px;background:#fff" allow="fullscreen" title="筆順動畫"></iframe><p class="muted" data-notw style="font-size:13px">筆順動畫：中華民國教育部《<a href="https://stroke-order.learningweb.moe.edu.tw/" target="_blank" rel="noopener">國字標準字體筆順學習網</a>》，原樣嵌入，授權 CC BY-NC-ND 3.0 TW</p><div class="mbtns"><button class="big" id="mClose">關閉</button></div></div>`;$('#modal').classList.add('open');$('#mClose').onclick=closeModal};/* 没有繁体笔顺数据的字：原样嵌教育部的动画（不改作、署名） */
  $('#bDraw').onclick=()=>go('draw',e.c);
  if($('#bPrev'))$('#bPrev').onclick=()=>go('write',prev.c);
  if(next)$('#bNext').onclick=()=>go('write',next.c);
