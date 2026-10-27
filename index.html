@@ -613,14 +613,14 @@ function gradeTabs(cur,attr){return `<div class="tabs" role="tablist">${GRADES.m
 /* ---------- players ---------- */
 const HERO_KINGS=['fire','sea','bird','plant','food','heart','beast','sun','metal','home','grain','mouth','wind','people','jade','cloth'];
 /* 网站介绍视频（三语字幕，1 分钟）：mp4 放在媒体 Worker 的 intro/ 下（_media/zilin-media/intro/，cd media && npx wrangler deploy），封面图在仓库 img/ 里 */
-const INTRO={src:'https://media.danpicbook.com/intro/zilin_intro.mp4',poster:'img/intro_poster.webp'};
-function introVideoHTML(){return `<figure class="hvid"><video controls playsinline preload="none" poster="${INTRO.poster}" src="${INTRO.src}" onplay="stat('f','intro')"></video><figcaption>🎬 1 分钟了解字灵乐园 · 字幕 中文 · Dansk · English</figcaption></figure>`}
+const INTRO={src:'https://media.danpicbook.com/intro/zilin_intro.mp4?v=2',poster:'img/intro_poster.webp?v=2'};
+function introVideoHTML(){return `<figure class="hvid"><video controls playsinline preload="none" poster="${INTRO.poster}" src="${INTRO.src}" onplay="stat('f','intro')"></video><figcaption>🎬 2 分钟了解字灵乐园 · 字幕 中文 · Dansk · English</figcaption></figure>`}
 function showIntro(){$('#mbox').classList.add('wide');$('#mbox').innerHTML=`<video controls autoplay playsinline poster="${INTRO.poster}" src="${INTRO.src}" style="width:100%;border-radius:16px;display:block;background:#000" onplay="stat('f','intro')"></video><div class="mbtns"><button class="big" id="mClose">关闭</button></div>`;$('#modal').classList.add('open');$('#mClose').onclick=closeModal}
 /* 页脚：特别致谢试点学校 */
 function siteFoot(){return `<footer class="sfoot">🙏 特别致谢 · 试点学校 <b>哥本哈根美人鱼中华文化学校</b><br><small>Særlig tak til vores pilotskole · Special thanks to our pilot school</small><br><small><a href="?tw=${TW?0:1}" data-notw onclick="stat('f','tw:${TW?0:1}')">${TW?'切换到简体字':'切換到繁體字（台灣）'}</a></small></footer>`}/* 简繁入口也放页脚，台湾的朋友一眼能看到 */
 function heroHTML(full){
  const parade=`<div class="parade" aria-hidden="true"><div>${[...HERO_KINGS,...HERO_KINGS].map(t=>`<img src="art/tribe_${t}_3.webp" alt="" loading="lazy">`).join('')}</div></div>`;
- if(!full)return `<div class="hero mini">${parade}<button class="introbtn" id="introBtn">🎬 1 分钟了解字灵乐园</button></div>`;
+ if(!full)return `<div class="hero mini">${parade}<button class="introbtn" id="introBtn">🎬 2 分钟了解字灵乐园</button></div>`;
  return `<section class="hero"><div><h1>写一个字，<br>召唤一只<em>字灵</em>！</h1>
   <p>跟着笔顺动画写汉字，写对就得一张字卡，喂给 24 个部落的字灵。喂得越多，字灵从蛋里孵出来，一路长成大王。</p>
   <p style="font-size:16px">丹麦的一位中文老师为课堂而做：课上一起写，回家接着练。初心很简单：让在海外长大的孩子也爱上汉字，读得懂中国的诗和故事。适合海外华人家庭和学中文的孩子。</p>${LOC==='nb'?`<p style="font-size:15px;background:#fff;border-radius:12px;padding:8px 12px">🇳🇴 <b>Norsk prøveversjon:</b> norske forklaringer til alle tegnene og fem bildebøker (静夜思, 春晓, 咏鹅, 守株待兔, 你好你好). <a href="?lang=da">Tilbake til dansk</a></p>`:LOC==='de'?`<p style="font-size:15px;background:#fff;border-radius:12px;padding:8px 12px">🇩🇪 <b>Deutsche Testversion:</b> deutsche Erklärungen zu allen Schriftzeichen und fünf Bilderbücher (静夜思, 春晓, 咏鹅, 守株待兔, 你好你好). <a href="?lang=da">Zurück zu Dänisch</a></p>`:''}
