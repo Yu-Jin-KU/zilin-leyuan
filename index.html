@@ -983,7 +983,7 @@ function write(c){
  if($('#bMean'))$('#bMean').onclick=toggleMean;if($('#mRep'))$('#mRep').onclick=sayMean;
  document.querySelectorAll('#qbar [data-q]').forEach(b=>b.onclick=()=>({say:()=>$('#bSay').click(),anim:()=>$('#bAnim').click(),mean:toggleMean})[b.dataset.q]());
  $('#bSay').onclick=()=>say(sayText,e.c);
- $('#bAnim').onclick=()=>{clearTimeout(autoT);writer.cancelQuiz();writer.hideCharacter();writer.animateCharacter();$('#msg').textContent='看好每一笔的方向哦';sayOnce('watch','看好每一笔的方向哦','ui_watch')};
+ $('#bAnim').onclick=()=>{clearTimeout(autoT);showBoard();writer.cancelQuiz();writer.hideCharacter();writer.animateCharacter();$('#msg').textContent='看好每一笔的方向哦';sayOnce('watch','看好每一笔的方向哦','ui_watch')};
  setTimeout(()=>say(sayText,e.c),250);
  $('#bQuiz').onclick=()=>startQuiz(e);
  $('#bQuest').onclick=()=>quest([e]);
@@ -993,8 +993,9 @@ function write(c){
  if(next)$('#bNext').onclick=()=>go('write',next.c);
  autoT=setTimeout(()=>{try{writer.animateCharacter()}catch(_){}},400);
 }
+function showBoard(){const b=document.querySelector('.board');if(!b)return;const r=b.getBoundingClientRect();if(r.top<0||r.bottom>innerHeight)b.scrollIntoView({block:'center',behavior:'smooth'})}/* 手机上「开始写」「看笔顺」按钮在田字格下面，点了把格子滚到眼前（2026-10-27） */
 function startQuiz(e){
- clearTimeout(autoT);
+ clearTimeout(autoT);showBoard();
  const dots=[...document.querySelectorAll('#combo span')];dots.forEach(d=>d.className='');
  let n=0;$('#msg').textContent='一笔一笔写，写对会变颜色';sayOnce('start','一笔一笔写，写对会变颜色','ui_start');
  writer.cancelQuiz();writer.hideCharacter();
