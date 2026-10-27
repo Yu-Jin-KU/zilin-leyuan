@@ -131,6 +131,9 @@ h1{font-size:34px;margin:8px 0 4px;font-weight:400}h2{font-size:26px;margin:22px
 .poem{font-size:26px;line-height:1.6;margin:8px 0 2px}.poem b{color:var(--berry);font-weight:400}
 .src{font-size:16px;color:var(--soft)}
 .ctrls{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.qbar{display:none;align-items:center;justify-content:center;gap:10px;margin:0 auto 10px;flex-wrap:wrap}.qbar .qch{font-size:46px;line-height:1;font-family:var(--kai)}.qbar .qch.lat{font-family:var(--lat);font-weight:700}.qbar .qpy{font-family:var(--lat);font-size:22px;color:var(--soft);margin-right:4px}.qbar .qb{width:50px;height:50px;border-radius:50%;border:3px solid var(--line);background:var(--paper);font-size:24px;line-height:1;cursor:pointer;box-shadow:0 2px 6px rgba(30,40,90,.12)}.qbar .qb[aria-pressed="true"]{border-color:#2F6BFF;background:#EAF1FF}
+@media (max-width:760px){.qbar{display:flex}}/* 手机上信息栏在田字格下面，孩子只顾写不知道字念什么、也不想往下滑，所以把字、拼音和 听 / 看笔顺 / 什么意思 放到格子上方 */
+.mean .mrep{margin-top:6px;font-size:15px;padding:4px 10px;border-radius:999px;border:2px solid var(--line);background:#fff;cursor:pointer}
 .ctrls .big{font-size:20px;padding:10px 16px}
 .msg{min-height:34px;font-size:22px;margin-top:12px;text-align:center}
 .combo{display:flex;justify-content:center;gap:6px;margin-top:8px}
@@ -621,7 +624,7 @@ function heroHTML(full){
  return `<section class="hero"><div><h1>写一个字，<br>召唤一只<em>字灵</em>！</h1>
   <p>跟着笔顺动画写汉字，写对就得一张字卡，喂给 24 个部落的字灵。喂得越多，字灵从蛋里孵出来，一路长成大王。</p>
   <p style="font-size:16px">丹麦的一位中文老师为课堂而做：课上一起写，回家接着练。初心很简单：让在海外长大的孩子也爱上汉字，读得懂中国的诗和故事。适合海外华人家庭和学中文的孩子。</p>${LOC==='nb'?`<p style="font-size:15px;background:#fff;border-radius:12px;padding:8px 12px">🇳🇴 <b>Norsk prøveversjon:</b> norske forklaringer til alle tegnene og fem bildebøker (静夜思, 春晓, 咏鹅, 守株待兔, 你好你好). <a href="?lang=da">Tilbake til dansk</a></p>`:LOC==='de'?`<p style="font-size:15px;background:#fff;border-radius:12px;padding:8px 12px">🇩🇪 <b>Deutsche Testversion:</b> deutsche Erklärungen zu allen Schriftzeichen und fünf Bilderbücher (静夜思, 春晓, 咏鹅, 守株待兔, 你好你好). <a href="?lang=da">Zurück zu Dänisch</a></p>`:''}
-  <div class="htags"><span>✍️ 6700 字笔顺</span><span>🔊 真人发音</span><span>📖 古诗绘本</span><span>🎮 闯关小游戏</span><span>🌍 中文 · English · ${LOCS[LOC].n}</span><span>👩‍🏫 老师可建班布置生字</span><span>💚 免费 · 无广告 · 不用注册</span></div>
+  <div class="htags"><span>✍️ 6700 字笔顺</span><span>🔊 真人发音</span><span>📖 古诗 · 成语 · 识字绘本</span><span>🎶 经典儿歌</span><span>🎮 闯关小游戏</span><span>🌍 中文 · English · ${LOCS[LOC].n}</span><span>👩‍🏫 老师可建班布置生字</span><span>💚 免费 · 无广告 · 不用注册</span></div>
   <div class="row" style="gap:10px;flex-wrap:wrap"><button class="big green" id="heroGo">写上名字，开始玩 ↓</button><button class="big ghost" id="heroVid">🎬 先看动画</button></div></div>
   <div>${introVideoHTML()}<div class="hsteps"><div class="hstep"><div class="hw" id="heroHw"></div><b>写一个字</b></div><div class="hstep"><img src="art/egg_fire.webp" alt=""><b>得卡喂蛋</b></div><div class="hstep"><img src="art/tribe_fire_1.webp" alt=""><b>孵出字灵</b></div><div class="hstep"><img src="art/tribe_fire_3.webp" alt=""><b>变成大王</b></div></div>${parade}</div></section>`}
 function heroDemo(){const el=$('#heroHw');if(!el||typeof HanziWriter==='undefined')return;const sz=Math.round(el.getBoundingClientRect().width)||120;
@@ -957,7 +960,7 @@ function write(c){
  const size=Math.max(260,Math.min(document.documentElement.clientWidth-64,window.innerHeight-200,460)),pad=e.letter?10:22;
  const hl=e.letter?pyz(e.l):esc(e.l).split(e.c).join(`<b>${e.c}</b>`);
  $('#main').innerHTML=`<button class="big ghost" data-go="grades" style="font-size:18px;padding:8px 14px;margin-bottom:12px">← ${label}</button>
- <div class="wwrap"><div><div class="board" style="width:${size+8}px;height:${size+8}px">${gridSVG(e,size,pad)}<div id="hw"></div>${prev?`<button class="side l" id="bPrev" title="上一个：${esc(prev.c)}" aria-label="上一个：${esc(prev.c)}"><i>‹</i>${kc(prev)}</button>`:''}${next?`<button class="side r" id="bNext" title="下一个：${esc(next.c)}" aria-label="下一个：${esc(next.c)}"><i>›</i>${kc(next)}</button>`:''}</div>
+ <div class="wwrap"><div><div class="qbar" id="qbar"><span class="qch ${e.letter?'lat':''}"${W.miss?' data-notw':''} style="${e.c.length>2?'font-size:34px':''}">${esc(e.c)}</span><span class="qpy">${e.letter?esc(e.pg||''):esc(e.p)}</span><button class="qb" data-q="say" title="听一听" aria-label="听一听">🔊</button><button class="qb" data-q="anim" title="看笔顺" aria-label="看笔顺">👀</button>${MEAN[e.c]?'<button class="qb" data-q="mean" title="什么意思" aria-label="什么意思">🔍</button>':''}</div><div class="board" style="width:${size+8}px;height:${size+8}px">${gridSVG(e,size,pad)}<div id="hw"></div>${prev?`<button class="side l" id="bPrev" title="上一个：${esc(prev.c)}" aria-label="上一个：${esc(prev.c)}"><i>‹</i>${kc(prev)}</button>`:''}${next?`<button class="side r" id="bNext" title="下一个：${esc(next.c)}" aria-label="下一个：${esc(next.c)}"><i>›</i>${kc(next)}</button>`:''}</div>
   <div class="combo" id="combo">${Array.from({length:W.n},()=>'<span></span>').join('')}</div>
   <div class="msg" id="msg">${W.miss?'這個字還沒有繁體筆順資料，先練簡體寫法':'先看一遍笔顺，再自己写！'}</div>${W.moe?`<div class="row" style="justify-content:center;margin-top:8px"><button class="ghost" id="bMoe" data-notw>📺 看教育部的繁體筆順動畫</button></div>`:''}</div>
  <div class="info"><div style="display:flex;gap:16px;align-items:center"><div class="big-ch ${e.letter?'lat':''}"${W.miss?' data-notw':''} style="${e.c.length>2?'font-size:54px':''}">${esc(e.c)}</div>
@@ -966,7 +969,7 @@ function write(c){
   <div class="src tribeline">${(()=>{const st=tribeStats(me(),e.tribe);return `${e.tribe.emoji} ${esc(e.tribe.name)} · ${esc(tname(e.tribe,st.stage))}${st.next?`，再喂 ${st.next} 个字就${st.stage?'进化':'孵化'}`:' · 已经是大王'}`})()}</div>
   <span class="kind" style="background:${KIND_COLOR[e.k]||'#8a8fae'}">${e.k}</span>
   <p class="poem">${hl}</p>${e.s?`<div class="src">${esc(e.s)}</div>`:''}${e.letter&&(PINYIN.items[e.c]||{}).sent?`<p class="poem" style="font-size:20px;margin-top:4px">👂 ${(()=>{const it=PINYIN.items[e.c];return esc(it.sent).split(it.word).join(`<b>${esc(it.word)}</b>`)})()}</p>`:''}
-  ${MEAN[e.c]?`<div class="mean" id="mean" hidden>${EMOJI[e.c]?`<div class="em">${EMOJI[e.c]}</div>`:''}<div>${MEAN[e.c][2]?`<span class="mpy">${esc(e.p)}</span>`:''}<p>${esc(MEAN[e.c][0])}</p><div class="w">${MEAN[e.c][1].map(w=>`<b>${esc(w)}</b>`).join('')}</div>${(MEAN[e.c][2]||[]).map(([py,m,ws])=>`<div class="mmore"><span class="mpy">${esc(py)}</span><p>${esc(m)}</p><div class="w">${ws.map(w=>`<b>${esc(w)}</b>`).join('')}</div></div>`).join('')}</div></div>`:''}
+  ${MEAN[e.c]?`<div class="mean" id="mean" hidden>${EMOJI[e.c]?`<div class="em">${EMOJI[e.c]}</div>`:''}<div>${MEAN[e.c][2]?`<span class="mpy">${esc(e.p)}</span>`:''}<p>${esc(MEAN[e.c][0])}</p><div class="w">${MEAN[e.c][1].map(w=>`<b>${esc(w)}</b>`).join('')}</div><button class="mrep" id="mRep">🔊 再听一遍</button>${(MEAN[e.c][2]||[]).map(([py,m,ws])=>`<div class="mmore"><span class="mpy">${esc(py)}</span><p>${esc(m)}</p><div class="w">${ws.map(w=>`<b>${esc(w)}</b>`).join('')}</div></div>`).join('')}</div></div>`:''}
   <div class="ctrls"><button class="big ghost" id="bSay">🔊 听一听</button>${MEAN[e.c]?`<button class="big ghost" id="bMean">🔍 什么意思</button>`:''}<button class="big" id="bAnim">👀 看笔顺</button><button class="big green" id="bQuiz">✏️ 开始写</button><button class="big purple" id="bQuest">🎯 闯关</button><button class="big ghost" id="bDraw">🎨 画一画</button></div>
   <div id="gymbox"></div><div id="bookbox"></div><div id="songbox"></div>
  </div></div>`;renderGym(e);renderBookBox(e);renderSongBox(e);
@@ -974,7 +977,11 @@ function write(c){
   charDataLoader:loadChar,onLoadCharDataError:()=>{$('#msg').textContent='这个字的笔顺没有加载出来，请检查网络后再试'}});
  const sayText=e.letter?LETTER_SAY[e.c]+'，'+e.l.replace(/[a-zü ]+/g,''):e.c+'。'+e.l;
  try{ctx()}catch(_){}preloadVoice([e.c,'ui_start','ui_hint','ui_retry','ui_summon','ui_evolve']);if(next)preloadVoice([next.c]);
- if($('#bMean'))$('#bMean').onclick=()=>{const m=$('#mean');m.hidden=!m.hidden;if(m.hidden)stopVoice();else{say(meanText(e),'m_'+e.c);$('#bMean').setAttribute('aria-expanded','true')}};
+ const sayMean=()=>{if(!voiceOn()){$('#msg').textContent='声音关着呢，点右上角的 🔇 打开再听';return}say(meanText(e),'m_'+e.c)};
+ const toggleMean=()=>{const m=$('#mean');if(!m)return;const open=m.hidden;if(open&&window.innerWidth<=760){const q=$('#qbar');if(q&&m.previousElementSibling!==q)q.after(m)}/* 手机：释义显示在快捷栏下面、田字格上面，不用往下滑 */
+  m.hidden=!open;if(open)sayMean();else stopVoice();$('#bMean').setAttribute('aria-expanded',open);const qb=document.querySelector('[data-q="mean"]');if(qb)qb.setAttribute('aria-pressed',open)};
+ if($('#bMean'))$('#bMean').onclick=toggleMean;if($('#mRep'))$('#mRep').onclick=sayMean;
+ document.querySelectorAll('#qbar [data-q]').forEach(b=>b.onclick=()=>({say:()=>$('#bSay').click(),anim:()=>$('#bAnim').click(),mean:toggleMean})[b.dataset.q]());
  $('#bSay').onclick=()=>say(sayText,e.c);
  $('#bAnim').onclick=()=>{clearTimeout(autoT);writer.cancelQuiz();writer.hideCharacter();writer.animateCharacter();$('#msg').textContent='看好每一笔的方向哦';sayOnce('watch','看好每一笔的方向哦','ui_watch')};
  setTimeout(()=>say(sayText,e.c),250);
