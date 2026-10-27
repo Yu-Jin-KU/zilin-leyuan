@@ -1,0 +1,13 @@
+# 字灵乐园的第四个媒体托管（2026-10-27 开）：绘本每页配图和三语旁白 book/<主题>/<页>.*，从 zilin-media 搬过来（那边加上新书会超 2 万个文件）。
+# 目录 ../_media/zilin-media4 由 tools/build_media.py 生成（不进 git）。部署：cd media4 && npx wrangler deploy
+# 一本书约 50 个文件，这里放到 2 万个之前（约 140 本后）要再开 media5，并给 books.json 加每本书的主机字段。
+name = "zilin-media4"
+compatibility_date = "2026-10-01"
+account_id = "e4cb58249df01fb0932d3bc1b56b5b0f"   # 管 danpicbook.com 域名的账户，和 media / media2 / media3 一样
+workers_dev = false
+routes = [{ pattern = "media4.danpicbook.com", custom_domain = true }]
+
+[assets]
+directory = "../_media/zilin-media4"
+html_handling = "none"
+not_found_handling = "none"
