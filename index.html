@@ -1373,7 +1373,7 @@ $('#logoSvg').innerHTML=creatureSVG(BY['火']||ALL[0],2);
 fetch('data/meaning.json').then(r=>r.ok?r.json():{}).then(j=>Object.assign(MEAN,j)).catch(()=>{});
 fetch('art/manifest.json').then(r=>r.ok?r.json():[]).then(list=>{for(const k of list)ART.add(k)}).catch(()=>{});
 const FINE=window.matchMedia&&window.matchMedia('(pointer:fine)').matches;
-if(new URLSearchParams(location.search).get('teacher')==='1'){try{localStorage.setItem('zilin_testvoice','1')}catch(_){}}
+{const _t=new URLSearchParams(location.search).get('teacher');try{if(_t==='1')localStorage.setItem('zilin_testvoice','1');else if(_t==='0')localStorage.removeItem('zilin_testvoice')}catch(_){}}/* ?teacher=0 退出作者模式，看到和大家一样的 65+5 */
 /* 渠道统计：?from=mama1 这种推广链接带来多少台新设备。每台设备一辈子只报一次（没带 from 的记 (none)），只发渠道名，不带任何设备信息；
    之前就有进度的老设备只在本机记 (old)、不报；本地 http 调试和老师模式不报 */
 (()=>{const P=new URLSearchParams(location.search),raw=(P.get('from')||'').toLowerCase(),src=/^[a-z0-9_-]{1,24}$/.test(raw)?raw:'';
