@@ -515,7 +515,7 @@ async function syncClasses(leaving){const byCls={};for(const [pid,code] of Objec
  rawSave()}
 async function joinClass(code,ids,rids){try{const r=await fetch(SYNC_API+'/c/'+code);if(r.status===404)return '没有这个班级码，再检查一下';if(r.status===429)return '试得太多次了，请过一分钟再试';if(!r.ok)throw 0;const j=await r.json();const roster=j.roster||[];
  if(roster.length&&!rids)return {roster,name:j.name};/* 老师录了名单：先让家长选孩子是名单里的谁 */
- S.cls=S.cls||{};S.clsInfo=S.clsInfo||{};S.clsRid=S.clsRid||{};S.clsInfo[code]={name:j.name,assign:j.assign||{},roster};for(const id of ids){S.cls[id]=code;if(rids&&rids[id])S.clsRid[id]=rids[id];else delete S.clsRid[id]}if(S.clsPending===code)delete S.clsPending;rawSave();BOOKS=null;LIB=null;BOOK_BY_LIB={};/* 加入班级后看全部古诗和成语 */syncNow();scheduleSync();return true}catch(_){return '连不上云端，请检查网络后再试'}}
+ S.cls=S.cls||{};S.clsInfo=S.clsInfo||{};S.clsRid=S.clsRid||{};S.clsInfo[code]={name:j.name,assign:j.assign||{},roster};for(const id of ids){S.cls[id]=code;if(rids&&rids[id])S.clsRid[id]=rids[id];else delete S.clsRid[id]}if(S.clsPending===code)delete S.clsPending;rawSave();syncNow();scheduleSync();return true}catch(_){return '连不上云端，请检查网络后再试'}}
 /* 找字：打字（汉字或拼音）或按住话筒说出来；汉字结果后面跟同音字 */
 const TONE_MAP={'ā':'a','á':'a','ǎ':'a','à':'a','ē':'e','é':'e','ě':'e','è':'e','ī':'i','í':'i','ǐ':'i','ì':'i','ō':'o','ó':'o','ǒ':'o','ò':'o','ū':'u','ú':'u','ǔ':'u','ù':'u','ǖ':'ü','ǘ':'ü','ǚ':'ü','ǜ':'ü'};
 const nopy=p=>String(p||'').toLowerCase().replace(/[āáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜ]/g,ch=>TONE_MAP[ch]).replace(/v/g,'ü').split(/[\/,\s]/)[0];
@@ -1185,8 +1185,8 @@ const ytSubCard=what=>`<div class="ytsub"><span class="yti">▶</span><div><b>�
 /* ---------- 绘本页：data/books.json（tools/build_books.py）= 每本书每一页的文字 + 哪些字 / 拼音对应哪一页；
    配图 MEDIA/book/<主题>/<页>.webp，旁白 MEDIA/book/<主题>/<页>.<zh|en|da>.mp3（不带配乐） ---------- */
 let BOOKS=null,BOOK_BY_LIB={},BA=null;
-/* 2026-11-03 用户要求：古诗、成语故事对外只显示「全部上线」之前那一批（有视频目录条目的，约 65 首古诗 + 5 个成语），其余做好的先隐藏、不删除；加入班级的家庭和作者模式（?teacher=1）看全部 */
-function fullAccess(){try{return Object.keys(S.cls||{}).length>0||!!S.clsPending||localStorage.getItem('zilin_testvoice')==='1'||new URLSearchParams(location.search).get('teacher')==='1'}catch(_){return false}}
+/* 2026-11-03 用户要求：古诗、成语故事所有人都只显示「全部上线」之前那一批（有视频目录条目的，65 首古诗 + 5 个成语），其余做好的先隐藏、不删除；班级码不影响，只有作者模式（?teacher=1）看全部 */
+function fullAccess(){try{return localStorage.getItem('zilin_testvoice')==='1'||new URLSearchParams(location.search).get('teacher')==='1'}catch(_){return false}}
 function pubOK(b){return (b.s!=='poem'&&b.s!=='idiom')||b.lib!=null||fullAccess()}
 async function booksData(){if(!BOOKS){try{BOOKS=await fetch('data/books.json').then(r=>r.json());await LOCP}catch(_){BOOKS={books:[],idx:{}}}BOOKS.books.forEach((b,i)=>{if(b.ready&&!pubOK(b))b.ready=0;if(b.ready&&b.lib!=null&&BOOK_BY_LIB[b.lib]==null)BOOK_BY_LIB[b.lib]=i;if(LOC!=='da'){const t=NB.b&&NB.b[b.t],z=NB.zh&&NB.zh[b.t];const A=NB.a&&NB.a[b.t]||[],ZA=NB.za&&NB.za[b.t]||[];b.pages.forEach(p=>{if(t&&t[p.n]){p[LOC]=t[p.n];if(A.includes(p.n))p.au+=LOC}if(z&&z[p.n]){p.zh=z[p.n];p.au=(ZA.includes(p.n)?'zh':'')+(A.includes(p.n)?LOC:'')}})}})/* 挪威语样板：页上加 nb 文字；讲丹麦的那页换成讲挪威的中文，旁白用 <页>.zhnb.mp3（旧的说的是丹麦） */}return BOOKS}
 const bookImg=(b,n)=>MEDIA4+'book/'+encodeURIComponent(b.t)+'/'+n+'.webp',bookAu=(b,n,l)=>MEDIA4+'book/'+encodeURIComponent(b.t)+'/'+n+'.'+(l==='zh'&&LOC!=='da'&&NB.zh&&NB.zh[b.t]&&NB.zh[b.t][n]?'zh'+LOC:l)+'.mp3'+(l==='de'?'?v=2':'');/* 2026-10-22 德语旁白换成 fish「Fröhliches Kind」童声：加 ?v=2 绕过一年的浏览器缓存 */
