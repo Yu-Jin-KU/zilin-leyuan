@@ -27,6 +27,8 @@ button:focus-visible,input:focus-visible{outline:4px solid var(--sun);outline-of
 .viewsw button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 h2 small{font-size:15px;margin-left:8px}
 .chip{display:inline-flex;align-items:center;gap:6px;font-size:17px;border-radius:999px;padding:5px 12px;background:var(--sun);color:#3a2a00;margin:4px 0}
+.langsw{display:flex;gap:2px;background:var(--bg2);border-radius:999px;padding:3px;font-family:var(--lat)}.langsw button{font-size:14px;padding:5px 10px;border-radius:999px;background:transparent;white-space:nowrap}.langsw button[aria-pressed="true"]{background:var(--paper);font-weight:700;box-shadow:0 1px 3px rgba(0,0,0,.12)}.langsw button:lang(zh-Hans),.langsw button:lang(zh-Hant){font-family:var(--han)}
+@media (max-width:520px){.langsw{order:9;width:100%;justify-content:center}.langsw button{flex:1;padding:6px 4px}}
 .sndwrap{position:relative}.sndmenu{position:absolute;right:0;top:48px;background:var(--paper);border:3px solid var(--line);border-radius:18px;padding:8px;display:flex;flex-direction:column;gap:6px;z-index:9;min-width:150px;box-shadow:0 8px 24px rgba(0,0,0,.15)}
 .sndmenu{max-height:calc(100vh - 80px);overflow-y:auto}.sndmenu[hidden]{display:none}.sndh{font-size:13px;color:var(--soft);padding:4px 6px 0}
 .sndmenu button{font-size:18px;padding:8px 12px;border-radius:12px;background:var(--bg);text-align:left}.sndmenu button[aria-pressed="true"]{background:var(--sun);color:#3a2a00}
@@ -231,6 +233,7 @@ h1{font-size:34px;margin:8px 0 4px;font-weight:400}h2{font-size:26px;margin:22px
  <nav class="nav" id="nav">
   <button data-go="grades">写字</button><button data-go="album">卡册</button><button data-go="poster">字灵王国</button><button data-go="library" data-arg="book">🎬 动画</button>
  </nav>
+ <div class="langsw" id="langsw" role="group" aria-label="语言 · Language · Sprog" data-notw data-notr><button data-ui="zh" lang="zh-Hans">简体</button><button data-ui="tw" lang="zh-Hant">繁體</button><button data-ui="en" lang="en">English</button><button data-ui="da" lang="da">Dansk</button></div>
  <button class="who" id="who" data-go="players">选人</button>
  <div class="sndwrap"><button class="snd" id="snd" aria-pressed="true" title="声音" aria-label="声音设置" aria-haspopup="true">🔊</button>
   <div class="sndmenu" id="sndmenu" hidden><div class="sndh">朗读</div><button data-vk="kid">🧒 童声</button><button data-vk="adult" class="testv" hidden>👩 成人声</button><button data-vk="teacher" class="testv" hidden>👩‍🏫 老师声</button><button data-vk="off">🔇 静音</button>
@@ -258,6 +261,28 @@ const LOCP=LOC==='da'?Promise.resolve():fetch('data/loc/'+LOC+'.json').then(r=>r
    写字页按字表换成繁体字、用繁体笔顺（data/<繁体字>.json，1927 个字有数据；没有数据的 404 个生僻字先练简体，会提示）；
    整站字体换成霞鹜文楷 TC（台湾教育部字形，fonts/LXGWWenKaiTC-sub.woff2）。进度、语音、班级作业都仍按简体字记，两种模式通用。
    有 data-notw 属性的元素不转换。 */
+/* 界面语言（2026-11-04）：简体 / 繁體 / English / Dansk，顶栏直接切换（?ui=zh|tw|en|da，记在 zl_ui）。
+   简繁照旧走下面的 TW；English / Dansk 和繁体一个做法：页面照常用中文渲染，uiInit() 用 MutationObserver 按 data/ui.json 把界面文字换掉
+   （tools/ui/build_ui.py 生成：整句对照 + 带数字的正则）。字、诗句、绘本、歌名不在表里，不会被换。和 LOC（绘本旁白语言）是两回事。
+   没选过的：已经在用的老用户保持中文；新用户看浏览器语言（有中文→中文，丹麦语→Dansk，英语→English，其他→中文）。 */
+const UI=(()=>{try{const u=new URLSearchParams(location.search),ok=['zh','tw','en','da'];let v=u.get('ui');if(!v&&u.has('tw'))v=u.get('tw')==='1'?'tw':'zh';
+ if(ok.includes(v)){localStorage.setItem('zl_ui',v);if(v==='tw')localStorage.setItem('zl_tw','1');else localStorage.removeItem('zl_tw');return v}
+ const s=localStorage.getItem('zl_ui');if(ok.includes(s))return s==='tw'&&localStorage.getItem('zl_tw')!=='1'?'zh':s;
+ if(localStorage.getItem('zl_tw')==='1')return 'tw';if(localStorage.getItem('zilin_v2')||localStorage.getItem('zilin_v1'))return 'zh';
+ const L=(navigator.languages&&navigator.languages.length?[...navigator.languages]:[navigator.language||'']).map(x=>String(x).toLowerCase());
+ if(L.some(x=>x.startsWith('zh')))return 'zh';if(L[0].startsWith('da'))return 'da';if(L[0].startsWith('en'))return 'en';return 'zh'}catch(_){return 'zh'}})();
+const UIX=UI==='en'?0:UI==='da'?1:-1;let UID=null,UIRX=[];
+function uiT(s,deep){if(!UID||!s)return undefined;const d=UID[s];if(d)return d[UIX];if((deep||0)>2)return undefined;
+ for(const [re,t] of UIRX){const m=s.match(re);if(m)return t[UIX].replace(/\$(\d)/g,(_,n)=>{const g=m[n];if(g==null)return '';const x=uiT(g,(deep||0)+1);return x!==undefined?x:g})}return undefined}
+const UI_SKIP='[data-notr],.poem,.mean p,.mean .w,.mmore,.big-ch,.qch,.tile .ch',UI_ONE='.drawwrap,.pg',UI_HAN=/[　-鿿＀-￯]/;
+function uiStr(s,el){const m=s.match(/^(\s*)([\s\S]*?)(\s*)$/),t=m[2];if(!t||!UI_HAN.test(t))return null;if(t.length===1&&!(el&&el.closest&&el.closest(UI_ONE)))return null;const r=uiT(t);return r!==undefined&&r!==t?m[1]+r+m[3]:null}
+const UI_NOWALK={SCRIPT:1,STYLE:1,NOSCRIPT:1};/* 输入框本身要换 placeholder，里面的字不动 */
+function uiNode(n){if(n.nodeType===3){const p=n.parentNode;if(!p||TW_SKIP[p.nodeName]||(p.closest&&p.closest(UI_SKIP)))return;const r=uiStr(n.data,p);if(r!==null)n.data=r;return}
+ if(n.nodeType!==1||UI_NOWALK[n.nodeName]||n.closest(UI_SKIP))return;const one=el=>{for(const a of TW_ATTRS){const v=el.getAttribute(a);if(v){const r=uiStr(v,el);if(r!==null)el.setAttribute(a,r)}}};one(n);
+ const w=document.createTreeWalker(n,NodeFilter.SHOW_TEXT|NodeFilter.SHOW_ELEMENT,{acceptNode:x=>x.nodeType===1&&(UI_NOWALK[x.nodeName]||x.matches(UI_SKIP))?NodeFilter.FILTER_REJECT:NodeFilter.FILTER_ACCEPT});let x;
+ while(x=w.nextNode()){if(x.nodeType===1)one(x);else uiNode(x)}}
+function uiInit(){document.documentElement.lang=UI;document.documentElement.style.setProperty('--han',"'Andika','ZCOOL KuaiLe','Noto Sans CJK SC','PingFang SC','Microsoft YaHei',sans-serif");/* 英文、丹麦文用 Andika（快乐体的拉丁字母大小写不好认），汉字仍走快乐体 */document.title=UI==='da'?'Ziling · Skriv kinesiske tegn':'Ziling · Write Chinese characters';uiNode(document.body);
+ new MutationObserver(ms=>{for(const m of ms){if(m.type==='childList')m.addedNodes.forEach(uiNode);else if(m.type==='characterData')uiNode(m.target);else if(m.target.nodeType===1&&!m.target.closest(UI_SKIP)){const v=m.target.getAttribute(m.attributeName);if(v){const r=uiStr(v,m.target);if(r!==null)m.target.setAttribute(m.attributeName,r)}}}}).observe(document.body,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['title','placeholder','aria-label','alt']})}
 const TW=(()=>{try{const u=new URLSearchParams(location.search);if(u.has('tw')){if(u.get('tw')==='0'){localStorage.removeItem('zl_tw');return false}localStorage.setItem('zl_tw','1');return true}return localStorage.getItem('zl_tw')==='1'}catch(_){return false}})();
 let TWD=null,TWR=null,TWMAX=1;
 const TWP=TW?fetch('data/tw.json?v=3').then(r=>r.json()).then(j=>{TWD=j;TWR={};for(const k in j.c)TWR[j.c[k]]=k;TWMAX=Math.max(1,...Object.keys(j.p).map(k=>k.length));twInit()}).catch(()=>{}):Promise.resolve();
@@ -275,6 +300,7 @@ function twInit(){document.documentElement.lang='zh-TW';
  HAN_FONT="'LXGW WenKai TC','Kaiti TC','BiauKai','DFKai-SB','Noto Serif CJK TC',serif";
  document.title=twText(document.title);twFix(document.body);
  new MutationObserver(ms=>{for(const m of ms){if(m.type==='childList')m.addedNodes.forEach(twFix);else if(m.type==='characterData')twTextNode(m.target);else twAttr(m.target)}}).observe(document.body,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:TW_ATTRS});}
+if(UIX>=0)fetch('data/ui.json?v=4').then(r=>r.json()).then(j=>{UID=j.d;UIRX=j.r.map(([p,...t])=>[new RegExp(p),t]);uiInit()}).catch(()=>{});
 if(LOC!=='da'){const L=LOCS[LOC];document.querySelector('header.bar').insertAdjacentHTML('afterend',`<div class="nbbar">${L.f} <b>${L.demo}</b> · ${LOC==='de'?'德语':'挪威语'}试用版 <button onclick="go(&quot;library&quot;)">📖 ${L.books} · 绘本</button> <a href="?lang=da">${L.back}</a></div>`)}/* 试用语言每页顶上都有一条，家长一眼看得出 */
 /* 字旁边的小字释义：家长可以选只显示当地语言、只显示英语、两个都显示或都不显示（🔊 菜单「释义」），记在这台设备上 */
 const GLM=()=>{try{return localStorage.getItem('zl_glm')||'both'}catch(_){return 'both'}};
@@ -1389,6 +1415,7 @@ document.addEventListener('click',()=>{$('#sndmenu').hidden=true});
 document.querySelectorAll('#sndmenu [data-glm]').forEach(b=>{b.setAttribute('aria-pressed',b.dataset.glm===GLM());b.onclick=ev=>{ev.stopPropagation();try{localStorage.setItem('zl_glm',b.dataset.glm)}catch(_){}document.querySelectorAll('#sndmenu [data-glm]').forEach(x=>x.setAttribute('aria-pressed',x===b));stat('f','glm:'+b.dataset.glm);if(curView&&curView!=='book'&&curView!=='library')go(curView,curView==='write'&&curItem?curItem.slice(2):undefined)}});
 $('#glmLoc').textContent='只显示 '+LOCS[LOC].n;
 document.querySelectorAll('#sndmenu [data-loc]').forEach(b=>{b.setAttribute('aria-pressed',b.dataset.loc===LOC);b.onclick=ev=>{ev.stopPropagation();if(b.dataset.loc!==LOC)location.href=location.pathname+'?lang='+b.dataset.loc}});
+document.querySelectorAll('#langsw [data-ui]').forEach(b=>{b.setAttribute('aria-pressed',b.dataset.ui===UI);b.onclick=ev=>{ev.stopPropagation();if(b.dataset.ui!==UI){stat('f','ui:'+b.dataset.ui);const u=new URLSearchParams(location.search);u.delete('tw');u.set('ui',b.dataset.ui);location.href=location.pathname+'?'+u.toString()+location.hash}}});/* 界面语言要整页重画，带参数重开 */
 document.querySelectorAll('#sndmenu [data-tw]').forEach(b=>{b.setAttribute('aria-pressed',(b.dataset.tw==='1')===TW);b.onclick=ev=>{ev.stopPropagation();if((b.dataset.tw==='1')!==TW){stat('f','tw:'+b.dataset.tw);location.href=location.pathname+'?tw='+b.dataset.tw}}});/* 简繁切换要整页重画，直接带参数重开 */
 setVoice(voiceOn()?voiceKind():'off');
 if('serviceWorker'in navigator&&location.protocol.startsWith('http')){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))}
